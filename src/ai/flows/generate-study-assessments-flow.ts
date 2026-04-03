@@ -1,6 +1,7 @@
+
 'use server';
 /**
- * @fileOverview A Genkit flow for generating various academic assessments (MCQ, Flashcard, Essay) from study material.
+ * @fileOverview A Genkit flow for generating various academic assessments using Groq.
  *
  * - generateStudyAssessments - A function that handles the assessment generation process.
  * - GenerateStudyAssessmentsInput - The input type for the generateStudyAssessments function.
@@ -50,6 +51,7 @@ const prompt = ai.definePrompt({
   name: 'generateStudyAssessmentsPrompt',
   input: { schema: GenerateStudyAssessmentsInputSchema },
   output: { schema: GenerateStudyAssessmentsOutputSchema },
+  model: 'groq/llama-3.1-8b-instant',
   prompt: `You are an AI assistant specialized in creating diverse academic assessments.
 Your task is to generate various types of assessments based on the provided study material and user specifications.
 
@@ -80,9 +82,6 @@ const generateStudyAssessmentsFlow = ai.defineFlow(
     name: 'generateStudyAssessmentsFlow',
     inputSchema: GenerateStudyAssessmentsInputSchema,
     outputSchema: GenerateStudyAssessmentsOutputSchema,
-    // Using gemini-1.5-flash as a suitable substitute for Groq's llama-3.1-8b-instant
-    // given the current Genkit plugin configuration only includes googleAI.
-    model: 'googleai/gemini-1.5-flash',
   },
   async (input) => {
     const { output } = await prompt(input);
