@@ -16,7 +16,9 @@ import {
   FileStack,
   X,
   Loader2,
-  FileIcon
+  FileIcon,
+  ChevronRight,
+  Info
 } from "lucide-react"
 import { 
   Select, 
@@ -41,6 +43,12 @@ export default function AssessmentsPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<GenerateStudyAssessmentsOutput | null>(null)
   
+  // Quiz Mode States
+  const [isQuizMode, setIsQuizMode] = useState(false)
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [selectedOption, setSelectedOption] = useState<string | null>(null)
+  const [isAnswerRevealed, setIsAnswerRevealed] = useState(false)
+
   // File Upload States
   const [inputType, setInputType] = useState<string>("paste")
   const [isExtracting, setIsExtracting] = useState(false)
@@ -86,7 +94,6 @@ export default function AssessmentsPage() {
       })
     }, 200)
 
-    // After simulation, set some dummy text based on the filename to represent "extracted" content
     setTimeout(() => {
       setIsExtracting(false)
       const mockText = `This is the extracted content from ${file.name}. It contains key academic concepts and definitions required for the assessment generation. [Simulated Extraction Success]`
@@ -138,6 +145,42 @@ export default function AssessmentsPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleOptionSelect = (option: string) => {
+    if (isAnswerRevealed) return
+    setSelectedOption(option)
+    setIsAnswerRevealed(true)
+  }
+
+  const nextQuestion = () => {
+    const mcqs = result?.mcqs || []
+    if (currentQuestionIndex < mcqs.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1)
+      setSelectedOption(null)
+      setIsAnswerRevealed(false)
+    } else {
+      setIsQuizMode(false)
+      toast({
+        title: "Quiz Finished!",
+        description: "You've completed all MCQs in this set."
+      })
+    }
+  }
+
+  const startQuiz = () => {
+    if (!result?.mcqs?.length) {
+      toast({
+        title: "No MCQs",
+        description: "This set doesn't contain multiple choice questions.",
+        variant: "destructive"
+      })
+      return
+    }
+    setIsQuizMode(true)
+    setCurrentQuestionIndex(0)
+    setSelectedOption(null)
+    setIsAnswerRevealed(false)
   }
 
   return (
@@ -254,72 +297,69 @@ export default function AssessmentsPage() {
                             <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 min-h-[150px] text-sm text-slate-600 leading-relaxed italic">
                               {material}
                             </div>
-                            <p className="text-xs text-slate-400 text-center italic">
-                              Content has been prepared for assessment generation. You can now configure your test settings.
-                            </p>
                           </div>
                         )}
                       </div>
                     )}
                   </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
+            </div>
 
-          <div className="space-y-6">
-            <Card className="border-none shadow-sm">
-              <CardHeader>
-                <CardTitle className="font-headline text-lg flex items-center gap-2">
-                  <Settings2 className="h-5 w-5 text-primary" />
-                  Configuration
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-3">
-                  <label className="text-sm font-medium">Academic Level</label>
-                  <Select value={level} onValueChange={setLevel}>
-                    <SelectTrigger className="h-11 rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="High School">High School</SelectItem>
-                      <SelectItem value="Undergraduate">Undergraduate</SelectItem>
-                      <SelectItem value="Postgraduate">Postgraduate</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+            <div className="space-y-6">
+              <Card className="border-none shadow-sm">
+                <CardHeader>
+                  <CardTitle className="font-headline text-lg flex items-center gap-2">
+                    <Settings2 className="h-5 w-5 text-primary" />
+                    Configuration
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <label className="text-sm font-medium">Academic Level</label>
+                      <Select value={level} onValueChange={setLevel}>
+                        <SelectTrigger className="h-11 rounded-xl">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="High School">High School</SelectItem>
+                          <SelectItem value="Undergraduate">Undergraduate</SelectItem>
+                          <SelectItem value="Postgraduate">Postgraduate</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                <div className="space-y-3">
-                  <label className="text-sm font-medium">Difficulty Level: <span className="text-primary font-bold">{difficulty}</span></label>
-                  <Select value={difficulty} onValueChange={setDifficulty}>
-                    <SelectTrigger className="h-11 rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Easy">Easy</SelectItem>
-                      <SelectItem value="Medium">Medium</SelectItem>
-                      <SelectItem value="Hard">Hard</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium">Question Count</label>
-                    <span className="text-primary font-bold text-lg">{count}</span>
+                    <div className="space-y-3">
+                      <label className="text-sm font-medium">Difficulty Level</label>
+                      <Select value={difficulty} onValueChange={setDifficulty}>
+                        <SelectTrigger className="h-11 rounded-xl">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Easy">Easy</SelectItem>
+                          <SelectItem value="Medium">Medium</SelectItem>
+                          <SelectItem value="Hard">Hard</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <Slider 
-                    value={[count]} 
-                    min={1} 
-                    max={20} 
-                    step={1} 
-                    onValueChange={(val) => setCount(val[0])}
-                    className="py-4"
-                  />
-                </div>
 
-                <div className="pt-4">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium">Question Count</label>
+                      <span className="text-primary font-bold text-lg">{count}</span>
+                    </div>
+                    <Slider 
+                      value={[count]} 
+                      min={1} 
+                      max={20} 
+                      step={1} 
+                      onValueChange={(val) => setCount(val[0])}
+                      className="py-4"
+                    />
+                  </div>
+
                   <Button 
                     className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-md shadow-xl shadow-primary/20"
                     onClick={handleGenerate}
@@ -337,22 +377,122 @@ export default function AssessmentsPage() {
                       </>
                     )}
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="p-6 rounded-3xl bg-slate-50 border border-slate-100 space-y-4">
-              <div className="flex gap-2">
-                <Badge variant="outline" className="bg-white">MCQ</Badge>
-                <Badge variant="outline" className="bg-white">Flashcards</Badge>
-                <Badge variant="outline" className="bg-white">Essay Prompts</Badge>
-              </div>
-              <h4 className="font-bold font-headline text-slate-800">Custom Mixed Mode</h4>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Generates a balanced variety of questions to ensure comprehensive topic mastery across different testing formats.
-              </p>
+                </CardContent>
+              </Card>
             </div>
           </div>
+
+          <div className="space-y-6">
+             <div className="p-8 rounded-3xl bg-slate-900 text-white relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl -mr-10 -mt-10"></div>
+                <BrainCircuit className="h-10 w-10 text-primary mb-4" />
+                <h3 className="text-xl font-bold font-headline mb-2">Master Your Topics</h3>
+                <p className="text-slate-400 text-sm leading-relaxed mb-6">
+                  Mentur AI identifies the core concepts in your material to build optimized testing sets.
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-xs text-slate-300">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Mixed MCQ & Flashcards
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-300">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Difficulty Adaptation
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-300">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Structural Analysis
+                  </div>
+                </div>
+              </div>
+          </div>
+        </div>
+      ) : isQuizMode ? (
+        <div className="max-w-3xl mx-auto space-y-8 animate-in slide-in-from-right-4 duration-500">
+          <div className="flex items-center justify-between">
+             <div className="flex items-center gap-4">
+                <Button variant="ghost" onClick={() => setIsQuizMode(false)} className="text-slate-500 hover:text-slate-900">
+                  Exit Quiz
+                </Button>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-slate-400">Question {currentQuestionIndex + 1} of {result.mcqs?.length}</span>
+                  <Progress value={((currentQuestionIndex + 1) / (result.mcqs?.length || 1)) * 100} className="w-32 h-1.5" />
+                </div>
+             </div>
+          </div>
+
+          <Card className="border-none shadow-xl rounded-3xl overflow-hidden">
+            <CardHeader className="bg-slate-50 border-b p-8">
+              <Badge className="mb-4 bg-primary/10 text-primary border-none font-bold">Multiple Choice</Badge>
+              <CardTitle className="text-2xl font-headline leading-tight text-slate-900">
+                {result.mcqs?.[currentQuestionIndex].question}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-8 space-y-6">
+              <div className="grid grid-cols-1 gap-4">
+                {result.mcqs?.[currentQuestionIndex].options.map((option, idx) => {
+                  const isCorrect = option === result.mcqs?.[currentQuestionIndex].correctAnswer
+                  const isSelected = selectedOption === option
+                  
+                  let buttonStyle = "bg-white border-slate-200 text-slate-700 hover:border-primary/40 hover:bg-slate-50"
+                  if (isAnswerRevealed) {
+                    if (isCorrect) {
+                      buttonStyle = "bg-emerald-50 border-emerald-400 text-emerald-700 font-bold"
+                    } else if (isSelected && !isCorrect) {
+                      buttonStyle = "bg-destructive/5 border-destructive/40 text-destructive font-bold"
+                    } else {
+                      buttonStyle = "bg-slate-50 border-slate-100 text-slate-400 opacity-60"
+                    }
+                  }
+
+                  return (
+                    <Button 
+                      key={idx}
+                      variant="outline"
+                      className={cn("h-16 justify-start px-6 rounded-2xl border-2 transition-all text-base text-left whitespace-normal", buttonStyle)}
+                      onClick={() => handleOptionSelect(option)}
+                      disabled={isAnswerRevealed}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={cn(
+                          "h-8 w-8 rounded-full border flex items-center justify-center font-bold text-sm shrink-0",
+                          isSelected ? "bg-primary text-white border-primary" : "bg-slate-100 text-slate-500 border-slate-200"
+                        )}>
+                          {String.fromCharCode(65 + idx)}
+                        </div>
+                        {option}
+                      </div>
+                    </Button>
+                  )
+                })}
+              </div>
+
+              {isAnswerRevealed && (
+                <div className="mt-8 p-6 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-primary/10 p-2 rounded-xl h-fit">
+                      <Info className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="space-y-2">
+                      <p className="font-bold text-slate-900">AI Explanation</p>
+                      <p className="text-sm text-slate-600 leading-relaxed">
+                        {result.mcqs?.[currentQuestionIndex].explanation || "The correct answer is derived from the core concepts presented in your study material."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {isAnswerRevealed && (
+            <div className="flex justify-center">
+              <Button 
+                onClick={nextQuestion}
+                className="h-14 px-12 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-lg shadow-2xl transition-transform hover:scale-105"
+              >
+                {currentQuestionIndex < (result.mcqs?.length || 0) - 1 ? "Next Question" : "View Results"}
+                <ChevronRight className="ml-2 h-6 w-6" />
+              </Button>
+            </div>
+          )}
         </div>
       ) : (
         <div className="space-y-8 animate-in zoom-in-95 duration-500">
@@ -360,13 +500,35 @@ export default function AssessmentsPage() {
             <Button variant="ghost" onClick={() => setResult(null)} className="text-primary font-semibold">
               ← Create New Set
             </Button>
-            <div className="flex gap-2">
-              <Button className="rounded-xl px-6 bg-accent hover:bg-accent/90">Take Quiz Mode</Button>
-              <Button className="rounded-xl px-6 bg-primary hover:bg-primary/90">Save Set</Button>
+            <div className="flex gap-3">
+              <Button 
+                onClick={startQuiz}
+                className="rounded-xl px-8 h-12 bg-primary hover:bg-primary/90 text-white font-bold shadow-xl shadow-primary/20"
+              >
+                <Zap className="mr-2 h-4 w-4 fill-current" />
+                Take Quiz Mode
+              </Button>
+              <Button variant="outline" className="rounded-xl px-6 h-12 border-slate-200 font-bold">Save Study Set</Button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="lg:col-span-2 p-6 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="bg-white p-3 rounded-xl border border-slate-200">
+                  <BrainCircuit className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900">Generated Set Preview</h3>
+                  <p className="text-sm text-slate-500">Review your mixed assessment items below.</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Badge variant="secondary" className="bg-white px-3 py-1">{result.mcqs?.length || 0} MCQs</Badge>
+                <Badge variant="secondary" className="bg-white px-3 py-1">{result.flashcards?.length || 0} Flashcards</Badge>
+              </div>
+            </div>
+
             {result.mcqs?.map((mcq, i) => (
               <Card key={i} className="border-none shadow-sm hover:shadow-md transition-shadow">
                 <CardHeader className="flex flex-row items-center gap-3">
@@ -382,7 +544,7 @@ export default function AssessmentsPage() {
                       <div 
                         key={j} 
                         className={`p-3 rounded-xl border text-sm transition-colors ${
-                          opt === mcq.correctAnswer ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-100'
+                          opt === mcq.correctAnswer ? 'bg-emerald-50 border-emerald-200 text-emerald-800 font-medium' : 'bg-slate-50 border-slate-100'
                         }`}
                       >
                         {opt}

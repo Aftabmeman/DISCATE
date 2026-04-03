@@ -10,12 +10,13 @@ const EvaluateEssayFeedbackInputSchema = z.object({
   essayText: z.string(),
   topic: z.string(),
   academicLevel: z.enum(['High School', 'College', 'Graduate', 'Other']),
-  rubric: z.string().optional(),
+  wordLimit: z.string().optional(),
+  question: z.string().optional(),
 });
 export type EvaluateEssayFeedbackInput = z.infer<typeof EvaluateEssayFeedbackInputSchema>;
 
 const EvaluateEssayFeedbackOutputSchema = z.object({
-  score: z.number().int().min(0).max(100),
+  score: z.number().int().min(0).max(10),
   strengths: z.array(z.string()),
   weaknesses: z.array(z.string()),
   improvementSuggestions: z.array(z.string()),
@@ -27,11 +28,11 @@ export async function evaluateEssayFeedback(input: EvaluateEssayFeedbackInput): 
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("GROQ_API_KEY is not set");
 
-  const systemPrompt = `You are an expert essay evaluator. Your task is to provide comprehensive feedback on the student's essay.
+  const systemPrompt = `You are an expert essay evaluator. Your task is to provide comprehensive feedback on a student's essay based on a specific question and academic level.
 Format your response as a valid JSON object strictly following the output schema.
 Schema:
 {
-  "score": number,
+  "score": number, // out of 10
   "strengths": ["string"],
   "weaknesses": ["string"],
   "improvementSuggestions": ["string"],
@@ -39,15 +40,17 @@ Schema:
 }`;
 
   const userPrompt = `Academic Level: ${input.academicLevel}
-Essay Topic: ${input.topic}
-${input.rubric ? `Evaluation Rubric: ${input.rubric}` : ''}
+Topic: ${input.topic}
+${input.question ? `Specific Question: ${input.question}` : ''}
+${input.wordLimit ? `Target Word Limit: ${input.wordLimit}` : ''}
 
-Critically analyze the provided essay and generate:
-1. An overall score out of 100.
+Critically analyze the student's essay. Focus on structural integrity, grammatical precision, depth of analysis, and relevance to the question.
+Generate:
+1. An overall score out of 10.
 2. A list of specific strengths.
 3. A list of specific weaknesses.
-4. Actionable suggestions for improvement.
-5. A structural outline of a model answer.
+4. Actionable suggestions for improvement (a roadmap).
+5. A structural outline of a model answer for this specific prompt.
 
 --- Student Essay ---
 ${input.essayText}

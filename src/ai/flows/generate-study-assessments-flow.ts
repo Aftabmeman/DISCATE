@@ -10,6 +10,7 @@ const MCQSchema = z.object({
   question: z.string(),
   options: z.array(z.string()),
   correctAnswer: z.string(),
+  explanation: z.string().describe('A brief explanation of why the correct answer is right and others are wrong.'),
 });
 
 const FlashcardSchema = z.object({
@@ -47,7 +48,7 @@ Your task is to generate various types of assessments based on the provided stud
 Format your response as a valid JSON object strictly following the output schema.
 Schema:
 {
-  "mcqs": [{"question": "string", "options": ["string"], "correctAnswer": "string"}],
+  "mcqs": [{"question": "string", "options": ["string"], "correctAnswer": "string", "explanation": "string"}],
   "flashcards": [{"front": "string", "back": "string"}],
   "essayPrompts": [{"prompt": "string", "modelAnswerOutline": ["string"]}]
 }`;
@@ -67,7 +68,7 @@ Instructions:
 1. Carefully read the study material.
 2. Generate assessments according to the specified types, academic level, difficulty, and question count.
 3. Ensure all generated content is directly derived from or highly relevant to the provided study material.
-4. For MCQs, provide at least 4 options.
+4. For MCQs, provide exactly 4 options and a clear explanation.
 5. For Flashcards, provide a clear front and concise back.
 6. For Essay prompts, create a thought-provoking question and provide a bulleted outline of key points.
 7. Return ONLY the JSON object.`;
