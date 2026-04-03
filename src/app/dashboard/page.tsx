@@ -1,4 +1,3 @@
-
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -38,9 +37,11 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" className="rounded-full h-11 px-6 font-medium">View History</Button>
-          <Button className="rounded-full h-11 px-6 font-medium bg-primary hover:bg-primary/90">
-            <BrainCircuit className="mr-2 h-4 w-4" />
-            New Assessment
+          <Button className="rounded-full h-11 px-6 font-medium bg-primary hover:bg-primary/90" asChild>
+            <Link href="/dashboard/assessments">
+              <BrainCircuit className="mr-2 h-4 w-4" />
+              New Assessment
+            </Link>
           </Button>
         </div>
       </div>
@@ -137,8 +138,10 @@ export default function DashboardPage() {
                       <p className="text-xs text-muted-foreground">{material.date} • {material.size}</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="text-slate-400 hover:text-primary">
-                    <ArrowRight className="h-4 w-4" />
+                  <Button variant="ghost" size="icon" className="text-slate-400 hover:text-primary" asChild>
+                    <Link href="/dashboard/materials">
+                       <ArrowRight className="h-4 w-4" />
+                    </Link>
                   </Button>
                 </div>
               ))}
@@ -155,8 +158,8 @@ export default function DashboardPage() {
               <h3 className="text-2xl font-bold font-headline leading-tight">Ready to test your knowledge?</h3>
               <p className="text-slate-400">Generate a custom assessment based on your uploaded materials and get instant feedback.</p>
             </div>
-            <Button className="w-fit mt-8 h-12 px-8 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl shadow-lg shadow-primary/25">
-              Start Evaluation
+            <Button className="w-fit mt-8 h-12 px-8 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl shadow-lg shadow-primary/25" asChild>
+              <Link href="/dashboard/assessments">Start Evaluation</Link>
             </Button>
           </CardContent>
         </Card>

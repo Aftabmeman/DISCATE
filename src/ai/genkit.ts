@@ -2,8 +2,12 @@ import { genkit } from 'genkit';
 import { groq } from 'genkitx-groq';
 
 export const ai = genkit({
-  plugins: [
-    groq(),
-  ],
-  model: 'groq/llama-3.1-8b-instant',
+  // Initialize with an empty plugins array or none, then use .use()
+  // to ensure compatibility with community plugins.
 });
+
+ai.use(
+  groq({
+    apiKey: process.env.GROQ_API_KEY,
+  })
+);
