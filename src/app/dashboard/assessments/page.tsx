@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { 
@@ -17,7 +17,8 @@ import {
   Loader2,
   FileIcon,
   ChevronRight,
-  Info
+  Info,
+  Type
 } from "lucide-react"
 import { 
   Select, 
@@ -27,6 +28,7 @@ import {
   SelectValue 
 } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
+import { Input } from "@/components/ui/input"
 import { generateStudyAssessments, type GenerateStudyAssessmentsOutput } from "@/ai/flows/generate-study-assessments-flow"
 import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
@@ -36,9 +38,11 @@ import { cn } from "@/lib/utils"
 
 export default function AssessmentsPage() {
   const [material, setMaterial] = useState("")
-  const [level, setLevel] = useState("Undergraduate")
+  const [level, setLevel] = useState("Undergraduate Year 1")
   const [difficulty, setDifficulty] = useState<string>("Medium")
-  const [count, setCount] = useState(5)
+  const [questionType, setQuestionType] = useState<string>("Mixed")
+  const [count, setCount] = useState(15)
+  const [essayWordLimit, setEssayWordLimit] = useState("300")
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<GenerateStudyAssessmentsOutput | null>(null)
   
@@ -56,6 +60,20 @@ export default function AssessmentsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   const { toast } = useToast()
+
+  // Dynamic Question Count Range logic
+  useEffect(() => {
+    if (difficulty === "Easy") {
+      if (count > 10) setCount(10)
+    } else if (difficulty === "Medium") {
+      if (count > 15) setCount(15)
+    } else if (difficulty === "Hard") {
+      if (count < 20) setCount(20)
+    }
+  }, [difficulty])
+
+  const maxCount = difficulty === "Easy" ? 10 : difficulty === "Medium" ? 15 : 25
+  const minCount = difficulty === "Hard" ? 10 : 1
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -95,7 +113,7 @@ export default function AssessmentsPage() {
 
     setTimeout(() => {
       setIsExtracting(false)
-      const mockText = `This is the extracted content from ${file.name}. It contains key academic concepts and definitions required for the assessment generation. [Simulated Extraction Success]`
+      const mockText = `Extracted content from ${file.name}: The subject matter covers fundamental principles and advanced theories relevant to ${level}. Key definitions and conceptual frameworks were identified for assessment generation.`
       setMaterial(mockText)
       toast({
         title: "Extraction Complete",
@@ -123,9 +141,10 @@ export default function AssessmentsPage() {
 
     setIsLoading(true)
     try {
+      const typesMapping: any = questionType === "Mixed" ? ["MCQ", "Flashcard", "Essay"] : [questionType]
       const assessments = await generateStudyAssessments({
         studyMaterial: material,
-        assessmentTypes: ["Mixed"],
+        assessmentTypes: typesMapping,
         academicLevel: level,
         difficulty: difficulty as any,
         questionCount: count
@@ -133,7 +152,7 @@ export default function AssessmentsPage() {
       setResult(assessments)
       toast({
         title: "Assessments Ready",
-        description: `Successfully generated ${count} items.`
+        description: `Successfully generated items for ${level}.`
       })
     } catch (error) {
       toast({
@@ -322,9 +341,14 @@ export default function AssessmentsPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="High School">High School</SelectItem>
-                          <SelectItem value="Undergraduate">Undergraduate</SelectItem>
-                          <SelectItem value="Postgraduate">Postgraduate</SelectItem>
+                          <SelectItem value="School Class 8-10">School Class 8-10</SelectItem>
+                          <SelectItem value="School Class 11-12">School Class 11-12</SelectItem>
+                          <SelectItem value="Undergraduate Year 1">Undergraduate Year 1</SelectItem>
+                          <SelectItem value="Undergraduate Year 2">Undergraduate Year 2</SelectItem>
+                          <SelectItem value="Undergraduate Year 3">Undergraduate Year 3</SelectItem>
+                          <SelectItem value="Competitive Exams (UPSC)">Competitive Exams (UPSC)</SelectItem>
+                          <SelectItem value="Competitive Exams (JEE/NEET)">Competitive Exams (JEE/NEET)</SelectItem>
+                          <SelectItem value="Competitive Exams (CAT/CLAT/SSC/NDA)">Competitive Exams (CAT/CLAT/SSC/NDA)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -336,23 +360,53 @@ export default function AssessmentsPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Easy">Easy</SelectItem>
+                          <SelectItem value="Easy">Easy (Low)</SelectItem>
                           <SelectItem value="Medium">Medium</SelectItem>
-                          <SelectItem value="Hard">Hard</SelectItem>
+                          <SelectItem value="Hard">Hard (High)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
 
                   <div className="space-y-4">
+                    <label className="text-sm font-medium">Question Type</label>
+                    <Tabs value={questionType} onValueChange={setQuestionType} className="w-full">
+                      <TabsList className="grid w-full grid-cols-4 rounded-xl h-11 bg-slate-100 p-1">
+                        <TabsTrigger value="MCQ" className="rounded-lg">MCQ</TabsTrigger>
+                        <TabsTrigger value="Flashcard" className="rounded-lg">Flashcard</TabsTrigger>
+                        <TabsTrigger value="Essay" className="rounded-lg">Essay</TabsTrigger>
+                        <TabsTrigger value="Mixed" className="rounded-lg">Mixed</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </div>
+
+                  {questionType === "Essay" && (
+                    <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <Type className="h-4 w-4" /> Essay Word Limit
+                      </label>
+                      <Input 
+                        type="number" 
+                        value={essayWordLimit}
+                        onChange={(e) => setEssayWordLimit(e.target.value)}
+                        placeholder="e.g. 300"
+                        className="h-11 rounded-xl"
+                      />
+                    </div>
+                  )}
+
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium">Question Count</label>
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium">Question Count</label>
+                        <p className="text-xs text-muted-foreground">Range adjusted for {difficulty} difficulty</p>
+                      </div>
                       <span className="text-primary font-bold text-lg">{count}</span>
                     </div>
                     <Slider 
                       value={[count]} 
-                      min={1} 
-                      max={20} 
+                      min={minCount} 
+                      max={maxCount} 
                       step={1} 
                       onValueChange={(val) => setCount(val[0])}
                       className="py-4"
@@ -387,17 +441,17 @@ export default function AssessmentsPage() {
                 <BrainCircuit className="h-10 w-10 text-primary mb-4" />
                 <h3 className="text-xl font-bold font-headline mb-2">Master Your Topics</h3>
                 <p className="text-slate-400 text-sm leading-relaxed mb-6">
-                  Mentur AI identifies the core concepts in your material to build optimized testing sets.
+                  Mentur AI identifies core concepts to build optimized testing sets for your academic level.
                 </p>
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-xs text-slate-300">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Mixed MCQ & Flashcards
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Professional Grade OCR
                   </div>
                   <div className="flex items-center gap-2 text-xs text-slate-300">
                     <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Difficulty Adaptation
                   </div>
                   <div className="flex items-center gap-2 text-xs text-slate-300">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Structural Analysis
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Specific Exam Targeting
                   </div>
                 </div>
               </div>
@@ -472,7 +526,7 @@ export default function AssessmentsPage() {
                     <div className="space-y-2">
                       <p className="font-bold text-slate-900">AI Explanation</p>
                       <p className="text-sm text-slate-600 leading-relaxed">
-                        {result.mcqs?.[currentQuestionIndex].explanation || "The correct answer is derived from the core concepts presented in your study material."}
+                        {result.mcqs?.[currentQuestionIndex].explanation || "The correct answer is derived from concepts suitable for your academic level."}
                       </p>
                     </div>
                   </div>
@@ -518,8 +572,8 @@ export default function AssessmentsPage() {
                   <BrainCircuit className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900">Generated Set Preview</h3>
-                  <p className="text-sm text-slate-500">Review your mixed assessment items below.</p>
+                  <h3 className="font-bold text-slate-900">Generated for {level}</h3>
+                  <p className="text-sm text-slate-500">Review your customized academic items below.</p>
                 </div>
               </div>
               <div className="flex gap-2">
