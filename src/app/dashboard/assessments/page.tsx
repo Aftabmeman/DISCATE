@@ -17,8 +17,12 @@ import {
   Loader2,
   FileIcon,
   ChevronRight,
+  ChevronLeft,
   Info,
-  Type
+  Type,
+  RotateCw,
+  Trophy,
+  BookOpen
 } from "lucide-react"
 import { 
   Select, 
@@ -51,6 +55,14 @@ export default function AssessmentsPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const [isAnswerRevealed, setIsAnswerRevealed] = useState(false)
+
+  // Flashcard Mode States
+  const [isFlashcardMode, setIsFlashcardMode] = useState(false)
+  const [currentFlashIndex, setCurrentFlashIndex] = useState(0)
+  const [isFlipped, setIsFlipped] = useState(false)
+  const [masteredCount, setMasteredCount] = useState(0)
+  const [learningCount, setLearningCount] = useState(0)
+  const [cardStatus, setCardStatus] = useState<Record<number, 'known' | 'learning'>>({})
 
   // File Upload States
   const [inputType, setInputType] = useState<string>("paste")
@@ -196,9 +208,58 @@ export default function AssessmentsPage() {
       return
     }
     setIsQuizMode(true)
+    setIsFlashcardMode(false)
     setCurrentQuestionIndex(0)
     setSelectedOption(null)
     setIsAnswerRevealed(false)
+  }
+
+  const startFlashcards = () => {
+    if (!result?.flashcards?.length) {
+      toast({
+        title: "No Flashcards",
+        description: "This set doesn't contain flashcards.",
+        variant: "destructive"
+      })
+      return
+    }
+    setIsFlashcardMode(true)
+    setIsQuizMode(false)
+    setCurrentFlashIndex(0)
+    setIsFlipped(false)
+    setMasteredCount(0)
+    setLearningCount(0)
+    setCardStatus({})
+  }
+
+  const handleCardFeedback = (status: 'known' | 'learning') => {
+    if (cardStatus[currentFlashIndex]) return // Prevent double counting
+
+    setCardStatus(prev => ({ ...prev, [currentFlashIndex]: status }))
+    if (status === 'known') {
+      setMasteredCount(prev => prev + 1)
+    } else {
+      setLearningCount(prev => prev + 1)
+    }
+  }
+
+  const nextFlashcard = () => {
+    if (currentFlashIndex < (result?.flashcards?.length || 0) - 1) {
+      setCurrentFlashIndex(prev => prev + 1)
+      setIsFlipped(false)
+    } else {
+      toast({
+        title: "Study Session Complete",
+        description: `You mastered ${masteredCount} out of ${result?.flashcards?.length} cards.`
+      })
+    }
+  }
+
+  const prevFlashcard = () => {
+    if (currentFlashIndex > 0) {
+      setCurrentFlashIndex(prev => prev - 1)
+      setIsFlipped(false)
+    }
   }
 
   return (
@@ -547,6 +608,103 @@ export default function AssessmentsPage() {
             </div>
           )}
         </div>
+      ) : isFlashcardMode ? (
+        <div className="max-w-3xl mx-auto space-y-8 animate-in slide-in-from-right-4 duration-500">
+           <div className="flex items-center justify-between">
+             <div className="flex items-center gap-4">
+                <Button variant="ghost" onClick={() => setIsFlashcardMode(false)} className="text-slate-500 hover:text-slate-900">
+                  Exit Study
+                </Button>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-slate-400">Card {currentFlashIndex + 1} of {result.flashcards?.length}</span>
+                  <Progress value={((currentFlashIndex + 1) / (result.flashcards?.length || 1)) * 100} className="w-32 h-1.5" />
+                </div>
+             </div>
+             <div className="flex gap-4">
+                <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 border-none font-bold">Mastered: {masteredCount}</Badge>
+                <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-none font-bold">Learning: {learningCount}</Badge>
+             </div>
+          </div>
+
+          <div 
+            className="relative h-[450px] w-full [perspective:1000px] cursor-pointer group"
+            onClick={() => setIsFlipped(!isFlipped)}
+          >
+            <div className={cn(
+              "relative h-full w-full transition-all duration-700 [transform-style:preserve-3d]",
+              isFlipped && "[transform:rotateY(180deg)]"
+            )}>
+              {/* Front Side */}
+              <div className="absolute inset-0 [backface-visibility:hidden]">
+                <Card className="h-full w-full border-none shadow-xl rounded-[2rem] flex flex-col items-center justify-center p-12 text-center bg-white border-2 border-slate-50">
+                   <Badge className="mb-6 bg-primary/10 text-primary border-none px-4 py-1.5 rounded-full font-bold uppercase tracking-wider text-xs">Question</Badge>
+                   <h2 className="text-3xl font-headline font-bold text-slate-900 leading-tight mb-8">
+                     {result.flashcards?.[currentFlashIndex].front}
+                   </h2>
+                   <div className="flex items-center gap-2 text-slate-400 animate-bounce mt-4">
+                      <RotateCw className="h-5 w-5" />
+                      <span className="text-sm font-medium">Tap to reveal answer</span>
+                   </div>
+                </Card>
+              </div>
+
+              {/* Back Side */}
+              <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)]">
+                <Card className="h-full w-full border-none shadow-xl rounded-[2rem] flex flex-col items-center justify-center p-12 text-center bg-slate-50 border-2 border-primary/20">
+                   <Badge className="mb-6 bg-emerald-100 text-emerald-700 border-none px-4 py-1.5 rounded-full font-bold uppercase tracking-wider text-xs">Answer</Badge>
+                   <p className="text-2xl font-medium text-slate-800 leading-relaxed italic">
+                     "{result.flashcards?.[currentFlashIndex].back}"
+                   </p>
+                </Card>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center gap-8">
+            {isFlipped && (
+              <div className="flex gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                <Button 
+                  onClick={(e) => { e.stopPropagation(); handleCardFeedback('learning'); }}
+                  disabled={!!cardStatus[currentFlashIndex]}
+                  className={cn(
+                    "h-14 px-8 rounded-2xl font-bold transition-all",
+                    cardStatus[currentFlashIndex] === 'learning' ? "bg-amber-500 text-white" : "bg-white border-2 border-amber-200 text-amber-600 hover:bg-amber-50"
+                  )}
+                >
+                  Still learning ✗
+                </Button>
+                <Button 
+                  onClick={(e) => { e.stopPropagation(); handleCardFeedback('known'); }}
+                  disabled={!!cardStatus[currentFlashIndex]}
+                  className={cn(
+                    "h-14 px-8 rounded-2xl font-bold transition-all",
+                    cardStatus[currentFlashIndex] === 'known' ? "bg-emerald-500 text-white" : "bg-white border-2 border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+                  )}
+                >
+                  I knew it ✓
+                </Button>
+              </div>
+            )}
+
+            <div className="flex items-center gap-6">
+              <Button 
+                variant="outline" 
+                onClick={prevFlashcard} 
+                disabled={currentFlashIndex === 0}
+                className="h-12 w-12 rounded-full border-slate-200"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </Button>
+              <Button 
+                onClick={nextFlashcard}
+                className="h-14 px-12 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-lg shadow-2xl transition-transform hover:scale-105"
+              >
+                {currentFlashIndex < (result.flashcards?.length || 0) - 1 ? "Next Card" : "Finish Session"}
+                <ChevronRight className="ml-2 h-6 w-6" />
+              </Button>
+            </div>
+          </div>
+        </div>
       ) : (
         <div className="space-y-8 animate-in zoom-in-95 duration-500">
           <div className="flex items-center justify-between">
@@ -554,6 +712,13 @@ export default function AssessmentsPage() {
               ← Create New Set
             </Button>
             <div className="flex gap-3">
+              <Button 
+                onClick={startFlashcards}
+                className="rounded-xl px-8 h-12 bg-amber-500 hover:bg-amber-600 text-white font-bold shadow-xl shadow-amber-500/20"
+              >
+                <BookOpen className="mr-2 h-4 w-4" />
+                Flashcard Study
+              </Button>
               <Button 
                 onClick={startQuiz}
                 className="rounded-xl px-8 h-12 bg-primary hover:bg-primary/90 text-white font-bold shadow-xl shadow-primary/20"
