@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useRef } from "react"
@@ -38,7 +37,7 @@ import { cn } from "@/lib/utils"
 export default function AssessmentsPage() {
   const [material, setMaterial] = useState("")
   const [level, setLevel] = useState("Undergraduate")
-  const [difficulty, setDifficulty] = useState<any>("Medium")
+  const [difficulty, setDifficulty] = useState<string>("Medium")
   const [count, setCount] = useState(5)
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<GenerateStudyAssessmentsOutput | null>(null)
@@ -302,9 +301,9 @@ export default function AssessmentsPage() {
                       </div>
                     )}
                   </TabsContent>
-                </CardContent>
-              </Card>
-            </div>
+                </Tabs>
+              </CardContent>
+            </Card>
 
             <div className="space-y-6">
               <Card className="border-none shadow-sm">
