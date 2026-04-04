@@ -1,3 +1,4 @@
+
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -10,7 +11,9 @@ import {
   BookOpen,
   ArrowRight,
   BrainCircuit,
-  Inbox
+  Inbox,
+  Cpu,
+  Zap
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -20,7 +23,7 @@ export default function DashboardPage() {
     { label: "Overall Score", value: "0%", icon: Target, color: "text-primary", bg: "bg-primary/10" },
     { label: "Assessments Done", value: "0", icon: Trophy, color: "text-amber-500", bg: "bg-amber-50" },
     { label: "Study Time", value: "0h", icon: Clock, color: "text-blue-500", bg: "bg-blue-50" },
-    { label: "Improvement", value: "0%", icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
+    { label: "Avg. Tokens/Run", value: "3.2k", icon: Cpu, color: "text-emerald-500", bg: "bg-emerald-50" },
   ]
 
   const recentMaterials: any[] = []
@@ -78,20 +81,34 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm bg-primary/5">
+        <Card className="border-none shadow-sm bg-slate-900 text-white overflow-hidden">
           <CardHeader>
-            <CardTitle className="font-headline text-xl text-primary">Topic Mastery</CardTitle>
-            <CardDescription>Where you stand in your current subjects</CardDescription>
+            <div className="flex items-center gap-2 text-primary">
+              <Cpu className="h-5 w-5" />
+              <CardTitle className="font-headline text-xl">AI Token Insight</CardTitle>
+            </div>
+            <CardDescription className="text-slate-400">Current Groq model efficiency</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <BookOpen className="h-8 w-8 text-slate-300 mb-2" />
-              <p className="text-sm text-slate-500">Add materials to track topic mastery.</p>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-400">Assessment Flow</span>
+                <span className="font-bold text-primary">~4.5k tokens</span>
+              </div>
+              <Progress value={75} className="h-1 bg-white/10" />
+              
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-400">Essay Evaluation</span>
+                <span className="font-bold text-primary">~1.8k tokens</span>
+              </div>
+              <Progress value={30} className="h-1 bg-white/10" />
             </div>
-            <div className="pt-4">
-              <Button variant="outline" className="w-full border-primary/20 text-primary hover:bg-primary/5 h-11 rounded-xl" asChild>
-                <Link href="/dashboard/materials">Add Your First Topic</Link>
-              </Button>
+            <div className="pt-4 border-t border-white/10">
+              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-2">Active Model</p>
+              <div className="flex items-center gap-2">
+                <Zap className="h-4 w-4 text-amber-400 fill-amber-400" />
+                <span className="text-xs font-medium">Llama 3.1 8B Instant</span>
+              </div>
             </div>
           </CardContent>
         </Card>
