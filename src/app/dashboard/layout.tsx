@@ -1,4 +1,3 @@
-
 "use client"
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
@@ -6,6 +5,8 @@ import { SidebarNav } from "@/components/dashboard/SidebarNav"
 import { Sparkles, Bell, Search, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+
+export const dynamic = 'force-dynamic';
 
 export default function DashboardLayout({
   children,
