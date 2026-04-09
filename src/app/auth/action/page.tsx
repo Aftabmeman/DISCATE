@@ -1,12 +1,11 @@
+'use client';
 
-"use client"
-
-import { useEffect, useState, Suspense } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
-import { auth } from "@/lib/firebase"
-import { applyActionCode } from "firebase/auth"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { applyActionCode } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { 
   CheckCircle2, 
   XCircle, 
@@ -16,41 +15,41 @@ import {
   Mail, 
   ShieldCheck,
   LifeBuoy
-} from "lucide-react"
-import { cn } from "@/lib/utils"
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 function AuthActionHandler() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
+  const searchParams = useSearchParams();
+  const router = useRouter();
   
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
-  const [errorMessage, setErrorMessage] = useState("")
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const mode = searchParams.get('mode')
-  const oobCode = searchParams.get('oobCode')
+  const mode = searchParams.get('mode');
+  const oobCode = searchParams.get('oobCode');
 
   useEffect(() => {
     if (mode === 'verifyEmail' && oobCode) {
-      handleVerifyEmail(oobCode)
+      handleVerifyEmail(oobCode);
     } else {
-      setStatus('error')
-      setErrorMessage("The action link is invalid or has expired.")
+      setStatus('error');
+      setErrorMessage('The action link is invalid or has expired.');
     }
-  }, [mode, oobCode])
+  }, [mode, oobCode]);
 
   const handleVerifyEmail = async (code: string) => {
     try {
-      await applyActionCode(auth, code)
-      setStatus('success')
+      await applyActionCode(auth, code);
+      setStatus('success');
     } catch (error: any) {
-      console.error("Verification error:", error)
-      setStatus('error')
-      setErrorMessage(error.message || "We couldn't verify your email at this time.")
+      console.error('Verification error:', error);
+      setStatus('error');
+      setErrorMessage(error.message || "We couldn't verify your email at this time.");
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-6 bg-slate-50 dark:bg-slate-950 selection:bg-primary/20">
+    <div className="min-h-screen w-full flex items-center justify-center p-6 bg-slate-50 dark:bg-slate-950 selection:bg-primary/20 font-body">
       {/* Abstract Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px]" />
@@ -165,7 +164,7 @@ function AuthActionHandler() {
         </p>
       </footer>
     </div>
-  )
+  );
 }
 
 export default function ActionPage() {
@@ -177,5 +176,5 @@ export default function ActionPage() {
     }>
       <AuthActionHandler />
     </Suspense>
-  )
+  );
 }
