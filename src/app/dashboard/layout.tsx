@@ -29,30 +29,27 @@ export default function DashboardLayout({
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
-  const [logoError, setLogoError] = useState(false);
+  const [logoLoaded, setLogoLoaded] = useState(false);
 
-  // Hide nav on verification page
   const hideNav = pathname === "/dashboard/verify-email";
 
   return (
     <div className="flex flex-col h-screen w-full bg-background transition-colors duration-300 overflow-hidden relative">
-      {/* Top Header */}
       <header className="h-16 border-b flex items-center justify-between px-6 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <div className="relative h-8 w-8 flex items-center justify-center">
-            {!logoError ? (
-              <Image 
+             <Image 
                 src="/logo.png" 
                 alt="Mentur Logo" 
                 fill 
-                className="object-contain"
-                onError={() => setLogoError(true)}
+                className={cn("object-contain transition-opacity duration-300", logoLoaded ? "opacity-100" : "opacity-0")}
+                onLoad={() => setLogoLoaded(true)}
               />
-            ) : (
-              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-                <BrainCircuit className="h-4 w-4 text-white" />
-              </div>
-            )}
+              {!logoLoaded && (
+                <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
+                  <BrainCircuit className="h-4 w-4 text-white" />
+                </div>
+              )}
           </div>
           <span className="text-base font-bold font-headline tracking-tight">Mentur AI</span>
         </div>
@@ -69,14 +66,12 @@ export default function DashboardLayout({
         </div>
       </header>
 
-      {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto no-scrollbar pb-28 p-6">
         <div className="max-w-2xl mx-auto">
           {children}
         </div>
       </main>
 
-      {/* Bottom Navigation */}
       {!hideNav && (
         <nav className="fixed bottom-6 left-6 right-6 h-20 bg-white/70 dark:bg-slate-900/70 border border-white/20 dark:border-slate-800/20 backdrop-blur-[24px] rounded-[32px] flex items-center justify-around px-2 z-50 shadow-2xl shadow-black/10">
           {navItems.map((item) => {

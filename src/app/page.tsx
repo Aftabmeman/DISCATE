@@ -1,5 +1,5 @@
 
-"use client"
+'use client';
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
@@ -7,7 +7,7 @@ import { onAuthStateChanged } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { ChevronRight, Sparkles, BrainCircuit } from "lucide-react"
+import { ChevronRight, BrainCircuit } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export default function Home() {
@@ -16,7 +16,7 @@ export default function Home() {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [onboardingStep, setOnboardingStep] = useState(0)
   const [isReturningUser, setIsReturningUser] = useState(false)
-  const [imgError, setImgError] = useState(false)
+  const [logoLoaded, setLogoLoaded] = useState(false)
 
   useEffect(() => {
     const hasSeenOnboarding = localStorage.getItem("mentur_onboarding_seen")
@@ -76,29 +76,28 @@ export default function Home() {
   if (showSplash) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 animate-in fade-in duration-700">
-        <div className="relative group animate-out zoom-out-95 duration-1000 delay-1000 fill-mode-forwards">
-          <div className="h-32 w-32 relative animate-pulse flex items-center justify-center">
-            {!imgError ? (
-              <Image 
+        <div className="relative group animate-out zoom-out-95 duration-1000 delay-1000 fill-mode-forwards flex flex-col items-center">
+          <div className="h-32 w-32 relative flex items-center justify-center">
+             <Image 
                 src="/logo.png" 
                 alt="Mentur AI Logo" 
                 fill 
-                className="object-contain"
-                onError={() => setImgError(true)}
+                className={cn("object-contain transition-opacity duration-500", logoLoaded ? "opacity-100" : "opacity-0")}
+                onLoad={() => setLogoLoaded(true)}
                 priority
               />
-            ) : (
-              <div className="h-24 w-24 bg-primary rounded-[32px] flex items-center justify-center shadow-xl">
-                <BrainCircuit className="h-12 w-12 text-white" />
-              </div>
-            )}
+              {!logoLoaded && (
+                <div className="absolute inset-0 bg-primary rounded-[32px] flex items-center justify-center shadow-xl animate-pulse">
+                  <BrainCircuit className="h-12 w-12 text-white" />
+                </div>
+              )}
           </div>
-        </div>
-        <div className="mt-8 text-center space-y-2 animate-in slide-in-from-bottom-4 duration-1000 delay-300">
-          <h1 className="text-3xl font-black font-headline tracking-tighter text-slate-900 dark:text-white">Mentur AI</h1>
-          <p className="text-primary font-bold text-xs uppercase tracking-[0.3em]">
-            {isReturningUser ? "Welcome Back!" : "Expert Academic Mentorship"}
-          </p>
+          <div className="mt-8 text-center space-y-2 animate-in slide-in-from-bottom-4 duration-1000 delay-300">
+            <h1 className="text-3xl font-black font-headline tracking-tighter text-slate-900 dark:text-white">Mentur AI</h1>
+            <p className="text-primary font-bold text-xs uppercase tracking-[0.3em]">
+              {isReturningUser ? "Welcome Back!" : "Expert Academic Mentorship"}
+            </p>
+          </div>
         </div>
       </div>
     )
@@ -108,7 +107,7 @@ export default function Home() {
     return (
       <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 p-8">
         <div className="flex-1 flex flex-col items-center justify-center text-center space-y-8 animate-in slide-in-from-right-8 duration-500">
-          <div className="h-48 w-48 relative mb-4 rounded-[40px] overflow-hidden shadow-2xl">
+          <div className="h-48 w-48 relative mb-4 rounded-[40px] overflow-hidden shadow-2xl bg-slate-100">
             <Image 
               src={onboardingCards[onboardingStep].image} 
               alt="Mentur Step" 

@@ -11,13 +11,15 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
-import { Loader2 } from "lucide-react"
+import { Loader2, BrainCircuit } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 export default function SignupPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
   const [loading, setLoading] = useState(false)
+  const [logoLoaded, setLogoLoaded] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -48,13 +50,19 @@ export default function SignupPage() {
     <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-slate-950">
       <Card className="w-full max-w-md border-none shadow-xl rounded-3xl overflow-hidden bg-white dark:bg-slate-900">
         <CardHeader className="text-center pt-8">
-          <div className="relative h-16 w-16 mx-auto mb-4">
+          <div className="relative h-16 w-16 mx-auto mb-4 flex items-center justify-center">
             <Image 
               src="/logo.png" 
               alt="Mentur Logo" 
               fill 
-              className="object-contain"
+              className={cn("object-contain transition-opacity duration-300", logoLoaded ? "opacity-100" : "opacity-0")}
+              onLoad={() => setLogoLoaded(true)}
             />
+            {!logoLoaded && (
+              <div className="h-16 w-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg">
+                <BrainCircuit className="h-8 w-8 text-white" />
+              </div>
+            )}
           </div>
           <CardTitle className="text-2xl font-headline font-bold">Create Account</CardTitle>
           <CardDescription>Join Mentur AI and start your mentorship journey</CardDescription>
