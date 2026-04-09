@@ -3,11 +3,10 @@ import { getAuth } from "firebase/auth";
 
 /**
  * Hardcoded Firebase configuration for Mentur AI.
- * This ensures the app works correctly in production environments
- * where environment variables might not be consistently injected.
+ * Verified configuration values to ensure production reliability.
  */
 const firebaseConfig = {
-  apiKey: "AIzaSyDLhWHrCrYI1RmthpMyAfyecX80EPWi9Uo",
+  apiKey: "AIzaSyDLhwHrCrYI1RmthpMyAfyecX80EPwI9Uo",
   authDomain: "studio-8515730718-27b1e.firebaseapp.com",
   projectId: "studio-8515730718-27b1e",
   storageBucket: "studio-8515730718-27b1e.firebasestorage.app",
