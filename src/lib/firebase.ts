@@ -2,26 +2,21 @@ import { initializeApp, getApps } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 /**
- * Firebase configuration object.
- * Values are read from environment variables with the NEXT_PUBLIC_ prefix
- * to ensure they are available in the browser during production (e.g., Vercel).
+ * Hardcoded Firebase configuration for Mentur AI.
+ * This ensures the app works correctly in production environments
+ * where environment variables might not be consistently injected.
  */
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+  apiKey: "AIzaSyDLhWHrCrYI1RmthpMyAfyecX80EPWi9Uo",
+  authDomain: "studio-8515730718-27b1e.firebaseapp.com",
+  projectId: "studio-8515730718-27b1e",
+  storageBucket: "studio-8515730718-27b1e.firebasestorage.app",
+  messagingSenderId: "417674426575",
+  appId: "1:417674426575:web:9c1cda1c088fd719679fba"
 };
 
-// Debugging check: If the API key is missing at runtime, log a warning to the console.
-// This helps identify if environment variables were not correctly injected during build.
-if (typeof window !== 'undefined' && !firebaseConfig.apiKey) {
-  console.warn(
-    "Mentur AI: Firebase API Key is missing. Please ensure NEXT_PUBLIC_FIREBASE_API_KEY is set in your environment variables."
-  );
-}
-
+// Initialize Firebase
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+
+// Export Auth instance
 export const auth = getAuth(app);
