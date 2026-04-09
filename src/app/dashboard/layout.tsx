@@ -1,15 +1,13 @@
-
 "use client"
 
 import { useAuth } from "@/components/providers/AuthProvider"
 import { useTheme } from "@/components/providers/ThemeProvider"
-import { Moon, Sun, User, Home, BookOpen, GraduationCap, FileEdit, BrainCircuit } from "lucide-react"
+import { Moon, Sun, User, Home, BookOpen, GraduationCap, FileEdit } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
+import { MenturLogo } from "@/components/MenturLogo"
 
 export const dynamic = 'force-dynamic';
 
@@ -26,37 +24,17 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
-  const [logoLoaded, setLogoLoaded] = useState(false);
-  const [logoError, setLogoError] = useState(false);
 
   const hideNav = pathname === "/dashboard/verify-email";
 
   return (
     <div className="flex flex-col h-screen w-full bg-background transition-colors duration-300 overflow-hidden relative">
       <header className="h-16 border-b flex items-center justify-between px-6 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl sticky top-0 z-50">
-        <div className="flex items-center gap-3">
-          <div className="relative h-8 w-8 flex items-center justify-center">
-            {!logoError ? (
-               <Image 
-                  src="/logo.png" 
-                  alt="Mentur Logo" 
-                  fill 
-                  className={cn("object-contain transition-opacity duration-300", logoLoaded ? "opacity-100" : "opacity-0")}
-                  onLoad={() => setLogoLoaded(true)}
-                  onError={() => { setLogoError(true); setLogoLoaded(true); }}
-                />
-            ) : null}
-            {(logoError || !logoLoaded) && (
-              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-                <BrainCircuit className="h-4 w-4 text-white" />
-              </div>
-            )}
-          </div>
-          <span className="text-base font-bold font-headline tracking-tight">Mentur AI</span>
-        </div>
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <MenturLogo size="sm" showText={true} />
+        </Link>
         
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full h-10 w-10">

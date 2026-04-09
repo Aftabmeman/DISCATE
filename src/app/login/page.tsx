@@ -1,24 +1,21 @@
-
 "use client"
 
 import { useState } from "react"
 import { signInWithEmailAndPassword } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
-import { Loader2, BrainCircuit } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Loader2 } from "lucide-react"
+import { MenturLogo } from "@/components/MenturLogo"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
-  const [logoLoaded, setLogoLoaded] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -43,20 +40,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-slate-950">
       <Card className="w-full max-w-md border-none shadow-xl rounded-3xl overflow-hidden bg-white dark:bg-slate-900">
         <CardHeader className="text-center pt-8">
-          <div className="relative h-16 w-16 mx-auto mb-4 flex items-center justify-center">
-            <Image 
-              src="/logo.png" 
-              alt="Mentur Logo" 
-              fill 
-              className={cn("object-contain transition-opacity duration-300", logoLoaded ? "opacity-100" : "opacity-0")}
-              onLoad={() => setLogoLoaded(true)}
-            />
-            {!logoLoaded && (
-              <div className="h-16 w-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg">
-                <BrainCircuit className="h-8 w-8 text-white" />
-              </div>
-            )}
-          </div>
+          <MenturLogo size="md" className="mx-auto mb-4" />
           <CardTitle className="text-2xl font-headline font-bold">Welcome Back</CardTitle>
           <CardDescription>Enter your credentials to access Mentur AI</CardDescription>
         </CardHeader>

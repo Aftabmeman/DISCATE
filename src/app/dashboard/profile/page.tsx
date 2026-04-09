@@ -1,23 +1,20 @@
-
 "use client"
 
 import { useAuth } from "@/components/providers/AuthProvider"
 import { useTheme } from "@/components/providers/ThemeProvider"
 import { auth } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { LogOut, User, Mail, ShieldCheck, Moon, Sun, ChevronRight, Award, Clock, BookMarked, Sparkles, BrainCircuit } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { LogOut, ShieldCheck, Moon, Sun, ChevronRight, Award, Clock, BookMarked } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
-import Image from "next/image"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
+import { MenturLogo } from "@/components/MenturLogo"
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
-  const [logoError, setLogoError] = useState(false);
 
   const handleLogout = async () => {
     await auth.signOut();
@@ -27,22 +24,10 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-28">
       <div className="flex flex-col items-center pt-8 pb-8">
-        <div className="h-28 w-28 rounded-[32px] bg-primary/10 border-4 border-background shadow-2xl flex items-center justify-center relative group overflow-hidden">
-          <div className="relative h-20 w-20 flex items-center justify-center">
-            {!logoError ? (
-              <Image 
-                src="/logo.png" 
-                alt="Mentur Logo" 
-                fill 
-                className="object-contain"
-                onError={() => setLogoError(true)}
-              />
-            ) : (
-              <BrainCircuit className="h-12 w-12 text-primary" />
-            )}
-          </div>
-          <div className="absolute -bottom-2 -right-2 h-8 w-8 bg-emerald-500 rounded-2xl border-4 border-background flex items-center justify-center">
-             <ShieldCheck className="h-4 w-4 text-white" />
+        <div className="relative">
+          <MenturLogo size="lg" />
+          <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-emerald-500 rounded-lg border-2 border-background flex items-center justify-center">
+             <ShieldCheck className="h-3 w-3 text-white" />
           </div>
         </div>
         <h1 className="mt-6 text-2xl font-bold font-headline">{user?.displayName || "Scholar"}</h1>
@@ -56,9 +41,9 @@ export default function ProfilePage() {
 
       <div className="grid grid-cols-3 gap-3">
         {[
-          { icon: Award, label: "Lvl", val: "12", color: "text-primary", bg: "bg-primary/5" },
-          { icon: Clock, label: "Hrs", val: "24", color: "text-amber-500", bg: "bg-amber-50" },
-          { icon: BookMarked, label: "Sets", val: "8", color: "text-emerald-500", bg: "bg-emerald-50" }
+          { icon: Award, label: "Lvl", val: "1", color: "text-primary", bg: "bg-primary/5" },
+          { icon: Clock, label: "Hrs", val: "0", color: "text-amber-500", bg: "bg-amber-50" },
+          { icon: BookMarked, label: "Sets", val: "0", color: "text-emerald-500", bg: "bg-emerald-50" }
         ].map((stat, i) => (
           <Card key={i} className="p-4 flex flex-col items-center justify-center text-center rounded-[24px] border-none bg-white shadow-sm">
             <stat.icon className={cn("h-6 w-6 mb-2", stat.color)} />
@@ -101,20 +86,8 @@ export default function ProfilePage() {
       </div>
 
       <footer className="pt-10 text-center space-y-4">
-        <div className="flex items-center justify-center gap-3">
-          <div className="relative h-4 w-4 flex items-center justify-center">
-            {!logoError ? (
-              <Image 
-                src="/logo.png" 
-                alt="Mentur" 
-                fill 
-                className="object-contain"
-                onError={() => setLogoError(true)}
-              />
-            ) : (
-              <BrainCircuit className="h-4 w-4 text-primary" />
-            )}
-          </div>
+        <div className="flex flex-col items-center gap-2">
+          <MenturLogo size="sm" />
           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Mentur AI Engine</span>
         </div>
         <p className="text-[8px] text-slate-400 max-w-[200px] mx-auto leading-relaxed">

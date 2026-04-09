@@ -1,11 +1,9 @@
-
-'use client';
+"use client"
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { applyActionCode } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -17,7 +15,7 @@ import {
   ShieldCheck,
   LifeBuoy
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { MenturLogo } from '@/components/MenturLogo';
 
 function AuthActionHandler() {
   const searchParams = useSearchParams();
@@ -51,26 +49,11 @@ function AuthActionHandler() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-6 bg-slate-50 dark:bg-slate-950 selection:bg-primary/20 font-body">
-      {/* Abstract Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent/5 rounded-full blur-[120px]" />
-      </div>
-
       <Card className="w-full max-w-md border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[2.5rem] overflow-hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl relative z-10">
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-accent to-primary animate-gradient-x" />
         
         <CardHeader className="text-center pt-10 pb-4">
-          <div className="flex justify-center mb-6">
-            <div className="relative h-16 w-16 rotate-3 hover:rotate-0 transition-transform duration-300">
-              <Image 
-                src="/logo.png" 
-                alt="Mentur Logo" 
-                fill 
-                className="object-contain"
-              />
-            </div>
-          </div>
+          <MenturLogo size="md" className="mx-auto mb-6" />
           <CardTitle className="text-3xl font-headline font-bold tracking-tight text-slate-900 dark:text-white">
             Mentur AI
           </CardTitle>
@@ -82,9 +65,7 @@ function AuthActionHandler() {
         <CardContent className="p-8 pt-2">
           {status === 'loading' && (
             <div className="flex flex-col items-center py-12 space-y-6 animate-in fade-in zoom-in-95 duration-500">
-              <div className="relative">
-                <Loader2 className="h-16 w-16 text-primary animate-spin" />
-              </div>
+              <Loader2 className="h-16 w-16 text-primary animate-spin" />
               <div className="text-center space-y-2">
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">Verifying account...</h3>
                 <p className="text-sm text-slate-500">Please wait while we confirm your credentials.</p>
@@ -160,12 +141,6 @@ function AuthActionHandler() {
           )}
         </CardContent>
       </Card>
-
-      <footer className="fixed bottom-8 text-center w-full px-6">
-        <p className="text-slate-400 text-xs font-medium tracking-tight">
-          &copy; {new Date().getFullYear()} Mentur AI. Built for the modern scholar.
-        </p>
-      </footer>
     </div>
   );
 }
