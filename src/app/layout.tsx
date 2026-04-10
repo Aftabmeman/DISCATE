@@ -1,10 +1,10 @@
-
 import type {Metadata, Viewport} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from "@/components/providers/AuthProvider"
 import { ThemeProvider } from "@/components/providers/ThemeProvider"
 import { PWALoader } from "@/components/PWALoader"
+import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
   title: 'Mentur AI | Expert Academic Mentorship',
@@ -42,13 +42,15 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="https://placehold.co/180x180/9333ea/ffffff?text=M" />
       </head>
       <body className="font-body antialiased transition-colors duration-300">
-        <ThemeProvider>
-          <AuthProvider>
-            <PWALoader />
-            {children}
-            <Toaster />
-          </AuthProvider>
-        </ThemeProvider>
+        <FirebaseClientProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <PWALoader />
+              {children}
+              <Toaster />
+            </AuthProvider>
+          </ThemeProvider>
+        </FirebaseClientProvider>
       </body>
     </html>
   );
