@@ -44,6 +44,8 @@ export default function DashboardPage() {
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
         
         const attemptsRef = collection(db, "users", user.uid, "assessment_attempts")
+        
+        // This query filters and orders on the same field, so no composite index is needed.
         const q = query(
           attemptsRef, 
           where("attemptDate", ">=", sevenDaysAgo.toISOString()),
@@ -63,7 +65,7 @@ export default function DashboardPage() {
         })
 
         const avg = count > 0 ? Math.round(totalScore / count) : 0
-        const studyHrs = count > 0 ? Math.round(totalTime / 60) : 0 // in minutes for now for visibility
+        const studyHrs = count > 0 ? Math.round(totalTime / 60) : 0 
         
         setStats({
           avgScore: avg,
@@ -74,7 +76,12 @@ export default function DashboardPage() {
 
         // Fetch recent materials (limited to 3)
         const materialsRef = collection(db, "users", user.uid, "study_materials")
-        const mq = query(materialsRef, orderBy("uploadDate", "desc"), where("userId", "==", user.uid))
+        
+        // FIX: Removed the redundant where("userId", "==") clause.
+        // Since we are querying a subcollection under a specific user ID, 
+        // the filter is redundant and causes Firestore to require a composite index.
+        const mq = query(materialsRef, orderBy("uploadDate", "desc"))
+        
         const mSnapshot = await getDocs(mq)
         const mats: any[] = []
         mSnapshot.forEach(doc => {
