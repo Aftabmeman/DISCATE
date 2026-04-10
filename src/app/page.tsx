@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { onAuthStateChanged } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { MenturLogo } from "@/components/MenturLogo"
 
@@ -27,7 +27,7 @@ export default function Home() {
       } else {
         checkAuthAndRedirect()
       }
-    }, 2500)
+    }, 3000)
 
     return () => clearTimeout(timer)
   }, [])
@@ -50,36 +50,38 @@ export default function Home() {
 
   const onboardingCards = [
     {
-      title: "Welcome to Mentur AI",
-      desc: "The fastest way to study smarter and ace your exams with AI-powered native focus.",
-      icon: "rocket"
+      title: "Meet Your AI Mentor",
+      desc: "Experience academic intelligence like never before with Mentur AI's deep-learning engine.",
+      icon: "robot"
     },
     {
-      title: "Built by a Student, for Students",
-      desc: "Proudly created by Aftab Ghaswala, a 19-year-old 2nd-year student who truly understands your academic struggles.",
+      title: "Built for Your Future",
+      desc: "Created by Aftab Ghaswala to help you bridge the gap between hard work and smart success.",
       icon: "heart"
     },
     {
-      title: "Instant Assessments",
-      desc: "Generate custom MCQs, quizzes, and flashcards in seconds from any topic or study material.",
+      title: "Instant Mastery",
+      desc: "Transform static notes into dynamic, adaptive assessments with one single tap.",
       icon: "zap"
     },
     {
-      title: "Boost Your Grades",
-      desc: "Get instant mentorship and let Mentur AI guide your educational journey to excellence.",
+      title: "Elevate Your Potential",
+      desc: "Join thousands of scholars using AI to unlock their peak academic performance.",
       icon: "award"
     }
   ]
 
   if (showSplash) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 animate-in fade-in duration-700">
-        <div className="relative group animate-out zoom-out-95 duration-1000 delay-1000 fill-mode-forwards flex flex-col items-center">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 overflow-hidden">
+        <div className="relative flex flex-col items-center animate-in zoom-in-95 duration-1000">
           <MenturLogo size="xl" />
-          <div className="mt-8 text-center space-y-2 animate-in slide-in-from-bottom-4 duration-1000 delay-300">
-            <h1 className="text-4xl font-black font-headline tracking-tighter text-slate-900 dark:text-white">Mentur AI</h1>
-            <p className="text-primary font-bold text-xs uppercase tracking-[0.3em]">
-              {isReturningUser ? "Welcome Back!" : "Expert Academic Mentorship"}
+          <div className="mt-8 text-center space-y-2">
+            <h1 className="text-5xl font-black font-headline tracking-tighter bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent animate-gradient-x">
+              Mentur AI
+            </h1>
+            <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.4em] animate-pulse">
+              {isReturningUser ? "Welcome Back" : "Human-AI Intelligence"}
             </p>
           </div>
         </div>
@@ -90,12 +92,13 @@ export default function Home() {
   if (showOnboarding) {
     return (
       <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 p-8">
-        <div className="flex-1 flex flex-col items-center justify-center text-center space-y-8 animate-in slide-in-from-right-8 duration-500">
-          <div className="h-48 w-48 relative mb-4 rounded-[40px] overflow-hidden shadow-2xl bg-primary/5 flex items-center justify-center border-2 border-primary/10">
-             <MenturLogo size="lg" />
+        <div className="flex-1 flex flex-col items-center justify-center text-center space-y-12 animate-in slide-in-from-right-8 duration-500">
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/10 blur-3xl rounded-full scale-150" />
+            <MenturLogo size="lg" />
           </div>
-          <div className="space-y-4 max-w-sm">
-            <h2 className="text-3xl font-black font-headline text-slate-900 dark:text-white leading-tight">
+          <div className="space-y-4 max-w-sm relative z-10">
+            <h2 className="text-4xl font-black font-headline text-slate-900 dark:text-white leading-tight tracking-tight">
               {onboardingCards[onboardingStep].title}
             </h2>
             <p className="text-slate-500 font-medium text-lg leading-relaxed">
@@ -104,14 +107,14 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="pb-12 space-y-6">
-          <div className="flex justify-center gap-2">
+        <div className="pb-12 space-y-8">
+          <div className="flex justify-center gap-3">
             {onboardingCards.map((_, i) => (
               <div 
                 key={i} 
                 className={cn(
-                  "h-1.5 transition-all duration-300 rounded-full",
-                  i === onboardingStep ? "w-8 bg-primary" : "w-2 bg-slate-200"
+                  "h-1.5 transition-all duration-500 rounded-full",
+                  i === onboardingStep ? "w-10 bg-primary" : "w-3 bg-slate-200"
                 )} 
               />
             ))}
@@ -120,17 +123,17 @@ export default function Home() {
           <div className="flex gap-4">
             {onboardingStep < onboardingCards.length - 1 ? (
               <>
-                <Button variant="ghost" onClick={handleFinishOnboarding} className="flex-1 h-14 rounded-2xl font-bold text-slate-400">
+                <Button variant="ghost" onClick={handleFinishOnboarding} className="flex-1 h-16 rounded-[24px] font-bold text-slate-400">
                   Skip
                 </Button>
-                <Button onClick={() => setOnboardingStep(s => s + 1)} className="flex-[2] h-14 rounded-2xl bg-primary text-white font-bold text-lg shadow-xl shadow-primary/20">
-                  Next
+                <Button onClick={() => setOnboardingStep(s => s + 1)} className="flex-[2] h-16 rounded-[24px] bg-primary text-white font-bold text-lg shadow-2xl shadow-primary/30">
+                  Next Step
                 </Button>
               </>
             ) : (
-              <Button onClick={handleFinishOnboarding} className="w-full h-16 rounded-2xl bg-primary text-white font-bold text-xl shadow-xl shadow-primary/20 animate-in zoom-in-95">
-                Get Started
-                <ChevronRight className="ml-2 h-6 w-6" />
+              <Button onClick={handleFinishOnboarding} className="w-full h-18 rounded-[28px] bg-gradient-to-r from-primary to-accent text-white font-bold text-xl shadow-2xl shadow-primary/40 animate-in zoom-in-95 duration-500">
+                Begin Journey
+                <ChevronRight className="ml-2 h-7 w-7" />
               </Button>
             )}
           </div>

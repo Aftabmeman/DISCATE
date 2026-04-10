@@ -5,7 +5,7 @@ import { useTheme } from "@/components/providers/ThemeProvider"
 import { auth } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { LogOut, ShieldCheck, Moon, Sun, ChevronRight, Award, Clock, BookMarked } from "lucide-react"
+import { LogOut, ShieldCheck, Moon, Sun, ChevronRight, Award, Clock, BookMarked, Sparkles } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -22,77 +22,87 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-28">
-      <div className="flex flex-col items-center pt-8 pb-8">
-        <div className="relative">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-28">
+      <div className="flex flex-col items-center pt-8 pb-4">
+        <div className="relative group">
+          <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 group-hover:bg-primary/30 transition-all duration-700" />
           <MenturLogo size="lg" />
-          <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-emerald-500 rounded-lg border-2 border-background flex items-center justify-center">
-             <ShieldCheck className="h-3 w-3 text-white" />
+          <div className="absolute -bottom-2 -right-2 h-10 w-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl border-4 border-background flex items-center justify-center shadow-lg">
+             <ShieldCheck className="h-5 w-5 text-white" />
           </div>
         </div>
-        <h1 className="mt-6 text-2xl font-bold font-headline">{user?.displayName || "Scholar"}</h1>
-        <p className="text-muted-foreground flex items-center gap-1 text-sm font-medium">
+        <h1 className="mt-8 text-3xl font-black font-headline tracking-tight text-slate-900 dark:text-white">
+          {user?.displayName || "Scholar"}
+        </h1>
+        <p className="text-muted-foreground text-sm font-medium mt-1">
           {user?.email}
         </p>
-        <Badge variant="secondary" className="mt-3 bg-primary/10 text-primary border-none px-4 py-1 rounded-full font-bold uppercase text-[10px] tracking-widest">
-           Verified Student
+        <Badge variant="secondary" className="mt-4 bg-primary/10 text-primary border-none px-6 py-1.5 rounded-full font-bold uppercase text-[10px] tracking-[0.2em]">
+           Verified Scholar
         </Badge>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-4">
         {[
-          { icon: Award, label: "Lvl", val: "1", color: "text-primary", bg: "bg-primary/5" },
-          { icon: Clock, label: "Hrs", val: "0", color: "text-amber-500", bg: "bg-amber-50" },
+          { icon: Award, label: "Level", val: "1", color: "text-primary", bg: "bg-primary/5" },
+          { icon: Clock, label: "Study Hrs", val: "0", color: "text-amber-500", bg: "bg-amber-50" },
           { icon: BookMarked, label: "Sets", val: "0", color: "text-emerald-500", bg: "bg-emerald-50" }
         ].map((stat, i) => (
-          <Card key={i} className="p-4 flex flex-col items-center justify-center text-center rounded-[24px] border-none bg-white shadow-sm">
-            <stat.icon className={cn("h-6 w-6 mb-2", stat.color)} />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{stat.label}</span>
-            <span className="text-lg font-black">{stat.val}</span>
+          <Card key={i} className="p-6 flex flex-col items-center justify-center text-center rounded-[32px] border-none bg-white dark:bg-slate-900 shadow-xl shadow-black/5">
+            <stat.icon className={cn("h-7 w-7 mb-3", stat.color)} />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{stat.label}</span>
+            <span className="text-2xl font-black text-slate-900 dark:text-white">{stat.val}</span>
           </Card>
         ))}
       </div>
 
-      <div className="space-y-3">
-        <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] px-2 mb-2">Account Settings</h3>
+      <div className="space-y-4">
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] px-4">System Settings</h3>
         
-        <div className="space-y-2">
+        <div className="space-y-3">
           <Card 
-            className="flex items-center justify-between p-5 rounded-[24px] cursor-pointer hover:bg-slate-50 transition-colors border-none shadow-sm group"
+            className="flex items-center justify-between p-6 rounded-[32px] cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all border-none shadow-sm group active:scale-95"
             onClick={toggleTheme}
           >
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-slate-50 rounded-2xl group-hover:bg-primary/5 transition-colors">
-                {theme === "light" ? <Moon className="h-5 w-5 text-slate-500 group-hover:text-primary" /> : <Sun className="h-5 w-5 text-slate-500 group-hover:text-primary" />}
+            <div className="flex items-center gap-5">
+              <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl group-hover:bg-primary/10 transition-colors">
+                {theme === "light" ? <Moon className="h-6 w-6 text-slate-500 group-hover:text-primary" /> : <Sun className="h-6 w-6 text-amber-500" />}
               </div>
-              <span className="font-bold text-slate-700">{theme === "light" ? "Dark Mode" : "Light Mode"}</span>
+              <span className="font-bold text-lg text-slate-700 dark:text-slate-200">{theme === "light" ? "Dark Mode" : "Light Mode"}</span>
             </div>
-            <ChevronRight className="h-5 w-5 text-slate-300" />
+            <ChevronRight className="h-6 w-6 text-slate-300 group-hover:translate-x-1 transition-transform" />
           </Card>
 
           <Card 
-            className="flex items-center justify-between p-5 rounded-[24px] cursor-pointer hover:bg-destructive/5 transition-colors border-none shadow-sm group"
+            className="flex items-center justify-between p-6 rounded-[32px] cursor-pointer hover:bg-destructive/5 transition-all border-none shadow-sm group active:scale-95"
             onClick={handleLogout}
           >
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-destructive/5 rounded-2xl group-hover:bg-destructive/10 transition-colors">
-                <LogOut className="h-5 w-5 text-destructive" />
+            <div className="flex items-center gap-5">
+              <div className="p-4 bg-destructive/5 rounded-2xl group-hover:bg-destructive/10 transition-colors">
+                <LogOut className="h-6 w-6 text-destructive" />
               </div>
-              <span className="font-bold text-destructive">Log Out</span>
+              <span className="font-bold text-lg text-destructive">Sign Out</span>
             </div>
-            <ChevronRight className="h-5 w-5 text-destructive/30" />
+            <ChevronRight className="h-6 w-6 text-destructive/30" />
           </Card>
         </div>
       </div>
 
-      <footer className="pt-10 text-center space-y-4">
-        <div className="flex flex-col items-center gap-2">
+      <footer className="pt-12 text-center space-y-6">
+        <div className="flex flex-col items-center gap-4">
           <MenturLogo size="sm" />
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Mentur AI Engine</span>
+          <span className="text-[11px] font-black uppercase tracking-[0.4em] bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            Mentur AI Engine
+          </span>
         </div>
-        <p className="text-[8px] text-slate-400 max-w-[200px] mx-auto leading-relaxed">
-          FASTEST ACADEMIC GENERATION SYSTEM ACTIVE — VERSION 2.5.4
-        </p>
+        <div className="space-y-2">
+          <p className="text-[10px] text-slate-400 max-w-[280px] mx-auto leading-relaxed font-bold uppercase tracking-widest">
+            Expert Academic Mentorship System
+          </p>
+          <p className="text-[9px] text-slate-300 dark:text-slate-600 tracking-[0.2em] font-medium">
+            VERSION 2.6.0-NATIVE.PRO
+          </p>
+        </div>
       </footer>
     </div>
   )
