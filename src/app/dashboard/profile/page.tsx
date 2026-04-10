@@ -24,10 +24,11 @@ export default function ProfilePage() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-28">
       <div className="flex flex-col items-center pt-8 pb-4">
-        <div className="relative group">
+        <div className="relative inline-block group">
           <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 group-hover:bg-primary/30 transition-all duration-700" />
           <MenturLogo size="lg" />
-          <div className="absolute -bottom-2 -right-2 h-10 w-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl border-4 border-background flex items-center justify-center shadow-lg">
+          {/* Fixed Verification Badge */}
+          <div className="absolute -top-1 -right-1 z-10 h-10 w-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl border-4 border-white dark:border-slate-900 flex items-center justify-center shadow-lg transform transition-transform group-hover:scale-110">
              <ShieldCheck className="h-5 w-5 text-white" />
           </div>
         </div>
