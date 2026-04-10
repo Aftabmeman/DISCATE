@@ -349,7 +349,7 @@ export default function AssessmentsPage() {
 
           <Card className="border-none shadow-2xl rounded-[32px] overflow-hidden bg-white dark:bg-slate-900">
             <div className="p-8 pb-4">
-               <h2 className="text-2xl font-bold font-headline leading-tight text-slate-900 dark:text-white">
+               <h2 className="text-2xl font-bold font-headline leading-tight text-slate-900 dark:text-gray-100">
                 {result.mcqs?.[currentQuestionIndex].question}
               </h2>
             </div>
@@ -381,11 +381,11 @@ export default function AssessmentsPage() {
                       <div className="flex items-center gap-4">
                         <div className={cn(
                           "h-8 w-8 rounded-full border flex items-center justify-center font-bold text-xs shrink-0",
-                          isSelected ? "bg-primary text-white border-primary" : "bg-white text-slate-400 border-slate-200 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-500"
+                          isSelected ? "bg-primary text-white border-primary" : "bg-white text-slate-400 border-slate-200 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-300"
                         )}>
                           {String.fromCharCode(65 + idx)}
                         </div>
-                        {option}
+                        <span className="dark:text-white">{option}</span>
                       </div>
                     </Button>
                   )
@@ -394,7 +394,7 @@ export default function AssessmentsPage() {
               {isAnswerRevealed && (
                 <div className="mt-6 p-6 bg-primary/5 rounded-[24px] border border-primary/10 animate-in fade-in">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Mentur Context</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                  <p className="text-sm text-slate-600 dark:text-slate-200 leading-relaxed">
                     {result.mcqs?.[currentQuestionIndex].explanation}
                   </p>
                 </div>
