@@ -47,5 +47,14 @@
       "url": "/dashboard/essay-lab",
       "description": "Analyze your writing"
     }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/screenshot.png",
+      "sizes": "680x1360",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mentur AI Dashboard"
+    }
   ]
 }
