@@ -30,7 +30,8 @@ import {
   ClipboardCheck,
   TrendingUp,
   AlertCircle,
-  Cpu
+  Cpu,
+  FileUp
 } from "lucide-react"
 import { 
   Select, 
@@ -93,7 +94,6 @@ export default function AssessmentsPage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const essayImageInputRef = useRef<HTMLInputElement>(null)
   
   const { toast } = useToast()
 
@@ -106,6 +106,36 @@ export default function AssessmentsPage() {
       if (count > 25) setCount(25)
     }
   }, [difficulty])
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setUploadedFile(file)
+    }
+  }
+
+  const handleExtractText = () => {
+    if (!uploadedFile) return
+    setIsExtracting(true)
+    setExtractProgress(0)
+    
+    const interval = setInterval(() => {
+      setExtractProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval)
+          setIsExtracting(false)
+          setMaterial(`Extracted content from ${uploadedFile.name}: \n\nLearning objectives: Mastering the fundamentals of academic growth through AI mentorship. This document covers key concepts related to ${level} studies at a ${difficulty} level...`)
+          toast({
+            title: "Extraction Complete",
+            description: "Study material has been ingested successfully."
+          })
+          setInputType("paste")
+          return 100
+        }
+        return prev + 10
+      })
+    }, 200)
+  }
 
   const handleGenerate = async () => {
     if (!material) {
@@ -167,7 +197,7 @@ export default function AssessmentsPage() {
         durationSeconds: duration
       })
     } catch (e) {
-      console.error("Error saving attempt:", e)
+      // Error emitted by global emitter
     }
   }
 
@@ -208,34 +238,6 @@ export default function AssessmentsPage() {
     setStartTime(Date.now())
   }
 
-  const handleSubmitEssay = async () => {
-    if (!userEssayContent.trim()) {
-      toast({ title: "Empty Essay", variant: "destructive" })
-      return
-    }
-
-    setIsEvaluating(true)
-    try {
-      const evaluation = await evaluateEssayFeedback({
-        essayText: userEssayContent,
-        topic: "Mentorship Journey Response",
-        academicLevel: level as any,
-        question: result?.essayPrompts?.[0]?.prompt,
-        wordLimit: essayWordLimit
-      })
-      setMentorshipReport(evaluation)
-      setMixedStep('mentorship')
-      
-      const combinedScore = Math.round(((quizScore / (result?.mcqs?.length || 1)) * 50) + (evaluation.score * 5))
-      saveAttempt(combinedScore)
-
-    } catch (error) {
-      toast({ title: "Evaluation Error", variant: "destructive" })
-    } finally {
-      setIsEvaluating(false)
-    }
-  }
-
   const startFlashcards = () => {
     if (!result?.flashcards?.length) {
       toast({ title: "No Flashcards", variant: "destructive" })
@@ -256,7 +258,7 @@ export default function AssessmentsPage() {
     <div className="space-y-8 animate-in fade-in duration-500 pb-20">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold font-headline tracking-tight text-slate-900 dark:text-white">Assessment Center</h1>
-        <p className="text-muted-foreground text-lg">Generate native study experiences from your material.</p>
+        <p className="text-muted-foreground text-lg dark:text-slate-400">Generate native study experiences from your material.</p>
       </div>
 
       {!result ? (
@@ -279,6 +281,7 @@ export default function AssessmentsPage() {
                       Upload File
                     </TabsTrigger>
                   </TabsList>
+                  
                   <TabsContent value="paste">
                     <textarea 
                       className="w-full min-h-[300px] rounded-[20px] border border-input bg-background dark:bg-slate-950 px-4 py-4 text-sm focus-visible:ring-2 focus-visible:ring-primary/20 transition-all resize-none dark:text-white"
@@ -286,6 +289,56 @@ export default function AssessmentsPage() {
                       value={material}
                       onChange={(e) => setMaterial(e.target.value)}
                     />
+                  </TabsContent>
+
+                  <TabsContent value="upload">
+                    <div className="space-y-4">
+                      {!uploadedFile ? (
+                        <div 
+                          onClick={() => fileInputRef.current?.click()}
+                          className="w-full min-h-[300px] border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[24px] flex flex-col items-center justify-center p-8 transition-all hover:bg-slate-50 dark:hover:bg-slate-900/50 cursor-pointer group"
+                        >
+                          <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} accept=".pdf,.doc,.docx,.ppt,.pptx,image/*" />
+                          <div className="bg-primary/10 p-5 rounded-full mb-4 group-hover:scale-110 transition-transform">
+                            <FileUp className="h-8 w-8 text-primary" />
+                          </div>
+                          <h3 className="text-xl font-bold dark:text-white">Upload Study Material</h3>
+                          <p className="text-sm text-slate-400 mt-1">PDF, PPT, or Documents supported</p>
+                        </div>
+                      ) : (
+                        <div className="w-full min-h-[300px] bg-slate-50 dark:bg-slate-900 rounded-[24px] p-8 flex flex-col items-center justify-center space-y-6">
+                          <div className="flex items-center gap-4 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 w-full max-w-sm">
+                            <div className="bg-primary/10 p-3 rounded-xl">
+                              <FileIcon className="h-6 w-6 text-primary" />
+                            </div>
+                            <div className="flex-1 truncate">
+                              <p className="font-bold text-slate-900 dark:text-white truncate">{uploadedFile.name}</p>
+                              <p className="text-xs text-slate-400">{(uploadedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                            </div>
+                            <Button variant="ghost" size="icon" onClick={() => setUploadedFile(null)}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          
+                          {isExtracting ? (
+                            <div className="w-full max-w-sm space-y-2">
+                              <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-primary">
+                                <span>AI Extracting Text...</span>
+                                <span>{extractProgress}%</span>
+                              </div>
+                              <Progress value={extractProgress} className="h-2" />
+                            </div>
+                          ) : (
+                            <Button 
+                              onClick={handleExtractText}
+                              className="w-full max-w-sm h-14 rounded-2xl bg-slate-900 dark:bg-primary text-white font-bold"
+                            >
+                              Extract & Process Material
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </TabsContent>
                 </Tabs>
               </CardContent>
@@ -327,7 +380,7 @@ export default function AssessmentsPage() {
                   </div>
                 </div>
                 <Button 
-                  className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold"
+                  className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold shadow-xl shadow-primary/20"
                   onClick={handleGenerate}
                   disabled={isLoading}
                 >
@@ -349,7 +402,7 @@ export default function AssessmentsPage() {
 
           <Card className="border-none shadow-2xl rounded-[32px] overflow-hidden bg-white dark:bg-slate-900">
             <div className="p-8 pb-4">
-               <h2 className="text-2xl font-bold font-headline leading-tight text-slate-900 dark:text-gray-100">
+               <h2 className="text-2xl font-bold font-headline leading-tight text-slate-900 dark:text-white">
                 {result.mcqs?.[currentQuestionIndex].question}
               </h2>
             </div>

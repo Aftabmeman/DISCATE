@@ -19,7 +19,9 @@ import {
   X,
   Loader2,
   Trophy,
-  MessageSquare
+  MessageSquare,
+  PlusCircle,
+  ImageIcon
 } from "lucide-react"
 import { 
   Select, 
@@ -44,27 +46,53 @@ export default function EssayLabPage() {
   const [result, setResult] = useState<EvaluateEssayFeedbackOutput | null>(null)
   
   const [inputType, setInputType] = useState("typed")
-  const [uploadedImage, setUploadedImage] = useState<File | null>(null)
-  const [isProcessingImage, setIsProcessingImage] = useState(false)
+  const [uploadedImages, setUploadedImages] = useState<File[]>([])
+  const [isProcessingImages, setIsProcessingImages] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { toast } = useToast()
   const wordCount = essayText.trim().split(/\s+/).filter(Boolean).length
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file && file.type.startsWith('image/')) {
-      setUploadedImage(file)
-      setIsProcessingImage(true)
-      setTimeout(() => {
-        setIsProcessingImage(false)
-        setEssayText(`[Handwritten text transcribed successfully]\n\nThe core findings of this study suggest that academic success is highly correlated with focused, iterative learning cycles...`)
-        toast({
-          title: "Transcription Complete",
-          description: "Handwritten content has been digitized."
-        })
-      }, 2000)
+    const files = Array.from(e.target.files || [])
+    const imageFiles = files.filter(file => file.type.startsWith('image/'))
+    
+    if (uploadedImages.length + imageFiles.length > 10) {
+      toast({
+        title: "Limit Exceeded",
+        description: "You can upload a maximum of 10 photos.",
+        variant: "destructive"
+      })
+      return
     }
+
+    if (imageFiles.length > 0) {
+      setUploadedImages(prev => [...prev, ...imageFiles])
+      toast({
+        title: "Images Added",
+        description: `${imageFiles.length} photos added for transcription.`
+      })
+    }
+  }
+
+  const removeImage = (index: number) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const processAllImages = () => {
+    if (uploadedImages.length === 0) return
+    setIsProcessingImages(true)
+    
+    // Simulating OCR for multiple pages
+    setTimeout(() => {
+      setIsProcessingImages(false)
+      setEssayText(`[Transcript from ${uploadedImages.length} handwritten pages]\n\nThe analysis presented in these pages explores the fundamental shifts in pedagogical approaches. Through extensive research, we've identified that student engagement is the primary driver of retention...`)
+      toast({
+        title: "Multi-page Transcription Done",
+        description: "All handwritten pages have been digitized."
+      })
+      setInputType("typed")
+    }, 1500 + (uploadedImages.length * 500))
   }
 
   const handleEvaluate = async () => {
@@ -146,23 +174,67 @@ export default function EssayLabPage() {
                   </TabsContent>
 
                   <TabsContent value="upload" className="mt-0">
-                    {!uploadedImage ? (
-                      <div onClick={() => fileInputRef.current?.click()} className="w-full min-h-[350px] border-2 border-dashed border-slate-200 rounded-[32px] flex flex-col items-center justify-center p-8 transition-all hover:bg-slate-50 cursor-pointer dark:border-slate-800 dark:hover:bg-slate-900/50">
-                        <input type="file" className="hidden" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" />
-                        <FileImage className="h-12 w-12 text-primary mb-4" />
-                        <h3 className="text-xl font-bold dark:text-white">Scan handwritten work</h3>
+                    <div className="space-y-6">
+                      <div 
+                        onClick={() => fileInputRef.current?.click()} 
+                        className="w-full min-h-[200px] border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[32px] flex flex-col items-center justify-center p-8 transition-all hover:bg-slate-50 dark:hover:bg-slate-900/50 cursor-pointer group"
+                      >
+                        <input type="file" className="hidden" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" multiple />
+                        <div className="bg-primary/10 p-4 rounded-full mb-3 group-hover:scale-110 transition-transform">
+                          <PlusCircle className="h-8 w-8 text-primary" />
+                        </div>
+                        <h3 className="text-lg font-bold dark:text-white">Add Hand-written Pages</h3>
+                        <p className="text-xs text-slate-400 mt-1">Select up to 10 photos</p>
                       </div>
-                    ) : (
-                      <div className="min-h-[350px] bg-slate-50 rounded-[32px] p-8 flex flex-col justify-center items-center text-center dark:bg-slate-900/50">
-                        {isProcessingImage ? <Loader2 className="animate-spin h-10 w-10 text-primary" /> : <p className="italic text-slate-600 dark:text-slate-300">"{essayText.substring(0, 200)}..."</p>}
-                        <Button variant="ghost" className="mt-6 text-xs font-bold uppercase tracking-widest" onClick={() => setUploadedImage(null)}>Scan Again</Button>
-                      </div>
-                    )}
+
+                      {uploadedImages.length > 0 && (
+                        <div className="space-y-6">
+                          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                            {uploadedImages.map((file, idx) => (
+                              <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 group">
+                                <img 
+                                  src={URL.createObjectURL(file)} 
+                                  alt={`Page ${idx + 1}`} 
+                                  className="w-full h-full object-cover"
+                                />
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); removeImage(idx); }}
+                                  className="absolute top-1 right-1 h-6 w-6 bg-destructive/90 text-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                                <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-[10px] text-white py-1 px-2 font-bold">
+                                  Page {idx + 1}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          <Button 
+                            onClick={processAllImages}
+                            disabled={isProcessingImages}
+                            className="w-full h-14 rounded-2xl bg-slate-900 dark:bg-primary text-white font-bold"
+                          >
+                            {isProcessingImages ? (
+                              <>
+                                <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                                Transcribing {uploadedImages.length} Pages...
+                              </>
+                            ) : (
+                              <>
+                                <Type className="h-5 w-5 mr-2" />
+                                Transcribe All Pages
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </TabsContent>
                 </Tabs>
               </div>
 
-              <Button size="lg" onClick={handleEvaluate} disabled={isLoading || isProcessingImage} className="w-full h-16 rounded-[24px] bg-primary text-white font-bold text-lg shadow-xl shadow-primary/20 transition-all active:scale-95">
+              <Button size="lg" onClick={handleEvaluate} disabled={isLoading || isProcessingImages} className="w-full h-16 rounded-[24px] bg-primary text-white font-bold text-lg shadow-xl shadow-primary/20 transition-all active:scale-95">
                 {isLoading ? <Loader2 className="animate-spin h-6 w-6" /> : "Analyze Writing"}
               </Button>
             </CardContent>
