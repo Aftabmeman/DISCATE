@@ -1,7 +1,7 @@
 'use server';
 /**
- * @fileOverview A sophisticated academic assessment generator for Mentur AI.
- * Tailors content based on 8th Std, University, or UPSC levels.
+ * @fileOverview High-performance academic assessment generator using Groq API.
+ * Models: mixtral-8x7b-32768 for deep content extraction and research.
  */
 
 import { z } from 'zod';
@@ -10,7 +10,7 @@ const MCQSchema = z.object({
   question: z.string(),
   options: z.array(z.string()),
   correctAnswer: z.string(),
-  explanation: z.string().describe('Detailed academic explanation based on the study level.'),
+  explanation: z.string(),
 });
 
 const FlashcardSchema = z.object({
@@ -20,7 +20,7 @@ const FlashcardSchema = z.object({
 
 const EssayPromptSchema = z.object({
   prompt: z.string(),
-  evaluationCriteria: z.array(z.string()).describe('Specific points a student must cover at this academic level.'),
+  evaluationCriteria: z.array(z.string()),
   modelAnswerOutline: z.array(z.string()),
 });
 
@@ -44,43 +44,37 @@ export type GenerateStudyAssessmentsOutput = z.infer<typeof GenerateStudyAssessm
 
 export async function generateStudyAssessments(input: GenerateStudyAssessmentsInput): Promise<GenerateStudyAssessmentsOutput> {
   const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) throw new Error("GROQ_API_KEY is not set");
+  if (!apiKey) throw new Error("GROQ_API_KEY is not set in environment variables.");
 
   const systemPrompt = `You are the Lead Educational Researcher for Mentur AI.
-Your task is to transform raw academic text into a high-stakes assessment journey.
+Your workflow involves 4 critical steps:
+1. FULL CONTENT EXTRACTION: Analyze every line of the provided material.
+2. CONTEXTUAL RESEARCH: Apply strict educational standards for the '${input.academicLevel}' level.
+   - 8th Standard: Focus on factual recall, basic concepts, and descriptive clarity.
+   - Undergraduate: Focus on analytical thinking, conceptual application, and critical arguments.
+   - UPSC: Focus on multi-dimensional analysis, ethical reasoning, and current relevance.
+3. TAILORED CONTENT GENERATION: Create high-stakes questions based on this research.
+4. JSON OUTPUT: Return only a valid JSON object.
 
-ACADEMIC CONTEXT RESEARCH LOGIC:
-- If '8th Standard': Focus on direct recall, basic conceptual understanding, and descriptive clarity.
-- If 'Undergraduate Year 1': Focus on critical analysis, theory application, and comparative arguments.
-- If 'Competitive Exams (UPSC)': Focus on multi-dimensional perspectives, ethical reasoning, current relevance, and high-level synthesis of information.
+REQUIRED QUANTITIES:
+- MCQs: ${input.mcqCount}
+- Essays: ${input.essayCount}
+- Flashcards: ${input.flashcardCount}`;
 
-INSTRUCTIONS:
-1. Extract every meaningful line from the input material before summarizing.
-2. Tailor question depth strictly to the '${input.academicLevel}' level.
-3. If 'Mixed' mode, you MUST provide both MCQs and Essays in the specified counts.
-4. For MCQs: Ensure 4 distinct options. One is correct. Provide a professional explanation.
-5. For Essays: Provide a structural blueprint (outline) and evaluation criteria.
+  const userPrompt = `Input Material:
+"""
+${input.studyMaterial}
+"""
 
-STRICT JSON OUTPUT FORMAT:
+Academic Target: ${input.academicLevel}
+Difficulty: ${input.difficulty}
+
+Generate the assessment now following the strict JSON format:
 {
   "mcqs": [{"question": "string", "options": ["string"], "correctAnswer": "string", "explanation": "string"}],
   "flashcards": [{"front": "string", "back": "string"}],
   "essayPrompts": [{"prompt": "string", "evaluationCriteria": ["string"], "modelAnswerOutline": ["string"]}]
 }`;
-
-  const userPrompt = `Study Material Extraction Target:
-"""
-${input.studyMaterial}
-"""
-
-TARGET SPECIFICATIONS:
-- Academic Level: ${input.academicLevel}
-- Difficulty: ${input.difficulty}
-- MCQ Target Quantity: ${input.mcqCount}
-- Essay Prompt Target Quantity: ${input.essayCount}
-- Flashcard Target Quantity: ${input.flashcardCount}
-
-Ensure the difficulty and depth perfectly match a ${input.academicLevel} student. Generate only relevant, high-quality questions. Return ONLY valid JSON.`;
 
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
@@ -89,13 +83,13 @@ Ensure the difficulty and depth perfectly match a ${input.academicLevel} student
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'llama-3.1-8b-instant',
+      model: 'mixtral-8x7b-32768',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
       response_format: { type: 'json_object' },
-      temperature: 0.6,
+      temperature: 0.5,
     }),
   });
 
@@ -107,7 +101,7 @@ Ensure the difficulty and depth perfectly match a ${input.academicLevel} student
   try {
     return GenerateStudyAssessmentsOutputSchema.parse(JSON.parse(content));
   } catch (e) {
-    console.error("AI Output Parsing Failed:", content);
-    throw new Error("Invalid educational data generated.");
+    console.error("AI Generation Failed:", content);
+    throw new Error("Invalid educational data generated by Groq.");
   }
 }
