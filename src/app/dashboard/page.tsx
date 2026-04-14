@@ -31,6 +31,11 @@ const chartConfig = {
 export default function DashboardPage() {
   const { user } = useUser()
   const db = useFirestore()
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
   
   // Real-time user profile sync
   const profileRef = useMemoFirebase(() => (user && db) ? doc(db, 'users', user.uid, 'profile', user.uid) : null, [user?.uid, db]);
@@ -65,7 +70,6 @@ export default function DashboardPage() {
         setPerformanceData(chartData)
       } catch (error) {
         console.error("Error fetching performance trend:", error)
-        // Set fallback data on error to prevent chart crash
         setPerformanceData([{ date: "N/A", score: 0 }])
       } finally {
         setLoading(false)
@@ -75,11 +79,13 @@ export default function DashboardPage() {
     fetchPerformanceTrend()
   }, [user, db])
 
+  if (!isMounted) return null
+
   const statsConfig = [
-    { label: "Overall", value: `${profileData?.avgScore || 0}%`, icon: Target, color: "text-primary", bg: "bg-primary/10" },
-    { label: "Total Coins", value: (profileData?.totalCoins || 0).toString(), icon: Coins, color: "text-amber-500", bg: "bg-amber-100" },
-    { label: "Done", value: (profileData?.assessmentsDone || 0).toString(), icon: Trophy, color: "text-blue-500", bg: "bg-blue-50" },
-    { label: "Level", value: `Lvl ${Math.floor((profileData?.assessmentsDone || 0) / 5) + 1}`, icon: Zap, color: "text-emerald-500", bg: "bg-emerald-50" },
+    { label: "Overall", value: `${profileData?.avgScore ?? 0}%`, icon: Target, color: "text-primary", bg: "bg-primary/10" },
+    { label: "Total Coins", value: (profileData?.totalCoins ?? 0).toString(), icon: Coins, color: "text-amber-500", bg: "bg-amber-100" },
+    { label: "Done", value: (profileData?.assessmentsDone ?? 0).toString(), icon: Trophy, color: "text-blue-500", bg: "bg-blue-50" },
+    { label: "Level", value: `Lvl ${Math.floor((profileData?.assessmentsDone ?? 0) / 5) + 1}`, icon: Zap, color: "text-emerald-500", bg: "bg-emerald-50" },
   ]
 
   return (

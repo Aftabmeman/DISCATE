@@ -25,7 +25,6 @@ export default function ProfilePage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  // Sync real profile data with safety guard for db and user
   const profileRef = useMemoFirebase(() => (user && db) ? doc(db, 'users', user.uid, 'profile', user.uid) : null, [user?.uid, db]);
   const { data: profileData } = useDoc(profileRef);
 
@@ -110,9 +109,9 @@ export default function ProfilePage() {
 
       <div className="grid grid-cols-3 gap-4">
         {[
-          { icon: Coins, label: "Coins", val: (profileData?.totalCoins || 0).toString(), color: "text-amber-500" },
-          { icon: Award, label: "Level", val: (Math.floor((profileData?.assessmentsDone || 0) / 5) + 1).toString(), color: "text-primary" },
-          { icon: BookMarked, label: "Sets", val: (profileData?.assessmentsDone || 0).toString(), color: "text-emerald-500" }
+          { icon: Coins, label: "Coins", val: (profileData?.totalCoins ?? 0).toString(), color: "text-amber-500" },
+          { icon: Award, label: "Level", val: (Math.floor((profileData?.assessmentsDone ?? 0) / 5) + 1).toString(), color: "text-primary" },
+          { icon: BookMarked, label: "Sets", val: (profileData?.assessmentsDone ?? 0).toString(), color: "text-emerald-500" }
         ].map((stat, i) => (
           <Card key={i} className="p-6 flex flex-col items-center justify-center text-center rounded-[32px] border-none bg-white dark:bg-slate-900 shadow-xl shadow-black/5">
             <stat.icon className={cn("h-7 w-7 mb-3", stat.color)} />
