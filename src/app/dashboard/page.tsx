@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -16,8 +15,8 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { useUser, useFirestore } from "@/firebase"
-import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore"
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase"
+import { doc, collection, query, where, getDocs, orderBy, limit } from "firebase/firestore"
 import { Skeleton } from "@/components/ui/skeleton"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
@@ -32,17 +31,16 @@ const chartConfig = {
 export default function DashboardPage() {
   const { user } = useUser()
   const db = useFirestore()
+  
+  // Real-time user profile sync
+  const profileRef = useMemoFirebase(() => user ? doc(db, 'users', user.uid, 'profile', user.uid) : null, [user?.uid]);
+  const { data: profileData, isLoading: profileLoading } = useDoc(profileRef);
+
   const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState({
-    avgScore: 0,
-    assessmentsDone: 0,
-    coins: 0,
-    masteryLevel: 1
-  })
   const [performanceData, setPerformanceData] = useState<any[]>([])
 
   useEffect(() => {
-    async function fetchDashboardData() {
+    async function fetchPerformanceTrend() {
       if (!user || !db) return
 
       try {
@@ -50,61 +48,45 @@ export default function DashboardPage() {
         const q = query(attemptsRef, orderBy("attemptDate", "desc"), limit(10))
         const querySnapshot = await getDocs(q)
         
-        let totalScore = 0
-        let count = 0
         const chartData: any[] = []
-
         querySnapshot.forEach((doc) => {
           const data = doc.data()
-          totalScore += data.overallScore || 0
-          count++
           chartData.unshift({
             date: new Date(data.attemptDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
             score: data.overallScore || 0
           })
         })
 
-        // Default data if none exists
         if (chartData.length === 0) {
           for(let i=1; i<=5; i++) chartData.push({ date: `Day ${i}`, score: 0 })
         }
-
-        const avg = count > 0 ? Math.round(totalScore / count) : 0
-        
-        setStats({
-          avgScore: avg,
-          assessmentsDone: count,
-          coins: (count * 10), // Mock logic: 10 coins per assessment
-          masteryLevel: Math.floor(count / 5) + 1
-        })
         setPerformanceData(chartData)
-
       } catch (error) {
-        console.error("Error fetching dashboard data:", error)
+        console.error("Error fetching performance trend:", error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchDashboardData()
+    fetchPerformanceTrend()
   }, [user, db])
 
   const statsConfig = [
-    { label: "Overall", value: `${stats.avgScore}%`, icon: Target, color: "text-primary", bg: "bg-primary/10" },
-    { label: "Coins", value: stats.coins.toString(), icon: Coins, color: "text-amber-500", bg: "bg-amber-100" },
-    { label: "Done", value: stats.assessmentsDone.toString(), icon: Trophy, color: "text-blue-500", bg: "bg-blue-50" },
-    { label: "Level", value: `Lvl ${stats.masteryLevel}`, icon: Zap, color: "text-emerald-500", bg: "bg-emerald-50" },
+    { label: "Overall", value: `${profileData?.avgScore || 0}%`, icon: Target, color: "text-primary", bg: "bg-primary/10" },
+    { label: "Total Coins", value: (profileData?.totalCoins || 0).toString(), icon: Coins, color: "text-amber-500", bg: "bg-amber-100" },
+    { label: "Done", value: (profileData?.assessmentsDone || 0).toString(), icon: Trophy, color: "text-blue-500", bg: "bg-blue-50" },
+    { label: "Level", value: `Lvl ${Math.floor((profileData?.assessmentsDone || 0) / 5) + 1}`, icon: Zap, color: "text-emerald-500", bg: "bg-emerald-50" },
   ]
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col gap-1.5 px-1">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white font-headline">Welcome, Scholar</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white font-headline">Welcome, {user?.displayName?.split(' ')[0] || 'Scholar'}</h1>
         <p className="text-muted-foreground text-sm font-medium">Your academic journey is looking bright today.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        {loading ? (
+        {(loading || profileLoading) ? (
           Array(4).fill(0).map((_, i) => (
             <Card key={i} className="border-none shadow-sm rounded-3xl bg-white dark:bg-slate-900/50">
               <CardContent className="p-4 space-y-3">

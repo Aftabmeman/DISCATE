@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -7,7 +6,7 @@ import { useTheme } from "@/components/providers/ThemeProvider"
 import { auth } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { LogOut, ShieldCheck, Moon, Sun, ChevronRight, Award, Clock, BookMarked, MessageSquare, Info, Send, Loader2 } from "lucide-react"
+import { LogOut, ShieldCheck, Moon, Sun, ChevronRight, Award, Clock, BookMarked, MessageSquare, Info, Send, Loader2, Coins } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -16,12 +15,19 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase"
+import { doc } from "firebase/firestore"
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
+
+  // Sync real profile data
+  const profileRef = useMemoFirebase(() => user ? doc(db, 'users', user.uid, 'profile', user.uid) : null, [user?.uid]);
+  const { data: profileData } = useDoc(profileRef);
 
   const [contactName, setContactName] = useState(user?.displayName || "");
   const [contactMessage, setContactMessage] = useState("");
@@ -100,9 +106,9 @@ export default function ProfilePage() {
 
       <div className="grid grid-cols-3 gap-4">
         {[
-          { icon: Award, label: "Level", val: "1", color: "text-primary" },
-          { icon: Clock, label: "Study Hrs", val: "0", color: "text-amber-500" },
-          { icon: BookMarked, label: "Sets", val: "0", color: "text-emerald-500" }
+          { icon: Coins, label: "Coins", val: (profileData?.totalCoins || 0).toString(), color: "text-amber-500" },
+          { icon: Award, label: "Level", val: (Math.floor((profileData?.assessmentsDone || 0) / 5) + 1).toString(), color: "text-primary" },
+          { icon: BookMarked, label: "Sets", val: (profileData?.assessmentsDone || 0).toString(), color: "text-emerald-500" }
         ].map((stat, i) => (
           <Card key={i} className="p-6 flex flex-col items-center justify-center text-center rounded-[32px] border-none bg-white dark:bg-slate-900 shadow-xl shadow-black/5">
             <stat.icon className={cn("h-7 w-7 mb-3", stat.color)} />

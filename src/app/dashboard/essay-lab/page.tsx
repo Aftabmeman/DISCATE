@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useRef } from "react"
@@ -36,6 +35,8 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import confetti from 'canvas-confetti'
+import { useUser, useFirestore } from "@/firebase"
+import { incrementUserStats } from "@/firebase/non-blocking-updates"
 
 export const maxDuration = 60;
 
@@ -46,6 +47,10 @@ const academicLevels = [
 ];
 
 export default function WritingWizardPage() {
+  const { user } = useUser()
+  const db = useFirestore()
+  const { toast } = useToast()
+
   const [step, setStep] = useState(1)
   const [question, setQuestion] = useState("")
   const [academicLevel, setAcademicLevel] = useState<string>("Class 10th")
@@ -58,7 +63,6 @@ export default function WritingWizardPage() {
   const [result, setResult] = useState<EvaluateEssayFeedbackOutput | null>(null)
   
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const { toast } = useToast()
 
   const playSuccessSound = () => {
     try {
@@ -66,15 +70,6 @@ export default function WritingWizardPage() {
       audio.volume = 0.5;
       audio.play();
     } catch (e) { console.log(e); }
-  }
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    if (uploadedImages.length + files.length > 5) {
-      toast({ title: "Limit Exceeded", description: "Max 5 photos allowed.", variant: "destructive" })
-      return
-    }
-    setUploadedImages(prev => [...prev, ...files])
   }
 
   const handleEvaluate = async () => {
@@ -95,7 +90,7 @@ export default function WritingWizardPage() {
       const evaluation = await evaluateEssayFeedback({
         topic: chapterName || "Self Practice Session",
         question: question,
-        essayText: essayText || "[Handwritten context scanned from images]",
+        essayText: essayText || "[Handwritten content scanned from images]",
         academicLevel: academicLevel,
       })
 
@@ -104,6 +99,13 @@ export default function WritingWizardPage() {
       } else {
         setResult(evaluation)
         setStep(5)
+        
+        // Reward coins for analyzed answer
+        if (user) {
+          incrementUserStats(db, user.uid, 10);
+          toast({ title: "+10 Gold Coins!", description: "Writing analysis reward added." });
+        }
+
         playSuccessSound()
         confetti({ particleCount: 200, spread: 90, origin: { y: 0.7 } })
       }
@@ -170,7 +172,7 @@ export default function WritingWizardPage() {
             <CardHeader className="p-8 pb-4"><CardTitle className="text-lg font-headline flex items-center gap-3"><div className="h-10 w-10 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0"><BookOpen className="h-5 w-5 text-emerald-600" /></div>Step 3: Submission</CardTitle></CardHeader>
             <CardContent className="p-8 pt-0 space-y-6">
               <div onClick={() => fileInputRef.current?.click()} className="h-32 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col items-center justify-center p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors bg-slate-50/50 dark:bg-slate-950">
-                <input type="file" className="hidden" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" multiple />
+                <input type="file" className="hidden" ref={fileInputRef} onChange={(e) => { const files = Array.from(e.target.files || []); setUploadedImages(prev => [...prev, ...files].slice(0, 5)); }} accept="image/*" multiple />
                 <PlusCircle className="h-6 w-6 text-primary mb-2" /><p className="text-[10px] font-bold text-slate-500 uppercase">Upload Handwritten Photos (Max 5)</p>
               </div>
               {uploadedImages.length > 0 && (

@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useRef, useEffect } from "react"
@@ -55,6 +54,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import confetti from 'canvas-confetti'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { useUser, useFirestore } from "@/firebase"
+import { incrementUserStats } from "@/firebase/non-blocking-updates"
 
 export const maxDuration = 60;
 
@@ -65,6 +66,10 @@ const academicLevels = [
 ];
 
 export default function AssessmentsPage() {
+  const { user } = useUser()
+  const db = useFirestore()
+  const { toast } = useToast()
+  
   const [wizardStep, setWizardStep] = useState(1)
   const [isCelebration, setIsCelebration] = useState(false)
   const [showHonestyModal, setShowHonestyModal] = useState(false)
@@ -91,7 +96,9 @@ export default function AssessmentsPage() {
   const [masteredCount, setMasteredCount] = useState(0)
   const [reviewCount, setReviewCount] = useState(0)
 
-  // Essay Submission in Journey
+  // Track recorded coin sessions to prevent double counting
+  const sessionRecorded = useRef<Set<string>>(new Set());
+
   const [essayText, setEssayText] = useState("")
   const [uploadedImages, setUploadedImages] = useState<File[]>([])
   const [isAnalyzingEssay, setIsAnalyzingEssay] = useState(false)
@@ -103,7 +110,6 @@ export default function AssessmentsPage() {
   
   const fileInputRef = useRef<HTMLInputElement>(null)
   const essayImageInputRef = useRef<HTMLInputElement>(null)
-  const { toast } = useToast()
 
   const playSuccessSound = () => {
     try {
@@ -115,18 +121,30 @@ export default function AssessmentsPage() {
     }
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) setUploadedFile(file)
-  }
-
-  const handleEssayImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    if (uploadedImages.length + files.length > 5) {
-      toast({ title: "Limit Exceeded", description: "Max 5 photos allowed.", variant: "destructive" })
-      return
+  const handleModeCompletion = () => {
+    const currentMode = activeMode!
+    
+    // Increment Coins logic
+    if (user && !sessionRecorded.current.has(currentMode)) {
+      incrementUserStats(db, user.uid, 10);
+      sessionRecorded.current.add(currentMode);
+      toast({ title: "+10 Gold Coins!", description: "Session complete reward added." });
     }
-    setUploadedImages(prev => [...prev, ...files])
+
+    setCompletedModes(prev => [...new Set([...prev, currentMode])])
+    setActiveMode(null)
+
+    if (currentMode === 'MCQ' && result?.flashcards?.length) {
+      toast({ title: "MCQs Finished!", description: "Next: Mastery Flashcards" })
+      setTimeout(() => startMode('Flashcard'), 800)
+    } else if ((currentMode === 'MCQ' || currentMode === 'Flashcard') && result?.essayPrompts?.length) {
+      toast({ title: "Almost There!", description: "Next: Writing Challenge" })
+      setTimeout(() => startMode('Essay'), 800)
+    } else {
+      toast({ title: "Journey Complete!", description: "You've finished all sections!" })
+      playSuccessSound()
+      confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 } })
+    }
   }
 
   const handleExtractText = async () => {
@@ -188,7 +206,6 @@ export default function AssessmentsPage() {
 
     setIsAnalyzingEssay(true)
     try {
-      // Simulation for OCR delay
       if (uploadedImages.length > 0) await new Promise(r => setTimeout(r, 1500));
 
       const evaluation = await evaluateEssayFeedback({
@@ -258,25 +275,6 @@ export default function AssessmentsPage() {
       setEssayResult(null)
     } else {
       handleModeCompletion()
-    }
-  }
-
-  const handleModeCompletion = () => {
-    const currentMode = activeMode!
-    setCompletedModes(prev => [...new Set([...prev, currentMode])])
-    setActiveMode(null)
-
-    // Check for next mode in sequence
-    if (currentMode === 'MCQ' && result?.flashcards?.length) {
-      toast({ title: "MCQs Finished!", description: "Next: Mastery Flashcards" })
-      setTimeout(() => startMode('Flashcard'), 800)
-    } else if ((currentMode === 'MCQ' || currentMode === 'Flashcard') && result?.essayPrompts?.length) {
-      toast({ title: "Almost There!", description: "Next: Writing Challenge" })
-      setTimeout(() => startMode('Essay'), 800)
-    } else {
-      toast({ title: "Journey Complete!", description: "You've finished all sections!" })
-      playSuccessSound()
-      confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 } })
     }
   }
 
@@ -359,7 +357,7 @@ export default function AssessmentsPage() {
                   <TabsContent value="upload">
                     {!uploadedFile ? (
                       <div onClick={() => fileInputRef.current?.click()} className="h-[220px] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center p-6 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                        <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} accept=".pdf" />
+                        <input type="file" className="hidden" ref={fileInputRef} onChange={(e) => { const file = e.target.files?.[0]; if (file) setUploadedFile(file); }} accept=".pdf" />
                         <FileUp className="h-7 w-7 text-primary mb-2" />
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Select PDF Document</p>
                       </div>
@@ -513,7 +511,7 @@ export default function AssessmentsPage() {
                     {!essayResult ? (
                       <div className="space-y-6">
                         <div onClick={() => essayImageInputRef.current?.click()} className="h-28 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center p-4 cursor-pointer hover:bg-slate-50 dark:bg-slate-950 transition-colors">
-                          <input type="file" className="hidden" ref={essayImageInputRef} onChange={handleEssayImageUpload} accept="image/*" multiple />
+                          <input type="file" className="hidden" ref={essayImageInputRef} onChange={(e) => { const files = Array.from(e.target.files || []); setUploadedImages(prev => [...prev, ...files].slice(0, 5)); }} accept="image/*" multiple />
                           <PlusCircle className="h-6 w-6 text-primary mb-2" />
                           <p className="text-[10px] font-bold text-slate-500 uppercase">Upload Handwritten Photos (Max 5)</p>
                         </div>
@@ -607,11 +605,10 @@ export default function AssessmentsPage() {
               <ChevronRight className="ml-2 h-6 w-6" />
             </Button>
             
-            <Button variant="ghost" onClick={() => { setResult(null); setCompletedModes([]); }} className="text-[10px] font-black uppercase tracking-widest text-slate-400">Build New Journey</Button>
+            <Button variant="ghost" onClick={() => { setResult(null); setCompletedModes([]); sessionRecorded.current.clear(); }} className="text-[10px] font-black uppercase tracking-widest text-slate-400">Build New Journey</Button>
           </Card>
         </div>
       )}
     </div>
   )
 }
-
