@@ -81,7 +81,6 @@ export default function AssessmentsPage() {
   const [isAnswerRevealed, setIsAnswerRevealed] = useState(false)
   const [isCardFlipped, setIsCardFlipped] = useState(false)
   
-  // Stats for Flashcards
   const [masteredCount, setMasteredCount] = useState(0)
   const [reviewCount, setReviewCount] = useState(0)
 
@@ -105,7 +104,6 @@ export default function AssessmentsPage() {
       formData.append('file', uploadedFile)
       const response = await extractTextFromPDF(formData)
       if (response.error) {
-        // Friendly Hinglish Fallback
         toast({ 
           title: "Scan Failed", 
           description: "Oops! Hum ye PDF theek se nahi padh paaye. Try another one?", 
@@ -232,14 +230,14 @@ export default function AssessmentsPage() {
       </AlertDialog>
 
       <div className="px-1 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold font-headline tracking-tight text-slate-900 dark:text-white">Learning Journey</h1>
-          <p className="text-sm text-muted-foreground mt-1">Refining academic growth with AI.</p>
+        <div className="max-w-[70%]">
+          <h1 className="text-2xl font-bold font-headline tracking-tight text-slate-900 dark:text-white truncate">Learning Journey</h1>
+          <p className="text-xs text-muted-foreground mt-1">Refining academic growth with AI.</p>
         </div>
         {!result && !activeMode && (
           <div className="flex items-center gap-1">
             {[1, 2, 3].map((s) => (
-              <div key={s} className={cn("h-1.5 w-6 rounded-full transition-all", wizardStep >= s ? "bg-primary" : "bg-slate-200")} />
+              <div key={s} className={cn("h-1.5 w-4 rounded-full transition-all", wizardStep >= s ? "bg-primary" : "bg-slate-200")} />
             ))}
           </div>
         )}
@@ -251,7 +249,7 @@ export default function AssessmentsPage() {
             <Card className="border-none shadow-xl rounded-[32px] bg-white dark:bg-slate-900 animate-in slide-in-from-right-4">
               <CardHeader className="p-8 pb-4">
                 <CardTitle className="text-xl font-headline flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center"><BookOpen className="h-5 w-5 text-primary" /></div>
+                  <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0"><BookOpen className="h-5 w-5 text-primary" /></div>
                   Step 1: Ingest Content
                 </CardTitle>
               </CardHeader>
@@ -274,12 +272,12 @@ export default function AssessmentsPage() {
                       <div onClick={() => fileInputRef.current?.click()} className="h-[220px] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center p-6 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                         <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} accept=".pdf" />
                         <FileUp className="h-7 w-7 text-primary mb-2" />
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Select PDF Document</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Select PDF Document</p>
                       </div>
                     ) : (
                       <div className="h-[220px] bg-slate-50 dark:bg-slate-950 rounded-2xl p-8 flex flex-col items-center justify-center space-y-4">
-                        <div className="flex items-center gap-3 bg-white dark:bg-slate-900 p-4 rounded-xl w-full border">
-                          <FileIcon className="h-5 w-5 text-primary" />
+                        <div className="flex items-center gap-3 bg-white dark:bg-slate-900 p-4 rounded-xl w-full border overflow-hidden">
+                          <FileIcon className="h-5 w-5 text-primary shrink-0" />
                           <span className="text-xs font-bold truncate dark:text-white">{uploadedFile.name}</span>
                         </div>
                         <Button onClick={handleExtractText} disabled={isExtracting} className="w-full rounded-2xl h-14 bg-slate-900 dark:bg-primary font-bold">
@@ -301,7 +299,7 @@ export default function AssessmentsPage() {
 
           {wizardStep === 2 && (
              <Card className="border-none shadow-xl rounded-[32px] bg-white dark:bg-slate-900 animate-in slide-in-from-right-4">
-               <CardHeader className="p-8 pb-4"><CardTitle className="text-xl font-headline flex items-center gap-3"><div className="h-10 w-10 rounded-2xl bg-amber-100 flex items-center justify-center"><GraduationCap className="h-5 w-5 text-amber-600" /></div>Step 2: Profile</CardTitle></CardHeader>
+               <CardHeader className="p-8 pb-4"><CardTitle className="text-xl font-headline flex items-center gap-3"><div className="h-10 w-10 rounded-2xl bg-amber-100 flex items-center justify-center shrink-0"><GraduationCap className="h-5 w-5 text-amber-600" /></div>Step 2: Profile</CardTitle></CardHeader>
                <CardContent className="p-8 pt-0 space-y-6">
                  <div className="space-y-2">
                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Select Your Level</label>
@@ -317,12 +315,12 @@ export default function AssessmentsPage() {
 
           {wizardStep === 3 && (
             <Card className="border-none shadow-xl rounded-[32px] bg-white dark:bg-slate-900 animate-in slide-in-from-right-4">
-               <CardHeader className="p-8 pb-4"><CardTitle className="text-xl font-headline flex items-center gap-3"><div className="h-10 w-10 rounded-2xl bg-emerald-100 flex items-center justify-center"><BrainCircuit className="h-5 w-5 text-emerald-600" /></div>Step 3: Format</CardTitle></CardHeader>
+               <CardHeader className="p-8 pb-4"><CardTitle className="text-xl font-headline flex items-center gap-3"><div className="h-10 w-10 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0"><BrainCircuit className="h-5 w-5 text-emerald-600" /></div>Step 3: Format</CardTitle></CardHeader>
                <CardContent className="p-8 pt-0 space-y-6">
                  <div className="grid grid-cols-1 gap-3">
                    {[{id:"Mixed", label:"Mixed Journey", icon:Sparkles}, {id:"MCQ", label:"Knowledge Checks", icon:ListChecks}, {id:"Flashcard", label:"Active Recall", icon:RotateCw}, {id:"Essay", label:"Writing Skills", icon:ClipboardList}].map(item => (
                      <div key={item.id} onClick={() => setQuestionType(item.id)} className={cn("p-5 rounded-2xl border-2 cursor-pointer flex items-center gap-4 transition-all", questionType === item.id ? "border-primary bg-primary/5" : "border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800")}>
-                       <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center", questionType === item.id ? "bg-primary text-white" : "bg-slate-100 dark:bg-slate-800")}><item.icon className={cn("h-5 w-5", questionType === item.id ? "text-white" : "text-slate-500")} /></div>
+                       <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0", questionType === item.id ? "bg-primary text-white" : "bg-slate-100 dark:bg-slate-800")}><item.icon className={cn("h-5 w-5", questionType === item.id ? "text-white" : "text-slate-500")} /></div>
                        <span className={cn("font-bold text-sm", questionType === item.id ? "text-primary" : "text-slate-600 dark:text-slate-300")}>{item.label}</span>
                      </div>
                    ))}
@@ -336,87 +334,95 @@ export default function AssessmentsPage() {
           )}
         </div>
       ) : activeMode ? (
-        <div className="flex flex-col h-full max-w-lg mx-auto space-y-6">
+        <div className="flex flex-col h-full max-w-lg mx-auto space-y-6 relative">
           <div className="flex items-center justify-between px-2">
             <Button variant="ghost" size="sm" onClick={() => setActiveMode(null)} className="font-bold text-slate-400 hover:text-primary">Exit Session</Button>
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Item {currentIdx + 1} of {(activeMode === 'MCQ' ? result.mcqs : activeMode === 'Flashcard' ? result.flashcards : result.essayPrompts)?.length}</span>
           </div>
 
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col px-1 overflow-hidden">
             {activeMode === 'MCQ' && result.mcqs && (
-              <Card className="border-none shadow-2xl rounded-[40px] bg-white dark:bg-slate-900 p-10 flex flex-col space-y-8 animate-in slide-in-from-bottom-4">
-                <h2 className="text-2xl font-black font-headline text-slate-900 dark:text-white leading-tight">{result.mcqs[currentIdx].question}</h2>
-                <div className="space-y-3">
-                  {result.mcqs[currentIdx].options.map((opt, i) => (
-                    <Button key={i} variant="outline" onClick={() => {
-                      if (isAnswerRevealed) return;
-                      setSelectedOption(opt);
-                      setIsAnswerRevealed(true);
-                    }} disabled={isAnswerRevealed} className={cn("h-auto min-h-[64px] justify-start px-6 rounded-2xl border-2 text-left font-medium w-full transition-all", isAnswerRevealed ? (opt === result.mcqs![currentIdx].correctAnswer ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-400 text-emerald-700 dark:text-emerald-400" : "opacity-40") : "bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-800 dark:text-white hover:border-primary")}>
-                       {opt}
-                    </Button>
-                  ))}
+              <Card className="border-none shadow-2xl rounded-[40px] bg-white dark:bg-slate-900 p-8 flex flex-col space-y-6 animate-in slide-in-from-bottom-4 h-full">
+                <div className="overflow-y-auto pr-2 no-scrollbar flex-1 space-y-6">
+                  <h2 className="text-xl font-black font-headline text-slate-900 dark:text-white leading-tight">{result.mcqs[currentIdx].question}</h2>
+                  <div className="space-y-3">
+                    {result.mcqs[currentIdx].options.map((opt, i) => (
+                      <Button key={i} variant="outline" onClick={() => {
+                        if (isAnswerRevealed) return;
+                        setSelectedOption(opt);
+                        setIsAnswerRevealed(true);
+                      }} disabled={isAnswerRevealed} className={cn("h-auto min-h-[56px] justify-start px-5 rounded-2xl border-2 text-left font-medium w-full transition-all whitespace-normal", isAnswerRevealed ? (opt === result.mcqs![currentIdx].correctAnswer ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-400 text-emerald-700 dark:text-emerald-400" : "opacity-40") : "bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-800 dark:text-white hover:border-primary")}>
+                         {opt}
+                      </Button>
+                    ))}
+                  </div>
+                  {isAnswerRevealed && (
+                    <div className="pt-4 animate-in slide-in-from-top-4">
+                      <div className="p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl mb-4 text-xs text-emerald-700 dark:text-emerald-400 font-medium leading-relaxed">{result.mcqs[currentIdx].explanation}</div>
+                    </div>
+                  )}
                 </div>
                 {isAnswerRevealed && (
-                  <div className="pt-6 animate-in slide-in-from-top-4">
-                    <div className="p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl mb-4 text-xs text-emerald-700 dark:text-emerald-400 font-medium leading-relaxed">{result.mcqs[currentIdx].explanation}</div>
-                    <Button onClick={() => nextItem()} className="w-full h-14 rounded-2xl bg-slate-900 dark:bg-primary text-white font-bold">Next Insight</Button>
-                  </div>
+                   <Button onClick={() => nextItem()} className="w-full h-14 rounded-2xl bg-slate-900 dark:bg-primary text-white font-bold shrink-0">Next Insight</Button>
                 )}
               </Card>
             )}
 
             {activeMode === 'Flashcard' && result.flashcards && (
-              <div className="flex-1 flex flex-col space-y-8">
-                <div className="grid grid-cols-2 gap-3 px-4">
-                  <div className="bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-3xl border border-emerald-100 dark:border-emerald-800 flex items-center gap-3">
-                    <Award className="h-5 w-5 text-emerald-600" />
-                    <div><p className="text-[8px] font-black uppercase text-emerald-600 tracking-widest">Mastered</p><p className="text-xl font-black text-emerald-700 dark:text-emerald-400">{masteredCount}</p></div>
+              <div className="flex-1 flex flex-col space-y-6 overflow-hidden">
+                <div className="grid grid-cols-2 gap-3 px-4 shrink-0">
+                  <div className="bg-emerald-50 dark:bg-emerald-900/10 p-3 rounded-2xl border border-emerald-100 dark:border-emerald-800 flex items-center gap-3">
+                    <Award className="h-5 w-5 text-emerald-600 shrink-0" />
+                    <div><p className="text-[7px] font-black uppercase text-emerald-600 tracking-widest">Mastered</p><p className="text-lg font-black text-emerald-700 dark:text-emerald-400">{masteredCount}</p></div>
                   </div>
-                  <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-3xl border border-amber-100 dark:border-amber-800 flex items-center gap-3">
-                    <BookMarked className="h-5 w-5 text-amber-600" />
-                    <div><p className="text-[8px] font-black uppercase text-amber-600 tracking-widest">To Review</p><p className="text-xl font-black text-amber-700 dark:text-amber-400">{reviewCount}</p></div>
+                  <div className="bg-amber-50 dark:bg-amber-900/10 p-3 rounded-2xl border border-amber-100 dark:border-amber-800 flex items-center gap-3">
+                    <BookMarked className="h-5 w-5 text-amber-600 shrink-0" />
+                    <div><p className="text-[7px] font-black uppercase text-amber-600 tracking-widest">To Review</p><p className="text-lg font-black text-amber-700 dark:text-amber-400">{reviewCount}</p></div>
                   </div>
                 </div>
 
-                <div className="flex-1 perspective-1000">
+                <div className="flex-1 perspective-1000 relative">
                   <div 
                     onClick={() => setIsCardFlipped(!isCardFlipped)}
                     className={cn(
-                      "relative w-full aspect-[4/5] cursor-pointer preserve-3d transition-transform duration-700 ease-in-out",
+                      "relative w-full h-[400px] cursor-pointer preserve-3d transition-transform duration-700 ease-in-out",
                       isCardFlipped ? "rotate-y-180" : ""
                     )}
                   >
                     {/* Front */}
-                    <Card className="absolute inset-0 backface-hidden rounded-[40px] bg-white dark:bg-slate-900 border-none shadow-2xl flex flex-col items-center justify-center p-12 text-center group">
-                      <Badge className="bg-primary/10 text-primary border-none mb-6">QUESTION</Badge>
-                      <h3 className="text-2xl font-black font-headline text-slate-900 dark:text-white leading-snug">{result.flashcards[currentIdx].front}</h3>
-                      <div className="absolute bottom-10 animate-bounce">
-                        <RotateCw className="h-6 w-6 text-slate-300" />
+                    <Card className="absolute inset-0 backface-hidden rounded-[40px] bg-white dark:bg-slate-900 border-none shadow-2xl flex flex-col items-center justify-center p-8 text-center overflow-hidden">
+                      <Badge className="bg-primary/10 text-primary border-none mb-4 shrink-0">QUESTION</Badge>
+                      <div className="flex-1 flex items-center justify-center overflow-y-auto w-full no-scrollbar">
+                        <h3 className="text-xl font-black font-headline text-slate-900 dark:text-white leading-snug px-2">{result.flashcards[currentIdx].front}</h3>
                       </div>
-                      <p className="absolute bottom-4 text-[9px] font-black uppercase tracking-widest text-slate-300">Tap to see answer</p>
+                      <div className="mt-4 animate-bounce shrink-0">
+                        <RotateCw className="h-5 w-5 text-slate-300" />
+                      </div>
+                      <p className="text-[8px] font-black uppercase tracking-widest text-slate-300 mt-2">Tap to see answer</p>
                     </Card>
 
                     {/* Back */}
-                    <Card className="absolute inset-0 backface-hidden rotate-y-180 rounded-[40px] bg-primary text-white border-none shadow-2xl flex flex-col items-center justify-center p-12 text-center">
-                      <Badge className="bg-white/20 text-white border-none mb-6">ANSWER</Badge>
-                      <p className="text-xl font-bold leading-relaxed">{result.flashcards[currentIdx].back}</p>
-                      <p className="absolute bottom-4 text-[9px] font-black uppercase tracking-widest text-white/40">Tap to flip back</p>
+                    <Card className="absolute inset-0 backface-hidden rotate-y-180 rounded-[40px] bg-primary text-white border-none shadow-2xl flex flex-col items-center justify-center p-8 text-center overflow-hidden">
+                      <Badge className="bg-white/20 text-white border-none mb-4 shrink-0">ANSWER</Badge>
+                      <div className="flex-1 flex items-center justify-center overflow-y-auto w-full no-scrollbar text-sm font-bold leading-relaxed px-2">
+                        {result.flashcards[currentIdx].back}
+                      </div>
+                      <p className="text-[8px] font-black uppercase tracking-widest text-white/40 mt-4">Tap to flip back</p>
                     </Card>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 pb-10">
+                <div className="grid grid-cols-2 gap-4 pb-6 shrink-0">
                   <Button 
-                    onClick={() => nextItem('review')}
+                    onClick={(e) => { e.stopPropagation(); nextItem('review'); }}
                     variant="outline"
-                    className="h-16 rounded-[28px] border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/10 text-amber-700 dark:text-amber-400 font-black text-xs hover:bg-amber-100"
+                    className="h-14 rounded-2xl border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/10 text-amber-700 dark:text-amber-400 font-black text-[10px] hover:bg-amber-100"
                   >
                     STILL LEARNING
                   </Button>
                   <Button 
-                    onClick={() => nextItem('mastered')}
-                    className="h-16 rounded-[28px] bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs shadow-lg shadow-emerald-500/20"
+                    onClick={(e) => { e.stopPropagation(); nextItem('mastered'); }}
+                    className="h-14 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10px] shadow-lg shadow-emerald-500/20"
                   >
                     I KNOW IT
                   </Button>
@@ -425,52 +431,52 @@ export default function AssessmentsPage() {
             )}
 
             {activeMode === 'Essay' && result.essayPrompts && (
-              <Card className="border-none shadow-2xl rounded-[40px] bg-white dark:bg-slate-900 p-10 flex flex-col space-y-8 animate-in slide-in-from-bottom-4">
-                <Badge className="bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 border-none w-fit font-black">ESSAY CHALLENGE</Badge>
-                <h2 className="text-2xl font-black font-headline text-slate-900 dark:text-white leading-tight">{result.essayPrompts[currentIdx].prompt}</h2>
-                <div className="bg-slate-50 dark:bg-slate-950 p-6 rounded-3xl space-y-4 border dark:border-slate-800">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Key Concepts to Include:</p>
-                  <ul className="space-y-2">
-                    {result.essayPrompts[currentIdx].modelAnswerOutline.map((p, i) => (
-                      <li key={i} className="flex gap-2 text-xs font-medium text-slate-600 dark:text-slate-400"><div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />{p}</li>
-                    ))}
-                  </ul>
+              <Card className="border-none shadow-2xl rounded-[40px] bg-white dark:bg-slate-900 p-8 flex flex-col space-y-6 animate-in slide-in-from-bottom-4 h-full overflow-hidden">
+                <div className="flex-1 overflow-y-auto no-scrollbar space-y-6 pr-1">
+                  <Badge className="bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 border-none w-fit font-black text-[10px]">ESSAY CHALLENGE</Badge>
+                  <h2 className="text-xl font-black font-headline text-slate-900 dark:text-white leading-tight">{result.essayPrompts[currentIdx].prompt}</h2>
+                  <div className="bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl space-y-4 border dark:border-slate-800">
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Key Concepts to Include:</p>
+                    <ul className="space-y-2">
+                      {result.essayPrompts[currentIdx].modelAnswerOutline.map((p, i) => (
+                        <li key={i} className="flex gap-2 text-xs font-medium text-slate-600 dark:text-slate-400"><div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />{p}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-                <div className="mt-auto space-y-3">
-                   <Button onClick={() => nextItem()} className="w-full h-14 rounded-2xl bg-slate-900 dark:bg-primary text-white font-bold">Complete Practice</Button>
-                </div>
+                <Button onClick={() => nextItem()} className="w-full h-14 rounded-2xl bg-slate-900 dark:bg-primary text-white font-bold shrink-0">Complete Practice</Button>
               </Card>
             )}
           </div>
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto no-scrollbar space-y-6">
-          <Card className="border-none shadow-xl rounded-[40px] bg-white dark:bg-slate-900 p-10 text-center space-y-8 animate-in zoom-in-95">
-            <div className="bg-primary/10 h-20 w-20 rounded-[28px] flex items-center justify-center mx-auto"><Sparkles className="h-10 w-10 text-primary" /></div>
+        <div className="flex-1 overflow-y-auto no-scrollbar space-y-6 px-1">
+          <Card className="border-none shadow-xl rounded-[40px] bg-white dark:bg-slate-900 p-8 text-center space-y-6 animate-in zoom-in-95">
+            <div className="bg-primary/10 h-16 w-16 rounded-2xl flex items-center justify-center mx-auto"><Sparkles className="h-8 w-8 text-primary" /></div>
             <div>
-              <h2 className="text-3xl font-black font-headline text-slate-900 dark:text-white">Journey Ready</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Profile: {level}</p>
+              <h2 className="text-2xl font-black font-headline text-slate-900 dark:text-white">Journey Ready</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Profile: {level}</p>
             </div>
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-3">
               {result.mcqs?.length ? (
-                <div className="flex items-center gap-4 p-5 bg-slate-50 dark:bg-slate-950 rounded-3xl border dark:border-slate-800">
-                  <ListChecks className="h-6 w-6 text-primary" />
-                  <div className="flex-1 text-left"><p className="text-sm font-black dark:text-white">{result.mcqs.length} Knowledge Checks</p></div>
-                  <Button size="sm" onClick={() => startMode('MCQ')} className="rounded-xl bg-slate-900 dark:bg-primary text-xs font-black text-white">START</Button>
+                <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border dark:border-slate-800">
+                  <ListChecks className="h-5 w-5 text-primary shrink-0" />
+                  <div className="flex-1 text-left"><p className="text-xs font-black dark:text-white">{result.mcqs.length} Knowledge Checks</p></div>
+                  <Button size="sm" onClick={() => startMode('MCQ')} className="rounded-xl bg-slate-900 dark:bg-primary text-[10px] font-black text-white px-4">START</Button>
                 </div>
               ) : null}
               {result.flashcards?.length ? (
-                <div className="flex items-center gap-4 p-5 bg-slate-50 dark:bg-slate-950 rounded-3xl border dark:border-slate-800">
-                  <RotateCw className="h-6 w-6 text-amber-500" />
-                  <div className="flex-1 text-left"><p className="text-sm font-black dark:text-white">{result.flashcards.length} mastery cards</p></div>
-                  <Button size="sm" onClick={() => startMode('Flashcard')} className="rounded-xl bg-slate-900 dark:bg-primary text-xs font-black text-white">START</Button>
+                <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border dark:border-slate-800">
+                  <RotateCw className="h-5 w-5 text-amber-500 shrink-0" />
+                  <div className="flex-1 text-left"><p className="text-xs font-black dark:text-white">{result.flashcards.length} Mastery Cards</p></div>
+                  <Button size="sm" onClick={() => startMode('Flashcard')} className="rounded-xl bg-slate-900 dark:bg-primary text-[10px] font-black text-white px-4">START</Button>
                 </div>
               ) : null}
               {result.essayPrompts?.length ? (
-                <div className="flex items-center gap-4 p-5 bg-slate-50 dark:bg-slate-950 rounded-3xl border dark:border-slate-800">
-                  <ClipboardList className="h-6 w-6 text-emerald-500" />
-                  <div className="flex-1 text-left"><p className="text-sm font-black dark:text-white">{result.essayPrompts.length} Writing Prompts</p></div>
-                  <Button size="sm" onClick={() => startMode('Essay')} className="rounded-xl bg-slate-900 dark:bg-primary text-xs font-black text-white">PRACTICE</Button>
+                <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border dark:border-slate-800">
+                  <ClipboardList className="h-5 w-5 text-emerald-500 shrink-0" />
+                  <div className="flex-1 text-left"><p className="text-xs font-black dark:text-white">{result.essayPrompts.length} Writing Prompts</p></div>
+                  <Button size="sm" onClick={() => startMode('Essay')} className="rounded-xl bg-slate-900 dark:bg-primary text-[10px] font-black text-white px-4">PRACTICE</Button>
                 </div>
               ) : null}
             </div>
