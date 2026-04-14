@@ -122,10 +122,11 @@ export default function AssessmentsPage() {
   }
 
   const handleModeCompletion = () => {
-    const currentMode = activeMode!
+    if (!activeMode) return;
+    const currentMode = activeMode;
     
-    // Increment Coins logic
-    if (user && !sessionRecorded.current.has(currentMode)) {
+    // Increment Coins logic with safety check for user and db
+    if (user && db && !sessionRecorded.current.has(currentMode)) {
       incrementUserStats(db, user.uid, 10);
       sessionRecorded.current.add(currentMode);
       toast({ title: "+10 Gold Coins!", description: "Session complete reward added." });
@@ -424,16 +425,16 @@ export default function AssessmentsPage() {
         <div className="flex flex-col h-full max-w-lg mx-auto space-y-6 relative">
           <div className="flex items-center justify-between px-2">
             <Button variant="ghost" size="sm" onClick={() => setActiveMode(null)} className="font-bold text-slate-400 hover:text-primary">Exit Session</Button>
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Item {currentIdx + 1} of {(activeMode === 'MCQ' ? result.mcqs : activeMode === 'Flashcard' ? result.flashcards : result.essayPrompts)?.length}</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Item {currentIdx + 1} of {(activeMode === 'MCQ' ? result?.mcqs : activeMode === 'Flashcard' ? result?.flashcards : result?.essayPrompts)?.length || 0}</span>
           </div>
 
           <div className="flex-1 flex flex-col px-1 overflow-hidden">
-            {activeMode === 'MCQ' && result.mcqs && (
+            {activeMode === 'MCQ' && result?.mcqs && (
               <Card className="border-none shadow-2xl rounded-[40px] bg-white dark:bg-slate-900 p-8 flex flex-col space-y-6 animate-in slide-in-from-bottom-4 h-full">
                 <div className="overflow-y-auto pr-2 no-scrollbar flex-1 space-y-6">
-                  <h2 className="text-xl font-black font-headline text-slate-900 dark:text-white leading-tight">{result.mcqs[currentIdx].question}</h2>
+                  <h2 className="text-xl font-black font-headline text-slate-900 dark:text-white leading-tight">{result.mcqs[currentIdx]?.question}</h2>
                   <div className="space-y-3">
-                    {result.mcqs[currentIdx].options.map((opt, i) => (
+                    {result.mcqs[currentIdx]?.options?.map((opt, i) => (
                       <Button key={i} variant="outline" onClick={() => {
                         if (isAnswerRevealed) return;
                         setSelectedOption(opt);
@@ -445,7 +446,7 @@ export default function AssessmentsPage() {
                   </div>
                   {isAnswerRevealed && (
                     <div className="pt-4 animate-in slide-in-from-top-4">
-                      <div className="p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl mb-4 text-xs text-emerald-700 dark:text-emerald-400 font-medium leading-relaxed">{result.mcqs[currentIdx].explanation}</div>
+                      <div className="p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl mb-4 text-xs text-emerald-700 dark:text-emerald-400 font-medium leading-relaxed">{result.mcqs[currentIdx]?.explanation}</div>
                     </div>
                   )}
                 </div>
@@ -455,7 +456,7 @@ export default function AssessmentsPage() {
               </Card>
             )}
 
-            {activeMode === 'Flashcard' && result.flashcards && (
+            {activeMode === 'Flashcard' && result?.flashcards && (
               <div className="flex-1 flex flex-col space-y-6 overflow-hidden">
                 <div className="grid grid-cols-2 gap-3 px-4 shrink-0">
                   <div className="bg-emerald-50 dark:bg-emerald-900/10 p-3 rounded-2xl border border-emerald-100 dark:border-emerald-800 flex items-center gap-3">
@@ -479,7 +480,7 @@ export default function AssessmentsPage() {
                     <Card className="absolute inset-0 backface-hidden rounded-[40px] bg-white dark:bg-slate-900 border-none shadow-2xl flex flex-col items-center justify-center p-8 text-center overflow-hidden">
                       <Badge className="bg-primary/10 text-primary border-none mb-4 shrink-0">QUESTION</Badge>
                       <div className="flex-1 flex items-center justify-center overflow-y-auto w-full no-scrollbar">
-                        <h3 className="text-xl font-black font-headline text-slate-900 dark:text-white leading-snug px-2">{result.flashcards[currentIdx].front}</h3>
+                        <h3 className="text-xl font-black font-headline text-slate-900 dark:text-white leading-snug px-2">{result.flashcards[currentIdx]?.front}</h3>
                       </div>
                       <div className="mt-4 animate-bounce shrink-0"><RotateCw className="h-5 w-5 text-slate-300" /></div>
                       <p className="text-[8px] font-black uppercase tracking-widest text-slate-300 mt-2">Tap to see answer</p>
@@ -487,7 +488,7 @@ export default function AssessmentsPage() {
                     <Card className="absolute inset-0 backface-hidden rotate-y-180 rounded-[40px] bg-primary text-white border-none shadow-2xl flex flex-col items-center justify-center p-8 text-center overflow-hidden">
                       <Badge className="bg-white/20 text-white border-none mb-4 shrink-0">ANSWER</Badge>
                       <div className="flex-1 flex items-center justify-center overflow-y-auto w-full no-scrollbar text-sm font-bold leading-relaxed px-2">
-                        {result.flashcards[currentIdx].back}
+                        {result.flashcards[currentIdx]?.back}
                       </div>
                       <p className="text-[8px] font-black uppercase tracking-widest text-white/40 mt-4">Tap to flip back</p>
                     </Card>
@@ -501,12 +502,12 @@ export default function AssessmentsPage() {
               </div>
             )}
 
-            {activeMode === 'Essay' && result.essayPrompts && (
+            {activeMode === 'Essay' && result?.essayPrompts && (
               <div className="flex-1 flex flex-col space-y-6 overflow-hidden">
                 <Card className="border-none shadow-2xl rounded-[40px] bg-white dark:bg-slate-900 p-8 flex flex-col space-y-6 animate-in slide-in-from-bottom-4 flex-1 overflow-hidden">
                   <div className="flex-1 overflow-y-auto no-scrollbar space-y-6 pr-1">
                     <Badge className="bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 border-none w-fit font-black text-[10px]">PROFESSOR'S CHALLENGE</Badge>
-                    <h2 className="text-xl font-black font-headline text-slate-900 dark:text-white leading-tight">{result.essayPrompts[currentIdx].prompt}</h2>
+                    <h2 className="text-xl font-black font-headline text-slate-900 dark:text-white leading-tight">{result.essayPrompts[currentIdx]?.prompt}</h2>
                     
                     {!essayResult ? (
                       <div className="space-y-6">
@@ -541,7 +542,7 @@ export default function AssessmentsPage() {
                           <AccordionItem value="feedback" className="border-none">
                             <AccordionTrigger className="h-12 bg-slate-50 dark:bg-slate-950 px-5 rounded-2xl hover:no-underline font-bold text-xs">Professor's Feedback</AccordionTrigger>
                             <AccordionContent className="pt-4 space-y-4">
-                               {[{t:"Intro", c:essayResult.feedbackBySection.introduction, cl:"text-blue-500"}, {t:"Body", c:essayResult.feedbackBySection.mainBody, cl:"text-primary"}, {t:"Grammar", c:essayResult.feedbackBySection.grammarAndVocabulary, cl:"text-amber-500"}].map((s,i) => (
+                               {[{t:"Intro", c:essayResult.feedbackBySection?.introduction, cl:"text-blue-500"}, {t:"Body", c:essayResult.feedbackBySection?.mainBody, cl:"text-primary"}, {t:"Grammar", c:essayResult.feedbackBySection?.grammarAndVocabulary, cl:"text-amber-500"}].map((s,i) => (
                                  <div key={i} className="p-4 bg-white dark:bg-slate-900 border rounded-2xl">
                                    <p className={cn("text-[8px] font-black uppercase mb-1", s.cl)}>{s.t}</p>
                                    <p className="text-[10px] font-medium text-slate-600 dark:text-slate-300 leading-relaxed">{s.c}</p>
@@ -581,9 +582,9 @@ export default function AssessmentsPage() {
             
             <div className="grid grid-cols-1 gap-3">
               {[
-                { id: 'MCQ', icon: ListChecks, label: 'Knowledge Checks', list: result.mcqs },
-                { id: 'Flashcard', icon: RotateCw, label: 'Mastery Cards', list: result.flashcards, color: 'text-amber-500' },
-                { id: 'Essay', icon: ClipboardList, label: 'Writing Prompts', list: result.essayPrompts, color: 'text-emerald-500' }
+                { id: 'MCQ', icon: ListChecks, label: 'Knowledge Checks', list: result?.mcqs },
+                { id: 'Flashcard', icon: RotateCw, label: 'Mastery Cards', list: result?.flashcards, color: 'text-amber-500' },
+                { id: 'Essay', icon: ClipboardList, label: 'Writing Prompts', list: result?.essayPrompts, color: 'text-emerald-500' }
               ].map((m) => m.list?.length ? (
                 <div key={m.id} className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border dark:border-slate-800">
                   <m.icon className={cn("h-5 w-5 shrink-0", m.color || "text-primary")} />

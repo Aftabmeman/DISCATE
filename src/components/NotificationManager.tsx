@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
 import { initializeFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 
@@ -10,9 +10,16 @@ export function NotificationManager() {
 
   useEffect(() => {
     const setupMessaging = async () => {
+      // Check if window is available and if messaging is supported in the current environment
       if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
 
       try {
+        const supported = await isSupported();
+        if (!supported) {
+          console.warn('Firebase Messaging is not supported in this browser.');
+          return;
+        }
+
         const { firebaseApp } = initializeFirebase();
         const messaging = getMessaging(firebaseApp);
 
@@ -24,14 +31,13 @@ export function NotificationManager() {
           });
           
           if (token) {
-            console.log('FCM Token generated:', token);
-            // In a real app, you'd save this token to the user's Firestore profile
+            console.log('FCM Token generated');
+            // Logic to save token to user profile would go here
           }
         }
 
         // Listen for foreground messages
         onMessage(messaging, (payload) => {
-          console.log('Message received. ', payload);
           toast({
             title: payload.notification?.title || 'Study Reminder',
             description: payload.notification?.body || 'Time for your next assessment!',
@@ -39,7 +45,8 @@ export function NotificationManager() {
         });
 
       } catch (error) {
-        console.error('An error occurred while retrieving token. ', error);
+        // Silent catch to prevent app-wide crash if FCM fails
+        console.warn('FCM setup failed silently:', error);
       }
     };
 

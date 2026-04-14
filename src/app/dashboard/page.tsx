@@ -33,7 +33,7 @@ export default function DashboardPage() {
   const db = useFirestore()
   
   // Real-time user profile sync
-  const profileRef = useMemoFirebase(() => user ? doc(db, 'users', user.uid, 'profile', user.uid) : null, [user?.uid]);
+  const profileRef = useMemoFirebase(() => (user && db) ? doc(db, 'users', user.uid, 'profile', user.uid) : null, [user?.uid, db]);
   const { data: profileData, isLoading: profileLoading } = useDoc(profileRef);
 
   const [loading, setLoading] = useState(true)
@@ -51,10 +51,12 @@ export default function DashboardPage() {
         const chartData: any[] = []
         querySnapshot.forEach((doc) => {
           const data = doc.data()
-          chartData.unshift({
-            date: new Date(data.attemptDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
-            score: data.overallScore || 0
-          })
+          if (data && data.attemptDate) {
+            chartData.unshift({
+              date: new Date(data.attemptDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
+              score: data.overallScore || 0
+            })
+          }
         })
 
         if (chartData.length === 0) {
@@ -63,6 +65,8 @@ export default function DashboardPage() {
         setPerformanceData(chartData)
       } catch (error) {
         console.error("Error fetching performance trend:", error)
+        // Set fallback data on error to prevent chart crash
+        setPerformanceData([{ date: "N/A", score: 0 }])
       } finally {
         setLoading(false)
       }
@@ -103,8 +107,8 @@ export default function DashboardPage() {
             <Card key={stat.label} className="border-none shadow-sm rounded-3xl hover:shadow-md transition-shadow group dark:bg-slate-900/50 bg-white">
               <CardContent className="p-4">
                 <div className="flex flex-col gap-3">
-                  <div className={stat.bg + " p-2.5 rounded-2xl w-fit group-hover:scale-110 transition-transform"}>
-                    <stat.icon className={"h-5 w-5 " + stat.color} />
+                  <div className={(stat.bg || "bg-slate-100") + " p-2.5 rounded-2xl w-fit group-hover:scale-110 transition-transform"}>
+                    <stat.icon className={"h-5 w-5 " + (stat.color || "text-slate-500")} />
                   </div>
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground dark:text-slate-400 mb-0.5">{stat.label}</p>
@@ -157,26 +161,28 @@ export default function DashboardPage() {
           
           <div className="h-[220px] w-full mt-2">
             <ChartContainer config={chartConfig} className="h-full w-full">
-              <LineChart data={performanceData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" opacity={0.5} />
-                <XAxis 
-                  dataKey="date" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 9, fontWeight: 700 }}
-                  dy={10}
-                />
-                <YAxis hide domain={[0, 100]} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Line 
-                  type="monotone" 
-                  dataKey="score" 
-                  stroke="hsl(var(--primary))" 
-                  strokeWidth={4} 
-                  dot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 2, stroke: '#fff' }}
-                  activeDot={{ r: 6, strokeWidth: 0 }}
-                />
-              </LineChart>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={performanceData && performanceData.length > 0 ? performanceData : [{ date: "", score: 0 }]}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" opacity={0.5} />
+                  <XAxis 
+                    dataKey="date" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 9, fontWeight: 700 }}
+                    dy={10}
+                  />
+                  <YAxis hide domain={[0, 100]} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="score" 
+                    stroke="hsl(var(--primary))" 
+                    strokeWidth={4} 
+                    dot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 2, stroke: '#fff' }}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </ChartContainer>
           </div>
         </Card>

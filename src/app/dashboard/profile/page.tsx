@@ -25,8 +25,8 @@ export default function ProfilePage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  // Sync real profile data
-  const profileRef = useMemoFirebase(() => user ? doc(db, 'users', user.uid, 'profile', user.uid) : null, [user?.uid]);
+  // Sync real profile data with safety guard for db and user
+  const profileRef = useMemoFirebase(() => (user && db) ? doc(db, 'users', user.uid, 'profile', user.uid) : null, [user?.uid, db]);
   const { data: profileData } = useDoc(profileRef);
 
   const [contactName, setContactName] = useState(user?.displayName || "");
@@ -34,8 +34,12 @@ export default function ProfilePage() {
   const [isSending, setIsSending] = useState(false);
 
   const handleLogout = async () => {
-    await auth.signOut();
-    router.push("/login");
+    try {
+      await auth.signOut();
+      router.push("/login");
+    } catch (e) {
+      console.error("Sign out error", e);
+    }
   };
 
   const handleContactSubmit = async (e: React.FormEvent) => {
@@ -88,13 +92,13 @@ export default function ProfilePage() {
              <ShieldCheck className="h-5 w-5 text-white" />
           </div>
         </div>
-        <h1 className="mt-8 text-3xl font-black font-headline tracking-tight text-slate-900 dark:text-white">
+        <h1 className="mt-8 text-3xl font-black font-headline tracking-tight text-slate-900 dark:text-white text-center">
           {user?.displayName || "Scholar"}
         </h1>
         <p className="text-muted-foreground text-sm font-medium mt-1">
           {user?.email}
         </p>
-        <div className="flex items-center gap-2 mt-4">
+        <div className="flex items-center gap-2 mt-4 flex-wrap justify-center">
           <Badge variant="secondary" className="bg-primary/10 text-primary border-none px-4 py-1.5 rounded-full font-bold uppercase text-[10px] tracking-widest">
             Mentur AI v1.0.0
           </Badge>
