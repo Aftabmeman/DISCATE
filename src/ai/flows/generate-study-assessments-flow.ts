@@ -1,8 +1,8 @@
+
 'use server';
 /**
  * @fileOverview High-performance academic assessment generator using Groq API.
  * Model: llama-3.1-8b-instant for fast and reliable educational content generation.
- * Ensures strict JSON output and sanitized payload for Groq.
  */
 
 import { z } from 'zod';
@@ -28,7 +28,11 @@ const EssayPromptSchema = z.object({
 const GenerateStudyAssessmentsInputSchema = z.object({
   studyMaterial: z.string().min(1, "Study material cannot be empty"),
   assessmentTypes: z.array(z.enum(['MCQ', 'Flashcard', 'Essay', 'Mixed'])),
-  academicLevel: z.enum(['8th Standard', 'Undergraduate Year 1', 'Competitive Exams (UPSC)', 'Competitive Exams (JEE/NEET)', 'Competitive Exams (CAT/CLAT/SSC/NDA)']),
+  academicLevel: z.enum([
+    'Class 8th', 'Class 9th', 'Class 10th', 'Class 11th', 'Class 12th',
+    'UG Year 1', 'UG Year 2', 'UG Year 3',
+    'Competitive (UPSC)', 'Competitive (JEE)', 'Competitive (NEET)', 'Competitive (Others)'
+  ]),
   difficulty: z.enum(['Easy', 'Medium', 'Hard']),
   mcqCount: z.number().int().min(0).max(20).optional().default(5),
   essayCount: z.number().int().min(0).max(10).optional().default(2),
@@ -58,15 +62,15 @@ export async function generateStudyAssessments(input: GenerateStudyAssessmentsIn
 
   const systemPrompt = `You are the Lead Educational Researcher for Mentur AI.
 Strictly follow these rules:
-1. FULL CONTENT EXTRACTION: Analyze the material deeply.
-2. ACADEMIC STANDARDS: Match the '${input.academicLevel}' level exactly.
+1. FULL CONTENT EXTRACTION: Analyze the provided study material deeply.
+2. ACADEMIC STANDARDS: Match the '${input.academicLevel}' academic level exactly. 
 3. OUTPUT FORMAT: Return ONLY a valid JSON object. No extra text or preamble.
 4. REQUIRED QUANTITIES:
    - MCQs: ${input.mcqCount}
    - Essay Prompts: ${input.essayCount}
    - Flashcards: ${input.flashcardCount}`;
 
-  const userPrompt = `Material:
+  const userPrompt = `Generate educational material based on the following source:
 """
 ${input.studyMaterial}
 """
