@@ -1,8 +1,8 @@
-
 'use server';
 /**
  * @fileOverview High-performance academic assessment generator using Groq llama-3.3-70b.
  * Strictly generates content from provided material only.
+ * Optimized for "Zero Rejection" even with small text inputs.
  */
 
 import { z } from 'zod';
@@ -48,13 +48,18 @@ export async function generateStudyAssessments(input: GenerateStudyAssessmentsIn
   const apiKey = process.env.GROQ_API_KEY;
   
   if (!apiKey) return { error: "AI Key is missing." };
-  if (input.studyMaterial.length < 300) return { error: "Input too short for quality generation." };
+  
+  // ZERO REJECTION: Reduced to 30 chars
+  if (input.studyMaterial.length < 30) {
+    return { error: "Content bahut chota hai. Please add at least a few lines to start." };
+  }
 
   let material = input.studyMaterial;
   if (material.length > 12000) material = material.substring(0, 12000) + "...";
 
   const systemPrompt = `You are a Senior Academic Content Developer at Mentur AI.
 STRICT RULE: Generate content ONLY from the provided material. Do NOT use external knowledge.
+If the material is very short, still extract the most meaningful academic concepts.
 LEVEL: ${input.academicLevel} | DIFFICULTY: ${input.difficulty}
 
 REQUIRED FORMATS:
@@ -104,6 +109,6 @@ JSON Schema:
     return GenerateStudyAssessmentsOutputSchema.parse(JSON.parse(data.choices[0].message.content));
   } catch (error: any) {
     console.error("AI Generation Error:", error.message);
-    return { error: "Failed to generate your learning journey. Please ensure your key is valid." };
+    return { error: "Failed to generate your learning journey. Please try again or check your content." };
   }
 }

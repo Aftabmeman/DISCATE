@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useRef } from "react"
@@ -106,14 +105,19 @@ export default function AssessmentsPage() {
       formData.append('file', uploadedFile)
       const response = await extractTextFromPDF(formData)
       if (response.error) {
-        toast({ title: "Extraction Failed", description: response.error, variant: "destructive" })
+        // Friendly Hinglish Fallback
+        toast({ 
+          title: "Scan Failed", 
+          description: "Oops! Hum ye PDF theek se nahi padh paaye. Try another one?", 
+          variant: "destructive" 
+        })
       } else if (response.text) {
         setMaterial(response.text)
         toast({ title: "Resource Ingested", description: `Successfully extracted content.` })
         setWizardStep(2)
       }
     } catch (e) {
-      toast({ title: "Error", description: "Failed to process PDF.", variant: "destructive" })
+      toast({ title: "Error", description: "Something went wrong scanning the PDF.", variant: "destructive" })
     } finally {
       setIsExtracting(false)
     }
@@ -260,7 +264,7 @@ export default function AssessmentsPage() {
                   <TabsContent value="paste">
                     <Textarea 
                       className="min-h-[220px] rounded-2xl bg-slate-50 dark:bg-slate-950 border-none p-5 text-sm dark:text-white"
-                      placeholder="Paste your study materials here (min 300 chars)..."
+                      placeholder="Paste your study materials here (min 30 chars)..."
                       value={material}
                       onChange={(e) => setMaterial(e.target.value)}
                     />
@@ -287,7 +291,7 @@ export default function AssessmentsPage() {
                   </TabsContent>
                 </Tabs>
                 {inputType === "paste" && (
-                  <Button onClick={() => setWizardStep(2)} disabled={material.length < 300} className="w-full h-16 rounded-3xl bg-primary text-white font-bold shadow-xl">
+                  <Button onClick={() => setWizardStep(2)} disabled={material.length < 30} className="w-full h-16 rounded-3xl bg-primary text-white font-bold shadow-xl">
                     Continue to Step 2 <ChevronRight className="ml-2 h-6 w-6" />
                   </Button>
                 )}
