@@ -7,16 +7,17 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider"
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'Mentur AI | Expert Academic Mentorship',
+  title: 'Mentur AI | Elite Academic Mentorship',
   description: 'Elevate your learning with AI-powered assessment generation and essay evaluation.',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/icons/192x192.png',
+    apple: '/icons/192x192.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: 'Mentur AI',
-  },
-  formatDetection: {
-    telephone: false,
   },
 };
 
@@ -40,7 +41,6 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <link rel="apple-touch-icon" href="/icons/192x192.png" />
-        <script dangerouslySetInnerHTML={{__html: "if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js')}"}} />
       </head>
       <body className="font-body antialiased transition-colors duration-300">
         <FirebaseClientProvider>
