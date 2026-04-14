@@ -1,7 +1,7 @@
 'use server';
 /**
- * @fileOverview Advanced AI Professor for Essay Evaluation.
- * Analyzes structure (Intro, Body, Conclusion), Grammar, and provides a full rewrite.
+ * @fileOverview Advanced AI Professor for Essay Evaluation using llama-3.3-70b.
+ * Analyzes structure and provides a full rewrite.
  */
 
 import { z } from 'zod';
@@ -42,7 +42,7 @@ TASK: Provide a comprehensive score out of 10 and a FULL suggested rewrite that 
 Return ONLY valid JSON.`;
 
   const userPrompt = `Topic: ${input.topic}
-${input.question ? `Question/Prompt: ${input.question}` : ''}
+Question: ${input.question || 'N/A'}
 
 Student's Essay:
 """
@@ -53,15 +53,15 @@ JSON Schema required:
 {
   "score": number,
   "feedbackBySection": {
-    "introduction": "...",
-    "mainBody": "...",
-    "conclusion": "...",
-    "grammarAndVocabulary": "..."
+    "introduction": "string",
+    "mainBody": "string",
+    "conclusion": "string",
+    "grammarAndVocabulary": "string"
   },
-  "strengths": ["..."],
-  "weaknesses": ["..."],
-  "suggestedRewrite": "...",
-  "modelAnswerOutline": ["..."]
+  "strengths": ["string"],
+  "weaknesses": ["string"],
+  "suggestedRewrite": "string",
+  "modelAnswerOutline": ["string"]
 }`;
 
   try {
@@ -72,23 +72,27 @@ JSON Schema required:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-70b-versatile',
+        model: 'llama-3.3-70b-versatile',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
         response_format: { type: 'json_object' },
-        temperature: 0.2,
+        temperature: 0.1,
       }),
     });
 
-    if (!response.ok) throw new Error("API Failure");
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Groq API Error Details:", errorData);
+      throw new Error("API Failure");
+    }
 
     const data = await response.json();
     const parsed = JSON.parse(data.choices[0].message.content);
     return EvaluateEssayFeedbackOutputSchema.parse(parsed);
   } catch (error: any) {
-    console.error("Evaluation Error:", error);
-    return { error: "Failed to evaluate essay.", score: 0, feedbackBySection: { introduction: "", mainBody: "", conclusion: "", grammarAndVocabulary: "" }, strengths: [], weaknesses: [], suggestedRewrite: "", modelAnswerOutline: [] };
+    console.error("Evaluation Error:", error.message);
+    return { error: "Failed to evaluate essay. Check API connectivity.", score: 0, feedbackBySection: { introduction: "", mainBody: "", conclusion: "", grammarAndVocabulary: "" }, strengths: [], weaknesses: [], suggestedRewrite: "", modelAnswerOutline: [] };
   }
 }

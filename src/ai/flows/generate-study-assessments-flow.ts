@@ -1,8 +1,7 @@
-
 'use server';
 /**
- * @fileOverview High-performance academic assessment generator using Groq API.
- * Handles MCQs, Flashcards, and Essay Prompts with strict format branching.
+ * @fileOverview High-performance academic assessment generator using Groq llama-3.3-70b.
+ * Strictly generates content from provided material.
  */
 
 import { z } from 'zod';
@@ -48,13 +47,13 @@ export async function generateStudyAssessments(input: GenerateStudyAssessmentsIn
   const apiKey = process.env.GROQ_API_KEY;
   
   if (!apiKey) return { error: "AI Key is missing." };
-  if (input.studyMaterial.length < 500) return { error: "Extracted text too short for quality generation." };
+  if (input.studyMaterial.length < 300) return { error: "Input too short for quality generation." };
 
   let material = input.studyMaterial;
-  if (material.length > 10000) material = material.substring(0, 10000) + "...";
+  if (material.length > 12000) material = material.substring(0, 12000) + "...";
 
   const systemPrompt = `You are a Senior Academic Content Developer at Mentur AI.
-STRICT RULE: Generate content ONLY from the provided material.
+STRICT RULE: Generate content ONLY from the provided material. Do NOT use external knowledge.
 LEVEL: ${input.academicLevel} | DIFFICULTY: ${input.difficulty}
 
 REQUIRED FORMATS:
@@ -62,7 +61,7 @@ REQUIRED FORMATS:
 2. Generate ${input.essayCount} Essay Prompts (only if count > 0)
 3. Generate ${input.flashcardCount} Flashcards (only if count > 0)
 
-Return ONLY valid JSON. If a count is 0, return an empty array for that key.`;
+Return ONLY valid JSON.`;
 
   const userPrompt = `Material:
 """
@@ -90,15 +89,20 @@ JSON Schema:
           { role: 'user', content: userPrompt }
         ],
         response_format: { type: 'json_object' },
-        temperature: 0.2,
+        temperature: 0.1,
       }),
     });
 
-    if (!response.ok) throw new Error("API Failure");
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Groq API Error Details:", errorData);
+      throw new Error("API Failure");
+    }
+    
     const data = await response.json();
     return GenerateStudyAssessmentsOutputSchema.parse(JSON.parse(data.choices[0].message.content));
   } catch (error: any) {
-    console.error("AI Generation Error:", error);
-    return { error: "Failed to generate your learning journey. Please try again." };
+    console.error("AI Generation Error:", error.message);
+    return { error: "Failed to generate your learning journey. Please ensure your key is valid." };
   }
 }
