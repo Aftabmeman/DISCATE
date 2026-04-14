@@ -1,12 +1,13 @@
+
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/components/providers/AuthProvider"
 import { useTheme } from "@/components/providers/ThemeProvider"
 import { auth } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { LogOut, ShieldCheck, Moon, Sun, ChevronRight, Award, Clock, BookMarked, MessageSquare, Info, Send, Loader2, Coins } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { LogOut, ShieldCheck, Moon, Sun, ChevronRight, Award, BookMarked, Info, Send, Loader2, Coins } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -15,7 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase"
+import { useFirestore, useDoc, useMemoFirebase } from "@/firebase"
 import { doc } from "firebase/firestore"
 
 export default function ProfilePage() {
@@ -25,12 +26,21 @@ export default function ProfilePage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const profileRef = useMemoFirebase(() => (user && db) ? doc(db, 'users', user.uid, 'profile', user.uid) : null, [user?.uid, db]);
-  const { data: profileData } = useDoc(profileRef);
-
-  const [contactName, setContactName] = useState(user?.displayName || "");
+  const [isMounted, setIsMounted] = useState(false);
+  const [contactName, setContactName] = useState("");
   const [contactMessage, setContactMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
+
+  // Guard against hydration mismatch
+  useEffect(() => {
+    setIsMounted(true);
+    if (user?.displayName) {
+      setContactName(user.displayName);
+    }
+  }, [user]);
+
+  const profileRef = useMemoFirebase(() => (isMounted && user && db) ? doc(db, 'users', user.uid, 'profile', user.uid) : null, [isMounted, user?.uid, db]);
+  const { data: profileData } = useDoc(profileRef);
 
   const handleLogout = async () => {
     try {
@@ -63,8 +73,8 @@ export default function ProfilePage() {
 
       if (response.ok) {
         toast({
-          title: "Message sent to Aftab!",
-          description: "We'll get back to you as soon as possible.",
+          title: "Message sent!",
+          description: "We'll get back to you soon.",
         });
         setContactMessage("");
       } else {
@@ -73,13 +83,21 @@ export default function ProfilePage() {
     } catch (error) {
       toast({
         title: "Submission Failed",
-        description: "Could not send message. Please try again later.",
+        description: "Could not send message. Please try again.",
         variant: "destructive"
       });
     } finally {
       setIsSending(false);
     }
   };
+
+  if (!isMounted) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary/20" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-28">
@@ -95,7 +113,7 @@ export default function ProfilePage() {
           {user?.displayName || "Scholar"}
         </h1>
         <p className="text-muted-foreground text-sm font-medium mt-1">
-          {user?.email}
+          {user?.email || "No email provided"}
         </p>
         <div className="flex items-center gap-2 mt-4 flex-wrap justify-center">
           <Badge variant="secondary" className="bg-primary/10 text-primary border-none px-4 py-1.5 rounded-full font-bold uppercase text-[10px] tracking-widest">
@@ -164,17 +182,6 @@ export default function ProfilePage() {
                   Making high-quality, personalized education accessible to every student, anytime, anywhere.
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="features" className="border-none px-6">
-                <AccordionTrigger className="hover:no-underline py-4">
-                  <div className="flex items-center gap-3">
-                    <ShieldCheck className="h-5 w-5 text-emerald-500" />
-                    <span className="font-bold text-slate-700 dark:text-slate-200">Features</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="text-slate-500 dark:text-slate-400 pb-4">
-                  Instant Quizzes, Smart Flashcards, Custom Assessments, and AI Mentorship.
-                </AccordionContent>
-              </AccordionItem>
             </Accordion>
           </Card>
         </div>
@@ -199,7 +206,7 @@ export default function ProfilePage() {
                   value={contactMessage}
                   onChange={(e) => setContactMessage(e.target.value)}
                   placeholder="How can we help you?"
-                  className="rounded-2xl min-h-[100px] bg-slate-50 dark:bg-slate-800 border-none resize-none"
+                  className="rounded-2xl min-h-[100px] bg-slate-50 dark:bg-slate-800 border-none resize-none font-body text-sm"
                   required
                 />
               </div>
@@ -230,23 +237,6 @@ export default function ProfilePage() {
           </Card>
         </div>
       </div>
-
-      <footer className="pt-12 text-center space-y-6">
-        <div className="flex flex-col items-center gap-4">
-          <MenturLogo size="sm" />
-          <span className="text-[11px] font-black uppercase tracking-[0.4em] bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Mentur AI Engine
-          </span>
-        </div>
-        <div className="space-y-2">
-          <p className="text-[10px] text-slate-400 max-w-[280px] mx-auto leading-relaxed font-bold uppercase tracking-widest">
-            Expert Academic Mentorship System
-          </p>
-          <p className="text-[9px] text-slate-300 dark:text-slate-600 tracking-[0.2em] font-medium uppercase">
-            v1.0.0 Student Edition
-          </p>
-        </div>
-      </footer>
     </div>
   )
 }
