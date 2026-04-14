@@ -150,7 +150,7 @@ export default function DashboardPage() {
               <Button className="h-12 px-8 bg-primary hover:bg-primary/90 text-white font-bold rounded-2xl shadow-xl shadow-primary/25" asChild>
                 <Link href="/dashboard/assessments">Create Journey</Link>
               </Button>
-              <Button variant="outline" className="h-12 px-8 border-white/20 text-white hover:bg-white/10 rounded-2xl font-bold" asChild>
+              <Button variant="ghost" className="h-12 px-8 border border-white/20 text-white hover:bg-white/10 rounded-2xl font-bold bg-transparent" asChild>
                 <Link href="/dashboard/essay-lab">Writing Lab</Link>
               </Button>
             </div>
