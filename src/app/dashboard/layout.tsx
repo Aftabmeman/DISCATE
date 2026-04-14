@@ -1,8 +1,9 @@
+
 "use client"
 
 import { useAuth } from "@/components/providers/AuthProvider"
 import { useTheme } from "@/components/providers/ThemeProvider"
-import { Moon, Sun, User, Home, BookOpen, GraduationCap, FileEdit } from "lucide-react"
+import { Moon, Sun, User, Home, GraduationCap, FileEdit } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -14,7 +15,6 @@ export const dynamic = 'force-dynamic';
 
 const navItems = [
   { icon: Home, label: "Home", href: "/dashboard" },
-  { icon: BookOpen, label: "Library", href: "/dashboard/materials" },
   { icon: GraduationCap, label: "Practice", href: "/dashboard/assessments" },
   { icon: FileEdit, label: "Writing", href: "/dashboard/essay-lab" },
   { icon: User, label: "Account", href: "/dashboard/profile" },

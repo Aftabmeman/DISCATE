@@ -1,10 +1,10 @@
+
 "use client"
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { 
   LayoutDashboard, 
-  BookOpen, 
   GraduationCap, 
   FileEdit, 
   History, 
@@ -29,9 +29,8 @@ import {
 
 const mainNavItems = [
   { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
-  { icon: BookOpen, label: "Study Materials", href: "/dashboard/materials" },
   { icon: GraduationCap, label: "Assessments", href: "/dashboard/assessments" },
-  { icon: FileEdit, label: "Essay Lab", href: "/dashboard/essay-lab" },
+  { icon: FileEdit, label: "Writing Lab", href: "/dashboard/essay-lab" },
 ]
 
 const statsNavItems = [
