@@ -1,7 +1,7 @@
 'use server';
 /**
- * @fileOverview Elite Academic Mentor for Essay Evaluation using llama-3.3-70b.
- * Performs deep multi-dimensional analysis, strict scoring, and provides a Masterclass Rewrite.
+ * @fileOverview Master Professor & Evaluator for Essay Evaluation using llama-3.3-70b.
+ * Performs deep multi-dimensional analysis and provides structured DATA_BLOCK output.
  */
 
 import { z } from 'zod';
@@ -15,17 +15,13 @@ const EvaluateEssayFeedbackInputSchema = z.object({
 export type EvaluateEssayFeedbackInput = z.infer<typeof EvaluateEssayFeedbackInputSchema>;
 
 const EvaluateEssayFeedbackOutputSchema = z.object({
-  score: z.number().min(0).max(10).describe("A strict score out of 10. Be a tough grader."),
-  feedbackBySection: z.object({
-    introduction: z.string().describe("Critique of the hook and thesis statement."),
-    mainBody: z.string().describe("Analysis of logical flow and depth of insight."),
-    conclusion: z.string().describe("Evaluation of the synthesis and final thought."),
-    grammarAndVocabulary: z.string().describe("List specific sophisticated alternatives for used words."),
+  dataBlock: z.object({
+    marks: z.number().describe("Score percentage out of 100"),
+    coins: z.number().describe("Coins awarded (50-100 based on quality)"),
+    status: z.enum(['Mastered', 'Improving', 'Needs Practice']),
   }),
-  strengths: z.array(z.string()),
-  weaknesses: z.array(z.string()),
-  suggestedRewrite: z.string().describe("A Masterclass version of the student's essay using sophisticated structure and vocabulary."),
-  modelAnswerOutline: z.array(z.string()).describe("Key multi-dimensional points (e.g., Bio-Psycho-Social or Ethical-Legal-Social)."),
+  professorFeedback: z.string().describe("Detailed, professor-style explanation, corrections, and guidance."),
+  suggestedRewrite: z.string().describe("A Masterclass version of the student's essay."),
   error: z.string().optional(),
 });
 export type EvaluateEssayFeedbackOutput = z.infer<typeof EvaluateEssayFeedbackOutputSchema>;
@@ -35,34 +31,34 @@ export async function evaluateEssayFeedback(input: EvaluateEssayFeedbackInput): 
   
   if (!apiKey) return { 
     error: "AI Key is missing.", 
-    score: 0, 
-    feedbackBySection: { introduction: "", mainBody: "", conclusion: "", grammarAndVocabulary: "" }, 
-    strengths: [], 
-    weaknesses: [], 
-    suggestedRewrite: "", 
-    modelAnswerOutline: [] 
+    dataBlock: { marks: 0, coins: 0, status: 'Needs Practice' },
+    professorFeedback: "",
+    suggestedRewrite: ""
   };
 
-  const isUPSC = input.academicLevel.includes("UPSC") || input.academicLevel.includes("Competitive");
+  const systemPrompt = `You are the "Master Professor & Evaluator" for Mentur AI.
+Your goal is to provide high-quality educational feedback while managing a reward system.
 
-  const systemPrompt = `You are an Elite Academic Mentor and Senior Professor at Mentur AI.
-Your task is to evaluate a student's essay for the '${input.academicLevel}' level with extreme rigor.
+STRICT OPERATING RULES:
+1. ROLE: Act as a supportive but strict academic professor.
+2. EVALUATION LOGIC (ESSAYS):
+   - Evaluate based on Clarity, Logic, and Depth.
+   - Award 50 to 100 coins based on quality.
+   - If the student provides a multi-dimensional perspective (e.g., Bio-Psycho-Social), award higher coins.
+3. OUTPUT FORMAT: You must return valid JSON that includes a dataBlock and professorFeedback.
 
-STRICT MARKING RULES:
-1. Do not give high scores (8+) unless the answer is truly exceptional. Give 5/10 if the depth is missing.
-2. If the topic is philosophical, analyze the depth of thought across Biological, Psychological, and Social factors.
-3. ${isUPSC ? "This is a UPSC level evaluation. Look for 'Critical Thinking', 'Ethical Reasoning', and 'Balanced Perspective'." : "Focus on structural integrity and logical clarity."}
-4. OCR Handling: If parts of the text (extracted from handwriting) seem unclear, mention it instead of guessing.
+DATA_BLOCK STRUCTURE:
+- Marks: [Score percentage]
+- Coins: [50-100]
+- Status: [Mastered/Improving/Needs Practice]
 
-EVALUATION CRITERIA:
-- Introduction: Does it have a strong hook and a clear roadmap?
-- Main Body: Are the points multidimensional? Is there deep insight?
-- Conclusion: Does it synthesize the argument or just repeat it?
-- Masterclass Rewrite: Take the student's original points and rewrite them with sophisticated vocabulary, better structure (Intro, Body, Conclusion), and deeper backing.
-
-Return ONLY valid JSON according to the provided schema.`;
+PROFESSOR_FEEDBACK:
+- Be a strict marker. Don't give high scores easily.
+- Explain WHY an answer is wrong or lacking depth.
+- Include a specific 'Masterclass Rewrite' in the suggestedRewrite field.`;
 
   const userPrompt = `Topic: ${input.topic}
+Level: ${input.academicLevel}
 Question: ${input.question || 'Self-Practice'}
 
 Student's Essay:
@@ -70,20 +66,7 @@ Student's Essay:
 ${input.essayText}
 """
 
-JSON Schema required:
-{
-  "score": number,
-  "feedbackBySection": {
-    "introduction": "string",
-    "mainBody": "string",
-    "conclusion": "string",
-    "grammarAndVocabulary": "string"
-  },
-  "strengths": ["string"],
-  "weaknesses": ["string"],
-  "suggestedRewrite": "string",
-  "modelAnswerOutline": ["string"]
-}`;
+Return JSON format matching the schema.`;
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -103,25 +86,19 @@ JSON Schema required:
       }),
     });
 
-    if (!response.ok) {
-      throw new Error(`Groq API Error: ${response.statusText}`);
-    }
+    if (!response.ok) throw new Error(`Groq Error: ${response.statusText}`);
 
     const data = await response.json();
-    const content = data.choices[0].message.content;
-    const parsed = JSON.parse(content);
+    const content = JSON.parse(data.choices[0].message.content);
     
-    return EvaluateEssayFeedbackOutputSchema.parse(parsed);
+    return EvaluateEssayFeedbackOutputSchema.parse(content);
   } catch (error: any) {
-    console.error("Evaluation Flow Error:", error);
+    console.error("Evaluation Error:", error);
     return { 
-      error: "Professor is currently busy or connection failed. Please try again.", 
-      score: 0, 
-      feedbackBySection: { introduction: "", mainBody: "", conclusion: "", grammarAndVocabulary: "" }, 
-      strengths: [], 
-      weaknesses: [], 
-      suggestedRewrite: "", 
-      modelAnswerOutline: [] 
+      error: "Professor is busy. Please try again.", 
+      dataBlock: { marks: 0, coins: 0, status: 'Needs Practice' },
+      professorFeedback: "",
+      suggestedRewrite: ""
     };
   }
 }
