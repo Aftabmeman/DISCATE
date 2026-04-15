@@ -21,7 +21,8 @@ import {
   Trophy,
   CheckCircle2,
   X,
-  ImageIcon
+  ImageIcon,
+  Cpu
 } from "lucide-react"
 import { 
   Select, 
@@ -212,6 +213,13 @@ export default function WritingWizardPage() {
                  <h2 className="text-xl font-black">{result.evaluationData.status}</h2>
               </div>
               
+              {result.totalTokens && (
+                <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-slate-400 bg-slate-50 dark:bg-slate-950 p-2 rounded-xl">
+                  <Cpu className="h-3 w-3" />
+                  Engine Stats: {result.totalTokens} Tokens
+                </div>
+              )}
+
               <Accordion type="single" collapsible className="w-full space-y-3">
                 <AccordionItem value="feedback" className="border-none">
                    <AccordionTrigger className="h-14 bg-slate-50 dark:bg-slate-950 px-6 rounded-2xl hover:no-underline font-bold text-sm">PROFESSOR_FEEDBACK</AccordionTrigger>

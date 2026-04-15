@@ -18,15 +18,16 @@ export type EvaluateEssayFeedbackInput = z.infer<typeof EvaluateEssayFeedbackInp
 const EvaluateEssayFeedbackOutputSchema = z.object({
   evaluationData: z.object({
     type: z.literal('Essay'),
-    questionsTotal: z.number().nullable(),
-    questionsCorrect: z.number().nullable(),
-    accuracyPercent: z.number().nullable(),
+    questionsTotal: z.number().nullable().optional(),
+    questionsCorrect: z.number().nullable().optional(),
+    accuracyPercent: z.number().nullable().optional(),
     essayScoreRaw: z.number(),
     coinsEarned: z.number(),
     status: z.enum(['Mastered', 'Improving', 'Needs Practice']),
   }),
   professorFeedback: z.string(),
   suggestedRewrite: z.string(),
+  totalTokens: z.number().optional(),
   error: z.string().optional(),
 });
 export type EvaluateEssayFeedbackOutput = z.infer<typeof EvaluateEssayFeedbackOutputSchema>;
@@ -103,9 +104,11 @@ Provide a balanced evaluation based on the Mentor Professor criteria.`;
 
     const data = await response.json();
     const content = JSON.parse(data.choices[0].message.content);
+    const usage = data.usage?.total_tokens || 0;
     
     return EvaluateEssayFeedbackOutputSchema.parse({
       ...content,
+      totalTokens: usage,
       evaluationData: {
         ...content.evaluationData,
         type: 'Essay',

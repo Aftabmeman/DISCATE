@@ -25,7 +25,7 @@ import {
   SendHorizontal,
   Coins,
   X,
-  ImageIcon
+  Cpu
 } from "lucide-react"
 import { 
   Select, 
@@ -601,6 +601,13 @@ export default function AssessmentsPage() {
                 </div>
               ) : null)}
             </div>
+
+            {result?.totalTokens && (
+              <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-slate-400 bg-slate-50 dark:bg-slate-950 p-2 rounded-xl">
+                <Cpu className="h-3 w-3" />
+                Engine Stats: {result.totalTokens} Tokens Used
+              </div>
+            )}
 
             <Button onClick={startJourney} className="w-full h-18 rounded-3xl bg-primary text-white font-black text-lg shadow-xl">
               {completedModes.length > 0 ? "Continue Session" : "Start Session"}

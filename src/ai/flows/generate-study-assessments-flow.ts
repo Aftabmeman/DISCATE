@@ -40,6 +40,7 @@ const GenerateStudyAssessmentsOutputSchema = z.object({
   mcqs: z.array(MCQSchema).optional(),
   flashcards: z.array(FlashcardSchema).optional(),
   essayPrompts: z.array(EssayPromptSchema).optional(),
+  totalTokens: z.number().optional(),
   error: z.string().optional(),
 });
 export type GenerateStudyAssessmentsOutput = z.infer<typeof GenerateStudyAssessmentsOutputSchema>;
@@ -49,7 +50,6 @@ export async function generateStudyAssessments(input: GenerateStudyAssessmentsIn
   
   if (!apiKey) return { error: "AI Key is missing." };
   
-  // ZERO REJECTION: Reduced to 30 chars
   if (input.studyMaterial.length < 30) {
     return { error: "Content bahut chota hai. Please add at least a few lines to start." };
   }
@@ -106,7 +106,13 @@ JSON Schema:
     }
     
     const data = await response.json();
-    return GenerateStudyAssessmentsOutputSchema.parse(JSON.parse(data.choices[0].message.content));
+    const content = JSON.parse(data.choices[0].message.content);
+    const usage = data.usage?.total_tokens || 0;
+    
+    return GenerateStudyAssessmentsOutputSchema.parse({
+      ...content,
+      totalTokens: usage
+    });
   } catch (error: any) {
     console.error("AI Generation Error:", error.message);
     return { error: "Failed to generate your learning journey. Please try again or check your content." };
