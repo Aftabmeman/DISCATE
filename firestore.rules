@@ -4,7 +4,7 @@ service cloud.firestore {
 
     /**
      * FIRESTORE SECURITY RULES
-     * Simplified to a robust user-siloed architecture.
+     * Simplified to a robust user-siloed architecture using recursive wildcards.
      */
 
     function isSignedIn() {
