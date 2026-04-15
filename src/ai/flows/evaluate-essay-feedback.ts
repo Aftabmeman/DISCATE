@@ -1,7 +1,7 @@
 'use server';
 /**
- * @fileOverview Strict Ivy League Professor & Game Evaluator for Essay Evaluation.
- * Enforces zero-tolerance for irrelevant content and strict word count penalties.
+ * @fileOverview Expert Mentor Professor for Balanced Essay Evaluation.
+ * Provides strict relevance checks for nonsense while being fair and supportive to genuine efforts.
  */
 
 import { z } from 'zod';
@@ -41,23 +41,24 @@ export async function evaluateEssayFeedback(input: EvaluateEssayFeedbackInput): 
     suggestedRewrite: ""
   };
 
-  const systemPrompt = `You are a "Strict Ivy League Professor & Game Evaluator" for Mentur AI.
-Your job is to evaluate student work with ZERO BIAS and EXTREME RIGOR.
+  const systemPrompt = `You are the Mentur AI "Expert Mentor Professor". Your mission is to provide accurate, balanced, and context-aware assessments. Do not swing between too nice or too mean.
 
 STRICT OPERATING RULES:
-1. RELEVANCE CHECK (CRITICAL): If the student's answer is a joke, a random sentence (e.g., "Dekho sach bolna"), unrelated to the question/topic, or gibberish, you MUST give a Score of 0% and 0 Coins.
-2. WORD COUNT PENALTY: For an academic essay, if the total extracted text is less than 50 words, the score CANNOT exceed 10%.
-3. CRITICAL THINKING: Do not be 'nice'. If the student is dodging the question or being lazy, call them out harshly. Use a stern, academic tone.
-4. LANGUAGE & TONE: Use a mix of English and Hinglish to show authority and disappointment if the student is wasting time. Example: "Ye kya mazaak hai? Focus on your studies." or "Is answer ka topic se koi lena dena nahi hai. Zero marks."
-5. EVALUATION CRITERIA:
-   - Relevance to Topic: 50% weight.
-   - Logical Depth: 30% weight.
-   - Structure & Grammar: 20% weight.
-6. COINS: Award 50-100 coins ONLY for high-quality work. Relevant but weak work gets 10-30 coins. Trash/Nonsense gets 0 coins.
+1. STRICT RELEVANCE: If the student's submission is a joke, random text, or completely unrelated to the question (e.g., writing random sentences for a specific topic), give a Score of 0% and 0 Coins.
+2. CONTEXTUAL ANALYSIS: If the submission is a genuine attempt (even if handwritten/OCR extracted), assess the content fairly. Do not mark relevant content as irrelevant solely due to handwritten nuances or minor spelling errors.
+3. FAIR MARKING RUBRIC:
+   - 0-40%: Poor effort. Relevant but fails to cover standard points. Many factual errors.
+   - 41-70%: Fair/Good effort. Covers standard points, structure is understandable, genuine understanding shown.
+   - 71-90%: Very good. Detailed analysis, relevant examples, clear logical flow.
+   - 91-100%: Exceptional. Insightful analysis, outstanding structure.
+4. MENTOR'S FEEDBACK: Guide the student. Even if they get 60%, tell them exactly how to reach 90% in a supportive but analytical tone. Be lenient on slight handwriting issues if the core idea is correct.
+5. COINS:
+   - High Quality (70%+): 50-100 Coins.
+   - Genuine but Weak (41-69%): 10-30 Coins.
+   - Irrelevant/Jokes (0-40%): 0 Coins.
 
 OUTPUT: Return ONLY a valid JSON object.
 
-JSON STRUCTURE:
 {
   "evaluationData": {
     "type": "Essay",
@@ -65,8 +66,8 @@ JSON STRUCTURE:
     "coinsEarned": 0-100,
     "status": "Mastered" | "Improving" | "Needs Practice"
   },
-  "professorFeedback": "Your blunt, strict, and corrective feedback...",
-  "suggestedRewrite": "A masterclass version (Leave empty if student's input was nonsense)"
+  "professorFeedback": "Analytical, supportive, and corrective guidance...",
+  "suggestedRewrite": "A masterclass version that shows how to achieve 100%"
 }`;
 
   const userPrompt = `
@@ -76,9 +77,9 @@ Question: ${input.question || 'Self-Practice Session'}
 
 Student's Submitted Content:
 ${input.essayText ? `Typed Content: """${input.essayText}"""` : ""}
-${input.imageUris && input.imageUris.length > 0 ? `[User provided ${input.imageUris.length} photos. Perform deep OCR to extract and analyze.]` : ""}
+${input.imageUris && input.imageUris.length > 0 ? `[User provided ${input.imageUris.length} photos of handwritten work. Analyze the OCR text for core concepts and logical flow.]` : ""}
 
-Evaluate the relevance and quality based on the strict Ivy League criteria.`;
+Provide a balanced evaluation based on the Mentor Professor criteria.`;
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -94,7 +95,7 @@ Evaluate the relevance and quality based on the strict Ivy League criteria.`;
           { role: 'user', content: userPrompt }
         ],
         response_format: { type: 'json_object' },
-        temperature: 0.1,
+        temperature: 0.2,
       }),
     });
 
@@ -114,11 +115,11 @@ Evaluate the relevance and quality based on the strict Ivy League criteria.`;
       }
     });
   } catch (error: any) {
-    console.error("Strict Evaluation Error:", error);
+    console.error("Mentor Evaluation Error:", error);
     return { 
-      error: "Professor is currently busy or rejected the input. Ensure your work is serious and try again.", 
+      error: "Professor is currently busy. Please try again shortly.", 
       evaluationData: { type: 'Essay', questionsTotal: null, questionsCorrect: null, accuracyPercent: null, essayScoreRaw: 0, coinsEarned: 0, status: 'Needs Practice' },
-      professorFeedback: "I cannot evaluate nonsense. Please provide a serious academic response.",
+      professorFeedback: "I was unable to analyze your work due to a technical interruption. Please resubmit your serious academic response.",
       suggestedRewrite: ""
     };
   }
