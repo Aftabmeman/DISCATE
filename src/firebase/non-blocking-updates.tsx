@@ -34,18 +34,20 @@ export function setDocumentNonBlocking(docRef: DocumentReference, data: any, opt
 
 /**
  * Increments user coins and assessment counts in Firestore.
+ * This satisfies the 'create' and 'update' security rules.
  */
-export function incrementUserStats(db: Firestore, userId: string, coins: number) {
-  const profileRef = doc(db, 'users', userId, 'profile', userId); 
-  // IMPORTANT: We include 'id: userId' to satisfy the 'create' security rule
-  // which requires request.resource.data.id == userId
+export function incrementUserStats(db: Firestore, userId: string, coins: number, isAssessment: boolean = true) {
+  // Using a consistent path for profile stats
+  const profileRef = doc(db, 'users', userId, 'profile', 'stats'); 
+  
   setDoc(profileRef, {
     id: userId,
     totalCoins: increment(coins),
-    assessmentsDone: increment(1),
+    assessmentsDone: isAssessment ? increment(1) : increment(0),
     updatedAt: new Date().toISOString()
   }, { merge: true }).catch(error => {
-    console.error("Progress update failed:", error);
+    // Silently log or emit error
+    console.warn("Progress update failed silently:", error);
   });
 }
 

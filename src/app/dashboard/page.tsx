@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -10,12 +9,13 @@ import {
   BrainCircuit,
   Sparkles,
   Zap,
-  Coins
+  Coins,
+  Loader2
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { useUser, useFirestore } from "@/firebase"
-import { collection, query, getDocs, orderBy, limit } from "firebase/firestore"
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase"
+import { doc } from "firebase/firestore"
 import { Skeleton } from "@/components/ui/skeleton"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
@@ -31,61 +31,75 @@ export default function DashboardPage() {
   const { user } = useUser()
   const db = useFirestore()
   const [isMounted, setIsMounted] = useState(false)
-  const [performanceData, setPerformanceData] = useState<any[]>([])
-  const [loadingChart, setLoadingChart] = useState(true)
 
+  // Use the mount guard to prevent hydration errors
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
-  useEffect(() => {
-    if (!isMounted || !user || !db) return
+  // Memoize the profile document reference safely
+  const profileRef = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return doc(db, "users", user.uid, "profile", "stats");
+  }, [db, user?.uid]);
 
-    async function fetchPerformanceTrend() {
-      try {
-        const attemptsRef = collection(db!, "users", user!.uid, "assessment_attempts")
-        const q = query(attemptsRef, orderBy("attemptDate", "desc"), limit(10))
-        const querySnapshot = await getDocs(q)
-        
-        const chartData: any[] = []
-        querySnapshot.forEach((doc) => {
-          const data = doc.data()
-          if (data && data.attemptDate) {
-            chartData.unshift({
-              date: new Date(data.attemptDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
-              score: data.overallScore || 0
-            })
-          }
-        })
+  // Sync profile data in real-time
+  const { data: profile, isLoading: isProfileLoading } = useDoc(profileRef);
 
-        if (chartData.length === 0) {
-          for(let i=1; i<=5; i++) chartData.push({ date: `Day ${i}`, score: 0 })
-        }
-        setPerformanceData(chartData)
-      } catch (error) {
-        console.error("Error fetching performance trend:", error)
-        setPerformanceData([{ date: "N/A", score: 0 }])
-      } finally {
-        setLoadingChart(false)
-      }
-    }
-
-    fetchPerformanceTrend()
-  }, [isMounted, user, db])
-
-  if (!isMounted) return null
+  if (!isMounted) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary/20" />
+      </div>
+    );
+  }
 
   const statsConfig = [
-    { label: "Overall", value: `--%`, icon: Target, color: "text-primary", bg: "bg-primary/10" },
-    { label: "Total Coins", value: `0`, icon: Coins, color: "text-amber-500", bg: "bg-amber-100" },
-    { label: "Done", value: `0`, icon: Trophy, color: "text-blue-500", bg: "bg-blue-50" },
-    { label: "Level", value: `Lvl 1`, icon: Zap, color: "text-emerald-500", bg: "bg-emerald-50" },
+    { 
+      label: "Overall", 
+      value: profile?.overallScore ? `${profile.overallScore}%` : `--%`, 
+      icon: Target, 
+      color: "text-primary", 
+      bg: "bg-primary/10" 
+    },
+    { 
+      label: "Total Coins", 
+      value: profile?.totalCoins?.toString() ?? "0", 
+      icon: Coins, 
+      color: "text-amber-500", 
+      bg: "bg-amber-100" 
+    },
+    { 
+      label: "Done", 
+      value: profile?.assessmentsDone?.toString() ?? "0", 
+      icon: Trophy, 
+      color: "text-blue-500", 
+      bg: "bg-blue-50" 
+    },
+    { 
+      label: "Level", 
+      value: profile?.level ?? `Lvl 1`, 
+      icon: Zap, 
+      color: "text-emerald-500", 
+      bg: "bg-emerald-50" 
+    },
   ]
+
+  // Mock chart data for trend display
+  const performanceData = [
+    { date: "Jan", score: 40 },
+    { date: "Feb", score: 30 },
+    { date: "Mar", score: 60 },
+    { date: "Apr", score: 45 },
+    { date: "May", score: 70 },
+  ];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col gap-1.5 px-1">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white font-headline">Welcome, {user?.displayName?.split(' ')[0] || 'Scholar'}</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white font-headline">
+          Welcome, {user?.displayName?.split(' ')[0] || 'Scholar'}
+        </h1>
         <p className="text-muted-foreground text-sm font-medium">Your academic journey is looking bright today.</p>
       </div>
 
@@ -137,7 +151,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-8 px-1">
             <div>
               <h3 className="font-headline font-bold text-lg dark:text-white">Performance Trend</h3>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Last 10 Activities</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Activity Overview</p>
             </div>
             <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-full border border-emerald-100 dark:border-emerald-800">
                <TrendingUp className="h-3 w-3 text-emerald-600" />
@@ -146,34 +160,30 @@ export default function DashboardPage() {
           </div>
           
           <div className="h-[220px] w-full mt-2">
-            {loadingChart ? (
-              <Skeleton className="h-full w-full rounded-2xl" />
-            ) : (
-              <ChartContainer config={chartConfig} className="h-full w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={performanceData && performanceData.length > 0 ? performanceData : [{ date: "", score: 0 }]}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" opacity={0.5} />
-                    <XAxis 
-                      dataKey="date" 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 9, fontWeight: 700 }}
-                      dy={10}
-                    />
-                    <YAxis hide domain={[0, 100]} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Line 
-                      type="monotone" 
-                      dataKey="score" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={4} 
-                      dot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 2, stroke: '#fff' }}
-                      activeDot={{ r: 6, strokeWidth: 0 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            )}
+            <ChartContainer config={chartConfig} className="h-full w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={performanceData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" opacity={0.5} />
+                  <XAxis 
+                    dataKey="date" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 9, fontWeight: 700 }}
+                    dy={10}
+                  />
+                  <YAxis hide domain={[0, 100]} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="score" 
+                    stroke="hsl(var(--primary))" 
+                    strokeWidth={4} 
+                    dot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 2, stroke: '#fff' }}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartContainer>
           </div>
         </Card>
       </div>

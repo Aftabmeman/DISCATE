@@ -51,6 +51,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import confetti from 'canvas-confetti'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { useUser, useFirestore } from "@/firebase"
+import { incrementUserStats } from "@/firebase/non-blocking-updates"
 
 export const maxDuration = 60;
 
@@ -61,6 +63,8 @@ const academicLevels = [
 ];
 
 export default function AssessmentsPage() {
+  const { user } = useUser()
+  const db = useFirestore()
   const { toast } = useToast()
   
   const [wizardStep, setWizardStep] = useState(1)
@@ -120,6 +124,11 @@ export default function AssessmentsPage() {
     let coinsEarned = 0;
     if (currentMode === 'MCQ') coinsEarned = mcqCorrectCount * 5;
     if (currentMode === 'Flashcard') coinsEarned = (result?.flashcards?.length || 0) * 2;
+
+    // Persist progress to Firebase
+    if (user && db) {
+      incrementUserStats(db, user.uid, coinsEarned);
+    }
 
     toast({ 
       title: `${currentMode} Completed!`, 
@@ -207,6 +216,12 @@ export default function AssessmentsPage() {
         toast({ title: "Analysis Failed", description: evaluation.error, variant: "destructive" })
       } else {
         setEssayResult(evaluation)
+        
+        // Persist progress to Firebase for Essay
+        if (user && db && evaluation.evaluationData?.coinsEarned) {
+          incrementUserStats(db, user.uid, evaluation.evaluationData.coinsEarned);
+        }
+
         playSuccessSound()
         confetti({ particleCount: 100, spread: 60, origin: { y: 0.8 } })
       }
