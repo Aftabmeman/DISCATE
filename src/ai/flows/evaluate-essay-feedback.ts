@@ -1,7 +1,7 @@
 'use server';
 /**
- * @fileOverview Master Professor & Game Evaluator for Essay Evaluation.
- * Now supports Vision/OCR for handwritten essay analysis.
+ * @fileOverview Strict Ivy League Professor & Game Evaluator for Essay Evaluation.
+ * Enforces zero-tolerance for irrelevant content and strict word count penalties.
  */
 
 import { z } from 'zod';
@@ -41,43 +41,44 @@ export async function evaluateEssayFeedback(input: EvaluateEssayFeedbackInput): 
     suggestedRewrite: ""
   };
 
-  const systemPrompt = `You are the "Master Professor & Game Evaluator" for Mentur AI. 
-Your role is to grade user essay attempts (typed or handwritten via OCR) with strict academic standards.
+  const systemPrompt = `You are a "Strict Ivy League Professor & Game Evaluator" for Mentur AI.
+Your job is to evaluate student work with ZERO BIAS and EXTREME RIGOR.
 
 STRICT OPERATING RULES:
-1. ROLE: Senior academic professor.
-2. EVALUATION LOGIC:
-   - If images are provided, perform deep OCR to extract the text first.
-   - Evaluate based on Clarity, Logic, and Depth.
-   - Award 50 to 100 coins based on merit.
-   - If 'UPSC' or 'Competitive' level is mentioned, check for 'Critical Thinking'.
-3. OUTPUT: Return ONLY a valid JSON object.
+1. RELEVANCE CHECK (CRITICAL): If the student's answer is a joke, a random sentence (e.g., "Dekho sach bolna"), unrelated to the question/topic, or gibberish, you MUST give a Score of 0% and 0 Coins.
+2. WORD COUNT PENALTY: For an academic essay, if the total extracted text is less than 50 words, the score CANNOT exceed 10%.
+3. CRITICAL THINKING: Do not be 'nice'. If the student is dodging the question or being lazy, call them out harshly. Use a stern, academic tone.
+4. LANGUAGE & TONE: Use a mix of English and Hinglish to show authority and disappointment if the student is wasting time. Example: "Ye kya mazaak hai? Focus on your studies." or "Is answer ka topic se koi lena dena nahi hai. Zero marks."
+5. EVALUATION CRITERIA:
+   - Relevance to Topic: 50% weight.
+   - Logical Depth: 30% weight.
+   - Structure & Grammar: 20% weight.
+6. COINS: Award 50-100 coins ONLY for high-quality work. Relevant but weak work gets 10-30 coins. Trash/Nonsense gets 0 coins.
+
+OUTPUT: Return ONLY a valid JSON object.
 
 JSON STRUCTURE:
 {
   "evaluationData": {
     "type": "Essay",
-    "questionsTotal": null,
-    "questionsCorrect": null,
-    "accuracyPercent": null,
     "essayScoreRaw": 0-100,
-    "coinsEarned": 50-100,
-    "status": "Mastered/Improving/Needs Practice"
+    "coinsEarned": 0-100,
+    "status": "Mastered" | "Improving" | "Needs Practice"
   },
-  "professorFeedback": "Detailed academic feedback...",
-  "suggestedRewrite": "A masterclass version..."
+  "professorFeedback": "Your blunt, strict, and corrective feedback...",
+  "suggestedRewrite": "A masterclass version (Leave empty if student's input was nonsense)"
 }`;
 
   const userPrompt = `
 Topic: ${input.topic}
-Level: ${input.academicLevel}
-Question: ${input.question || 'Self-Practice'}
+Academic Level: ${input.academicLevel}
+Question: ${input.question || 'Self-Practice Session'}
 
-Student's Content:
-${input.essayText ? `Typed Text: """${input.essayText}"""` : ""}
-${input.imageUris && input.imageUris.length > 0 ? `[User provided ${input.imageUris.length} photos of handwritten work. Analyze the visible logic and text.]` : ""}
+Student's Submitted Content:
+${input.essayText ? `Typed Content: """${input.essayText}"""` : ""}
+${input.imageUris && input.imageUris.length > 0 ? `[User provided ${input.imageUris.length} photos. Perform deep OCR to extract and analyze.]` : ""}
 
-Return the evaluation JSON.`;
+Evaluate the relevance and quality based on the strict Ivy League criteria.`;
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -93,32 +94,31 @@ Return the evaluation JSON.`;
           { role: 'user', content: userPrompt }
         ],
         response_format: { type: 'json_object' },
-        temperature: 0.2,
+        temperature: 0.1,
       }),
     });
 
     if (!response.ok) throw new Error(`Groq Error: ${response.statusText}`);
 
     const data = await response.json();
-    const rawContent = data.choices[0].message.content;
-    const content = JSON.parse(rawContent);
+    const content = JSON.parse(data.choices[0].message.content);
     
-    // Ensure the structure matches what Zod expects
     return EvaluateEssayFeedbackOutputSchema.parse({
       ...content,
       evaluationData: {
         ...content.evaluationData,
-        questionsTotal: content.evaluationData.questionsTotal ?? null,
-        questionsCorrect: content.evaluationData.questionsCorrect ?? null,
-        accuracyPercent: content.evaluationData.accuracyPercent ?? null,
+        type: 'Essay',
+        questionsTotal: null,
+        questionsCorrect: null,
+        accuracyPercent: null,
       }
     });
   } catch (error: any) {
-    console.error("Evaluation Error:", error);
+    console.error("Strict Evaluation Error:", error);
     return { 
-      error: "Professor is currently busy. Please try smaller photos or check your connection.", 
+      error: "Professor is currently busy or rejected the input. Ensure your work is serious and try again.", 
       evaluationData: { type: 'Essay', questionsTotal: null, questionsCorrect: null, accuracyPercent: null, essayScoreRaw: 0, coinsEarned: 0, status: 'Needs Practice' },
-      professorFeedback: "",
+      professorFeedback: "I cannot evaluate nonsense. Please provide a serious academic response.",
       suggestedRewrite: ""
     };
   }
