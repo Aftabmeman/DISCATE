@@ -1,0 +1,8 @@
+[{
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.menturai.app",
+      "sha256_cert_fingerprints": ["4E:DB:7F:D0:CF:56:CE:03:46:EC:25:DB:14:DF:B7:8B:32:8B:69:DB:91:74:55:63:31:62:B0:AB:B8:56:57:FF"]
+    }
+  }]
