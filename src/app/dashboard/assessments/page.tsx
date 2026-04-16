@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { 
@@ -18,7 +18,6 @@ import {
   ArrowRight,
   ChevronLeft,
   Trophy,
-  Activity,
   Zap,
   Globe,
   Target
@@ -26,6 +25,7 @@ import {
 import { Slider } from "@/components/ui/slider"
 import { generateStudyAssessments, type GenerateStudyAssessmentsOutput } from "@/ai/flows/generate-study-assessments-flow"
 import { evaluateEssayFeedback, type EvaluateEssayFeedbackOutput } from "@/ai/flows/evaluate-essay-feedback"
+import { parseFileToText } from "@/app/actions/file-parser"
 import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -52,6 +52,7 @@ export default function AssessmentsPage() {
   const { user } = useUser()
   const db = useFirestore()
   const { toast } = useToast()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
   const profileRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -70,6 +71,7 @@ export default function AssessmentsPage() {
   const [showLangConfirm, setShowLangConfirm] = useState(false)
   
   const [isLoading, setIsLoading] = useState(false)
+  const [isParsing, setIsParsing] = useState(false)
   const [result, setResult] = useState<GenerateStudyAssessmentsOutput | null>(null)
   const [completedModes, setCompletedModes] = useState<string[]>([])
   
@@ -88,8 +90,8 @@ export default function AssessmentsPage() {
     }
   }, [profile]);
 
-  // Dynamic question count adjustment based on type
   useEffect(() => {
+    // Dynamic Limits: 1-5 for Essay, 10-30 for others
     if (questionType === "Essay") {
       if (questionCount > 5) setQuestionCount(5);
       if (questionCount < 1) setQuestionCount(1);
@@ -99,9 +101,33 @@ export default function AssessmentsPage() {
     }
   }, [questionType, questionCount]);
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsParsing(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await parseFileToText(formData);
+      if (response.error) {
+        toast({ title: "Parsing Failed", description: response.error, variant: "destructive" });
+      } else if (response.text) {
+        setMaterial(response.text);
+        toast({ title: "Resource Loaded", description: "Material has been ingested successfully." });
+      }
+    } catch (e) {
+      toast({ title: "Error", description: "Could not parse the file. Please try a different format.", variant: "destructive" });
+    } finally {
+      setIsParsing(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const handleGenerate = async () => {
     if (material.length < 30) {
-      toast({ title: "Content Short", description: "Please add at least 30 characters.", variant: "destructive" });
+      toast({ title: "Content Short", description: "Please add at least 30 characters of material.", variant: "destructive" });
       return;
     }
     setIsLoading(true)
@@ -121,7 +147,7 @@ export default function AssessmentsPage() {
         setResult(assessments)
       }
     } catch (error: any) {
-      toast({ title: "Error", description: "Generation failed.", variant: "destructive" })
+      toast({ title: "Error", description: "Generation failed. Please check your connection.", variant: "destructive" })
     } finally {
       setIsLoading(false)
     }
@@ -153,7 +179,7 @@ export default function AssessmentsPage() {
         confetti({ particleCount: 100, spread: 60 });
       }
     } catch (e) {
-      toast({ title: "Error", description: "Professor is busy.", variant: "destructive" })
+      toast({ title: "Error", description: "Professor is busy. Please try again.", variant: "destructive" })
     } finally {
       setIsAnalyzingEssay(false)
     }
@@ -223,17 +249,34 @@ export default function AssessmentsPage() {
               <div className="space-y-6 animate-in slide-in-from-right-4">
                 <div className="flex items-center justify-between">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Step 1: Study Material</label>
-                  <Button variant="outline" size="sm" className="h-9 rounded-full text-[10px] font-bold border-dashed border-primary/40 text-primary hover:bg-primary/5">
-                    <FileUp className="h-4 w-4 mr-2" /> Upload Resource
-                  </Button>
+                  <div>
+                    <input 
+                      type="file" 
+                      accept=".txt,.pdf,.docx" 
+                      ref={fileInputRef} 
+                      className="hidden" 
+                      onChange={handleFileUpload}
+                    />
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      size="sm" 
+                      disabled={isParsing}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="h-10 rounded-2xl text-[10px] font-bold border-dashed border-primary/40 text-primary hover:bg-primary/5 px-6"
+                    >
+                      {isParsing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FileUp className="h-4 w-4 mr-2" />}
+                      {isParsing ? "Parsing Elite Content..." : "Upload Resource (PDF, DOCX, TXT)"}
+                    </Button>
+                  </div>
                 </div>
                 <textarea 
                   className="w-full min-h-[250px] rounded-[32px] bg-slate-50 dark:bg-slate-950 border-2 border-transparent focus:border-primary/20 p-8 text-sm dark:text-white resize-none leading-relaxed transition-all outline-none"
-                  placeholder="Paste the material you want to practice here..."
+                  placeholder="Paste material or upload a file above..."
                   value={material}
                   onChange={(e) => setMaterial(e.target.value)}
                 />
-                <Button onClick={() => setStep(2)} disabled={material.trim().length < 30} className="w-full h-16 rounded-2xl bg-primary text-white font-bold text-lg">
+                <Button onClick={() => setStep(2)} disabled={material.trim().length < 30 || isParsing} className="w-full h-16 rounded-2xl bg-primary text-white font-bold text-lg">
                   Next Step <ChevronRight className="ml-2 h-5 w-5" />
                 </Button>
               </div>
@@ -319,7 +362,7 @@ export default function AssessmentsPage() {
           </div>
           <div className="space-y-3">
             <h2 className="text-3xl font-black font-headline">Evaluation Language</h2>
-            <p className="text-slate-500 font-medium">Do you want the AI to give feedback in your profile language ({preferredLanguage}) or something else?</p>
+            <p className="text-slate-500 font-medium">Do you want the AI to give feedback in your profile language ({preferredLanguage})?</p>
           </div>
           <div className="space-y-6">
             <Select value={preferredLanguage} onValueChange={setPreferredLanguage}>
@@ -438,10 +481,6 @@ export default function AssessmentsPage() {
                             <Coins className="h-8 w-8 text-amber-600 dark:text-amber-400" />
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest justify-center sm:justify-start">
-                          <Activity className="h-4 w-4 text-primary" />
-                          Performance Metrics Active
-                        </div>
                       </div>
                     </div>
 
@@ -463,19 +502,12 @@ export default function AssessmentsPage() {
                     </div>
 
                     <div className="space-y-4 mb-12">
-                      <div className="flex items-center gap-3 px-4">
-                        <Badge className="bg-primary/10 text-primary uppercase font-black text-[9px] px-3 py-1 rounded-full">Professor's Remark</Badge>
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">In {preferredLanguage} Style</span>
-                      </div>
                       <div className="p-10 bg-slate-50 dark:bg-slate-800 rounded-[40px] italic text-xl text-slate-800 dark:text-slate-100 leading-relaxed border-l-8 border-primary shadow-sm">
                         " {essayResult.professorFeedback} "
                       </div>
                     </div>
 
                     <div className="space-y-6">
-                      <div className="flex items-center gap-3 px-4">
-                        <Badge className="bg-slate-900 text-white uppercase font-black text-[9px] px-3 py-1 rounded-full">Masterclass Model Answer</Badge>
-                      </div>
                       <div className="p-10 bg-slate-900 dark:bg-black rounded-[40px] text-slate-300 leading-relaxed text-lg italic whitespace-pre-wrap border border-white/5 shadow-2xl">
                         {essayResult.suggestedRewrite}
                       </div>
