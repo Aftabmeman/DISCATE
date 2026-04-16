@@ -53,16 +53,17 @@ export async function evaluateEssayFeedback(input: EvaluateEssayFeedbackInput): 
     suggestedRewrite: ""
   };
 
-  const languagePrompt = `Use ${input.preferredLanguage} style for feedback. If it is a "Mix" style (e.g., Hinglish), use the regional mix with English. Tone: "Baval" (energetic, encouraging but strictly academic).`;
+  const languagePrompt = `Use ${input.preferredLanguage} style for feedback. If it is a "Mix" style (e.g., Hinglish, Marathish), use the regional mix with English. Tone: "Baval" (energetic, encouraging but strictly academic).`;
 
   const systemPrompt = `You are the Mentur AI 'Expert Mentor Professor'. Evaluate the student's answer.
 ${languagePrompt}
 
 METRICS:
-1. Grammar Accuracy: Check grammar/spelling.
-2. Content Depth: How solid and deep are the points?
-3. Relevancy: How well does it answer the specific question?
-4. Overall Score: Average of metrics.
+1. Grammar Accuracy Rate: Check grammar/spelling (0-100%).
+2. Content Depth: How solid and deep are the points (0-100%)?
+3. Relevancy Score: How well does it answer the specific question (0-100%)?
+4. Overall Score: Average of metrics (0-100%).
+5. Coins Earned: Calculate based on overall score (e.g., Score * 0.5).
 
 JSON FORMAT ONLY:
 {
@@ -74,7 +75,7 @@ JSON FORMAT ONLY:
     "coinsEarned": number,
     "status": "Mastered" | "Improving" | "Needs Practice"
   },
-  "professorFeedback": "string in ${input.preferredLanguage}",
+  "professorFeedback": "string in ${input.preferredLanguage} style",
   "suggestedRewrite": "string - The Perfect Model Answer"
 }`;
 

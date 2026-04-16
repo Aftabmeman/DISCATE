@@ -11,8 +11,14 @@ export const metadata: Metadata = {
   description: 'Elevate your learning with AI-powered assessment generation and essay evaluation.',
   manifest: '/manifest.json',
   icons: {
-    icon: '/icons/192x192.png',
-    apple: '/icons/192x192.png',
+    icon: [
+      { url: '/icons/192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/512x512.png', sizes: '512x512', type: 'image/png' }
+    ],
+    apple: [
+      { url: '/icons/192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/512x512.png', sizes: '512x512', type: 'image/png' }
+    ],
   },
   appleWebApp: {
     capable: true,
@@ -41,6 +47,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <link rel="apple-touch-icon" href="/icons/192x192.png" />
+        <link rel="apple-touch-icon" sizes="512x512" href="/icons/512x512.png" />
       </head>
       <body className="font-body antialiased transition-colors duration-300">
         <FirebaseClientProvider>

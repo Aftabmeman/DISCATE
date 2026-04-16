@@ -2,7 +2,7 @@
 'use server';
 /**
  * @fileOverview High-performance academic assessment generator using Groq llama-3.1-8b-instant.
- * Robust parsing added to prevent ERESOLVE type errors.
+ * Updated to support dynamic question counts from 1 to 30.
  */
 
 import { z } from 'zod';

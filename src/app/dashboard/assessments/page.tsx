@@ -82,15 +82,22 @@ export default function AssessmentsPage() {
   const [isAnalyzingEssay, setIsAnalyzingEssay] = useState(false)
   const [essayResult, setEssayResult] = useState<EvaluateEssayFeedbackOutput | null>(null)
 
-  // Question count auto-adjustment based on mode
+  useEffect(() => {
+    if (profile?.preferredLanguage) {
+      setPreferredLanguage(profile.preferredLanguage);
+    }
+  }, [profile]);
+
+  // Dynamic question count adjustment based on type
   useEffect(() => {
     if (questionType === "Essay") {
       if (questionCount > 5) setQuestionCount(5);
       if (questionCount < 1) setQuestionCount(1);
     } else {
       if (questionCount < 10) setQuestionCount(10);
+      if (questionCount > 30) setQuestionCount(30);
     }
-  }, [questionType]);
+  }, [questionType, questionCount]);
 
   const handleGenerate = async () => {
     if (material.length < 30) {
@@ -206,7 +213,7 @@ export default function AssessmentsPage() {
     <div className="flex flex-col h-full space-y-6 pb-28 animate-in fade-in duration-500">
       <div className="px-1 text-center mb-4">
         <h1 className="text-3xl font-black font-headline tracking-tight text-slate-900 dark:text-white">Academic Practice</h1>
-        <p className="text-xs font-bold text-muted-foreground mt-1 uppercase tracking-widest">Simple & Fast Mentorship</p>
+        <p className="text-xs font-bold text-muted-foreground mt-1 uppercase tracking-widest">Sequential Mastery Wizard</p>
       </div>
 
       {!result ? (
@@ -333,7 +340,7 @@ export default function AssessmentsPage() {
           <div className="flex items-center justify-between px-2">
             <Button variant="ghost" size="sm" onClick={() => setActiveMode(null)} className="font-bold text-slate-400 hover:text-primary">Exit Session</Button>
             <div className="bg-slate-100 dark:bg-slate-800 px-5 py-2 rounded-full">
-              <span className="text-[10px] font-black uppercase trackingwidest text-slate-500">Item {currentIdx + 1} of {(activeMode === 'MCQ' ? result?.mcqs : activeMode === 'Flashcard' ? result?.flashcards : result?.essayPrompts)?.length || 0}</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Item {currentIdx + 1} of {(activeMode === 'MCQ' ? result?.mcqs : activeMode === 'Flashcard' ? result?.flashcards : result?.essayPrompts)?.length || 0}</span>
             </div>
           </div>
 
@@ -444,7 +451,7 @@ export default function AssessmentsPage() {
                         { label: "Content Depth", val: essayResult.evaluationData.contentDepthScore, icon: Trophy },
                         { label: "Relevancy Score", val: essayResult.evaluationData.relevancyScore, icon: Target }
                       ].map((stat, i) => (
-                        <div key={i} className="p-6 bg-slate-50 dark:bg-slate-950 rounded-[28px] border border-slate-100 dark:border-slate-800 space-y-4">
+                        <div key={i} className="p-6 bg-slate-50 dark:bg-slate-950 rounded-[28px] border border-slate-100 dark:border-amber-800 space-y-4">
                           <div className="flex items-center justify-between">
                             <stat.icon className="h-5 w-5 text-slate-400" />
                             <span className="text-lg font-black text-slate-900 dark:text-white">{stat.val}%</span>
