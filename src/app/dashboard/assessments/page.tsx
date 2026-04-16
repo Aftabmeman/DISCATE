@@ -247,9 +247,12 @@ export default function AssessmentsPage() {
           <CardContent className="p-10 space-y-10">
             {step === 1 && (
               <div className="space-y-6 animate-in slide-in-from-right-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Step 1: Study Material</label>
-                  <div>
+                <div className="flex flex-col space-y-4">
+                  <div className="flex flex-col space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Step 1: Study Material</label>
+                    <p className="text-[10px] font-medium text-slate-400 px-1">Upload PDF, Word or Text for elite analysis</p>
+                  </div>
+                  <div className="w-full">
                     <input 
                       type="file" 
                       accept=".txt,.pdf,.docx" 
@@ -263,20 +266,20 @@ export default function AssessmentsPage() {
                       size="sm" 
                       disabled={isParsing}
                       onClick={() => fileInputRef.current?.click()}
-                      className="h-10 rounded-2xl text-[10px] font-bold border-dashed border-primary/40 text-primary hover:bg-primary/5 px-6"
+                      className="w-full h-14 rounded-2xl text-[10px] font-bold border-dashed border-primary/40 text-primary hover:bg-primary/5 px-6 transition-all active:scale-95"
                     >
-                      {isParsing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FileUp className="h-4 w-4 mr-2" />}
+                      {isParsing ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <FileUp className="h-5 w-5 mr-2" />}
                       {isParsing ? "Parsing Elite Content..." : "Upload Resource (PDF, DOCX, TXT)"}
                     </Button>
                   </div>
                 </div>
                 <textarea 
-                  className="w-full min-h-[250px] rounded-[32px] bg-slate-50 dark:bg-slate-950 border-2 border-transparent focus:border-primary/20 p-8 text-sm dark:text-white resize-none leading-relaxed transition-all outline-none"
+                  className="w-full min-h-[250px] rounded-[32px] bg-slate-50 dark:bg-slate-950 border-2 border-transparent focus:border-primary/20 p-8 text-sm dark:text-white resize-none leading-relaxed transition-all outline-none shadow-sm"
                   placeholder="Paste material or upload a file above..."
                   value={material}
                   onChange={(e) => setMaterial(e.target.value)}
                 />
-                <Button onClick={() => setStep(2)} disabled={material.trim().length < 30 || isParsing} className="w-full h-16 rounded-2xl bg-primary text-white font-bold text-lg">
+                <Button onClick={() => setStep(2)} disabled={material.trim().length < 30 || isParsing} className="w-full h-16 rounded-2xl bg-primary text-white font-bold text-lg shadow-xl shadow-primary/20">
                   Next Step <ChevronRight className="ml-2 h-5 w-5" />
                 </Button>
               </div>
@@ -294,7 +297,7 @@ export default function AssessmentsPage() {
                 </div>
                 <div className="flex gap-3 pt-4">
                   <Button variant="ghost" onClick={() => setStep(1)} className="flex-1 h-16 rounded-2xl font-bold text-slate-400"><ChevronLeft className="mr-2 h-5 w-5" /> Back</Button>
-                  <Button onClick={() => setStep(3)} className="flex-[2] h-16 rounded-2xl bg-primary text-white font-bold text-lg">Next Step <ChevronRight className="ml-2 h-5 w-5" /></Button>
+                  <Button onClick={() => setStep(3)} className="flex-[2] h-16 rounded-2xl bg-primary text-white font-bold text-lg shadow-xl shadow-primary/20">Next Step <ChevronRight className="ml-2 h-5 w-5" /></Button>
                 </div>
               </div>
             )}
@@ -317,7 +320,7 @@ export default function AssessmentsPage() {
                 </div>
                 <div className="flex gap-3 pt-4">
                   <Button variant="ghost" onClick={() => setStep(2)} className="flex-1 h-16 rounded-2xl font-bold text-slate-400"><ChevronLeft className="mr-2 h-5 w-5" /> Back</Button>
-                  <Button onClick={() => setStep(4)} className="flex-[2] h-16 rounded-2xl bg-primary text-white font-bold text-lg">Next Step <ChevronRight className="ml-2 h-5 w-5" /></Button>
+                  <Button onClick={() => setStep(4)} className="flex-[2] h-16 rounded-2xl bg-primary text-white font-bold text-lg shadow-xl shadow-primary/20">Next Step <ChevronRight className="ml-2 h-5 w-5" /></Button>
                 </div>
               </div>
             )}
