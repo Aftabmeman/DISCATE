@@ -27,8 +27,6 @@ export async function parseFileToText(formData: FormData) {
     } else if (fileType === 'txt') {
       extractedText = buffer.toString('utf-8');
     } else if (fileType === 'doc' || fileType === 'ppt' || fileType === 'pptx') {
-      // Basic text extraction for legacy doc/ppt is complex without heavy local binaries.
-      // We inform the user to use PDF/DOCX for now for better reliability.
       throw new Error(`The format .${fileType} is supported via conversion. Please convert to PDF for elite accuracy.`);
     } else {
       throw new Error("Unsupported file format. Please use PDF, DOCX, or TXT.");

@@ -68,7 +68,7 @@ export default function DashboardPage() {
       bg: "bg-amber-100/50" 
     },
     { 
-      label: "Practice", 
+      label: "Sets", 
       value: profile?.assessmentsDone?.toString() ?? "0", 
       icon: Trophy, 
       color: "text-blue-500", 
@@ -92,25 +92,25 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-14 animate-in fade-in duration-700 pb-40 max-w-2xl mx-auto px-4">
-      <div className="flex flex-col gap-4 text-center sm:text-left pt-10">
-        <h1 className="text-4xl sm:text-6xl font-black tracking-tighter text-slate-900 dark:text-white font-headline leading-tight text-balance">
+    <div className="space-y-8 sm:space-y-14 animate-in fade-in duration-700 pb-40 max-w-2xl mx-auto px-4">
+      <div className="flex flex-col gap-2 sm:gap-4 text-center sm:text-left pt-6 sm:pt-10">
+        <h1 className="text-2xl sm:text-5xl font-black tracking-tighter text-slate-900 dark:text-white font-headline leading-tight">
           Welcome, {user?.displayName?.split(' ')[0] || 'Scholar'}
         </h1>
-        <p className="text-slate-500 text-xl font-medium leading-relaxed">Your academic journey is looking bright today.</p>
+        <p className="text-slate-500 text-sm sm:text-lg font-medium leading-relaxed">Your academic journey is looking bright today.</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 sm:gap-10">
+      <div className="grid grid-cols-2 gap-4 sm:gap-8">
         {statsConfig.map((stat) => (
-          <Card key={stat.label} className="border-none shadow-2xl rounded-[2.5rem] hover:shadow-3xl transition-all duration-500 group dark:bg-slate-900/50 bg-white border border-slate-50 dark:border-white/5">
-            <CardContent className="p-10 sm:p-12">
-              <div className="flex flex-col gap-8">
-                <div className={cn("p-6 rounded-[2rem] w-fit group-hover:scale-110 transition-transform shadow-sm", stat.bg)}>
-                  <stat.icon className={cn("h-8 w-8 sm:h-10 sm:w-10", stat.color)} />
+          <Card key={stat.label} className="border-none shadow-xl rounded-[2rem] hover:shadow-2xl transition-all duration-500 group dark:bg-slate-900/50 bg-white border border-slate-50 dark:border-white/5">
+            <CardContent className="p-6 sm:p-10">
+              <div className="flex flex-col gap-4 sm:gap-6">
+                <div className={cn("p-4 rounded-2xl w-fit group-hover:scale-110 transition-transform shadow-sm", stat.bg)}>
+                  <stat.icon className={cn("h-5 w-5 sm:h-8 sm:w-8", stat.color)} />
                 </div>
                 <div>
-                  <p className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-400 mb-3">{stat.label}</p>
-                  <h3 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white leading-none tracking-tighter">{stat.value}</h3>
+                  <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 mb-1">{stat.label}</p>
+                  <h3 className="text-xl sm:text-4xl font-black text-slate-900 dark:text-white leading-none tracking-tighter">{stat.value}</h3>
                 </div>
               </div>
             </CardContent>
@@ -118,45 +118,45 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="space-y-12">
-        <Card className="border-none shadow-3xl rounded-[3.5rem] overflow-hidden bg-slate-950 text-white relative border border-white/5">
-          <CardContent className="p-12 sm:p-24 flex flex-col justify-between min-h-[400px] relative z-10">
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/25 rounded-full blur-[180px] -mr-40 -mt-40 opacity-70"></div>
+      <div className="space-y-8 sm:space-y-12">
+        <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-slate-950 text-white relative border border-white/5">
+          <CardContent className="p-8 sm:p-16 flex flex-col justify-between min-h-[320px] sm:min-h-[400px] relative z-10">
+            <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-primary/20 rounded-full blur-[120px] -mr-40 -mt-40 opacity-70"></div>
             
-            <div className="space-y-10">
-              <div className="h-20 w-20 sm:h-24 sm:w-24 bg-white/10 rounded-[2.5rem] flex items-center justify-center backdrop-blur-xl border border-white/10 shadow-lg">
-                <BrainCircuit className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
+            <div className="space-y-6 sm:space-y-10">
+              <div className="h-14 w-14 sm:h-20 sm:w-20 bg-white/10 rounded-[1.5rem] flex items-center justify-center backdrop-blur-xl border border-white/10 shadow-lg">
+                <BrainCircuit className="h-7 w-7 sm:h-10 sm:w-10 text-primary" />
               </div>
-              <div className="space-y-5">
-                <h3 className="text-4xl sm:text-5xl font-black font-headline leading-tight text-balance tracking-tight">Forge Your Elite Potential</h3>
-                <p className="text-slate-400 text-xl font-medium leading-relaxed max-w-[450px]">Transform static notes into deep, adaptive practice modules instantly.</p>
+              <div className="space-y-3 sm:space-y-5">
+                <h3 className="text-2xl sm:text-4xl font-black font-headline leading-tight tracking-tight">Forge Your Elite Potential</h3>
+                <p className="text-slate-400 text-sm sm:text-lg font-medium leading-relaxed max-w-[400px]">Transform static notes into deep, adaptive practice modules instantly.</p>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-6 mt-12">
-              <Button className="flex-1 h-20 px-12 bg-primary hover:bg-primary/90 text-white font-black rounded-[2rem] shadow-3xl shadow-primary/30 text-2xl" asChild>
+            <div className="flex flex-col sm:flex-row gap-4 mt-8">
+              <Button className="flex-1 h-14 sm:h-18 px-8 bg-primary hover:bg-primary/90 text-white font-black rounded-[1.5rem] shadow-xl text-lg sm:text-xl active:scale-95 transition-all" asChild>
                 <Link href="/dashboard/assessments">Create Journey</Link>
               </Button>
-              <Button variant="ghost" className="flex-1 h-20 px-12 border border-white/10 text-white hover:bg-white/10 rounded-[2rem] font-black bg-transparent text-2xl" asChild>
+              <Button variant="ghost" className="flex-1 h-14 sm:h-18 px-8 border border-white/10 text-white hover:bg-white/10 rounded-[1.5rem] font-black bg-transparent text-lg sm:text-xl active:scale-95 transition-all" asChild>
                 <Link href="/dashboard/essay-lab">Writing Lab</Link>
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-3xl rounded-[3.5rem] bg-white dark:bg-slate-900/50 p-12 sm:p-20 border border-slate-50 dark:border-white/5">
-          <div className="flex items-center justify-between mb-14 px-2">
+        <Card className="border-none shadow-xl rounded-[2.5rem] bg-white dark:bg-slate-900/50 p-8 sm:p-16 border border-slate-50 dark:border-white/5">
+          <div className="flex items-center justify-between mb-8 sm:mb-14 px-1">
             <div>
-              <h3 className="font-headline font-black text-3xl sm:text-4xl dark:text-white tracking-tight">Performance Trend</h3>
-              <p className="text-[12px] font-black uppercase tracking-[0.5em] text-slate-400 mt-4">Scholar Activity</p>
+              <h3 className="font-headline font-black text-xl sm:text-3xl dark:text-white tracking-tight">Trend</h3>
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 mt-2">Scholar Activity</p>
             </div>
-            <div className="flex items-center gap-4 bg-emerald-50 dark:bg-emerald-950 px-8 py-4 rounded-full border border-emerald-100 dark:border-emerald-800/30 shadow-sm">
-               <TrendingUp className="h-5 w-5 text-emerald-600" />
-               <span className="text-[11px] font-black text-emerald-600 uppercase tracking-widest">Improving</span>
+            <div className="flex items-center gap-2 sm:gap-4 bg-emerald-50 dark:bg-emerald-950 px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-emerald-100 dark:border-emerald-800/30">
+               <TrendingUp className="h-4 w-4 text-emerald-600" />
+               <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Improving</span>
             </div>
           </div>
           
-          <div className="h-[350px] w-full">
+          <div className="h-[250px] sm:h-[300px] w-full">
             <ChartContainer config={chartConfig} className="h-full w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={performanceData}>
@@ -165,8 +165,8 @@ export default function DashboardPage() {
                     dataKey="date" 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12, fontWeight: 900 }}
-                    dy={25}
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10, fontWeight: 900 }}
+                    dy={15}
                   />
                   <YAxis hide domain={[0, 100]} />
                   <ChartTooltip content={<ChartTooltipContent />} />
@@ -174,9 +174,9 @@ export default function DashboardPage() {
                     type="monotone" 
                     dataKey="score" 
                     stroke="hsl(var(--primary))" 
-                    strokeWidth={6} 
-                    dot={{ r: 7, fill: 'hsl(var(--primary))', strokeWidth: 4, stroke: '#fff' }}
-                    activeDot={{ r: 10, strokeWidth: 0 }}
+                    strokeWidth={4} 
+                    dot={{ r: 5, fill: 'hsl(var(--primary))', strokeWidth: 3, stroke: '#fff' }}
+                    activeDot={{ r: 8, strokeWidth: 0 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -185,9 +185,9 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <footer className="pt-24 pb-12 text-center opacity-40">
-        <p className="text-[11px] font-black uppercase tracking-[0.6em] text-slate-300 dark:text-slate-600 flex items-center justify-center gap-5">
-          <Sparkles className="h-6 w-6" /> Mentur AI Engine — Peak Performance
+      <footer className="pt-20 pb-10 text-center opacity-40">
+        <p className="text-[9px] font-black uppercase tracking-[0.5em] text-slate-300 dark:text-slate-600 flex items-center justify-center gap-3">
+          <Sparkles className="h-5 w-5" /> Mentur AI Engine — Peak Performance
         </p>
       </footer>
     </div>
