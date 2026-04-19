@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 import { Loader2, ChevronRight, Globe } from "lucide-react"
-import { MenturLogo } from "@/components/MenturLogo"
+import { DiscateLogo } from "@/components/DiscateLogo"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const languages = [
@@ -71,7 +71,7 @@ export default function SignupPage() {
     <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-slate-950">
       <Card className="w-full max-w-md border-none shadow-xl rounded-[40px] overflow-hidden bg-white dark:bg-slate-900">
         <CardHeader className="text-center pt-8">
-          <MenturLogo size="md" className="mx-auto mb-4" />
+          <DiscateLogo size="md" className="mx-auto mb-4" />
           <CardTitle className="text-2xl font-headline font-bold">Create Account</CardTitle>
           <CardDescription>Join Discate for elite academic mentorship</CardDescription>
         </CardHeader>

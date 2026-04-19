@@ -8,7 +8,7 @@ import { auth } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
 import { ChevronRight, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { MenturLogo } from "@/components/MenturLogo"
+import { DiscateLogo } from "@/components/MenturLogo"
 
 export default function Home() {
   const router = useRouter()
@@ -51,7 +51,7 @@ export default function Home() {
 
   const onboardingCards = [
     {
-      title: "Meet Your AI Mentor",
+      title: "Meet Your Discate AI",
       desc: "Experience academic intelligence like never before with Discate's deep-learning engine.",
       icon: "robot"
     },
@@ -76,7 +76,7 @@ export default function Home() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 overflow-hidden">
         <div className="relative flex flex-col items-center animate-in zoom-in-95 duration-1000">
-          <MenturLogo size="xl" />
+          <DiscateLogo size="xl" />
           <div className="mt-8 text-center space-y-2">
             <h1 className="text-5xl font-black font-headline tracking-tighter bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent animate-gradient-x">
               Discate
@@ -96,7 +96,7 @@ export default function Home() {
         <div className="flex-1 flex flex-col items-center justify-center text-center space-y-12 animate-in slide-in-from-right-8 duration-500">
           <div className="relative">
             <div className="absolute inset-0 bg-primary/10 blur-3xl rounded-full scale-150" />
-            <MenturLogo size="lg" />
+            <DiscateLogo size="lg" />
           </div>
           <div className="space-y-4 max-w-sm relative z-10">
             <h2 className="text-4xl font-black font-headline text-slate-900 dark:text-white leading-tight tracking-tight">

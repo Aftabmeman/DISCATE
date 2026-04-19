@@ -1,15 +1,16 @@
+
 {
   "placeholderImages": [
     {
       "id": "hero-education",
       "description": "Abstract academic concept",
-      "imageUrl": "https://picsum.photos/seed/mentur1/1200/800",
+      "imageUrl": "https://picsum.photos/seed/discate1/1200/800",
       "imageHint": "academic study"
     },
     {
       "id": "dashboard-stat",
       "description": "Learning progress illustration",
-      "imageUrl": "https://picsum.photos/seed/mentur2/400/300",
+      "imageUrl": "https://picsum.photos/seed/discate2/400/300",
       "imageHint": "learning data"
     }
   ]

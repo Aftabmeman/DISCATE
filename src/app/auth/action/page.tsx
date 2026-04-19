@@ -16,7 +16,7 @@ import {
   ShieldCheck, 
   LifeBuoy
 } from 'lucide-react';
-import { MenturLogo } from '@/components/MenturLogo';
+import { DiscateLogo } from '@/components/DiscateLogo';
 
 function AuthActionHandler() {
   const searchParams = useSearchParams();
@@ -54,7 +54,7 @@ function AuthActionHandler() {
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-accent to-primary animate-gradient-x" />
         
         <CardHeader className="text-center pt-10 pb-4">
-          <MenturLogo size="md" className="mx-auto mb-6" />
+          <DiscateLogo size="md" className="mx-auto mb-6" />
           <CardTitle className="text-3xl font-headline font-bold tracking-tight text-slate-900 dark:text-white">
             Discate
           </CardTitle>

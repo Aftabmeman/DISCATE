@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 import { Loader2 } from "lucide-react"
-import { MenturLogo } from "@/components/MenturLogo"
+import { DiscateLogo } from "@/components/DiscateLogo"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -41,7 +41,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-slate-950">
       <Card className="w-full max-w-md border-none shadow-xl rounded-3xl overflow-hidden bg-white dark:bg-slate-900">
         <CardHeader className="text-center pt-8">
-          <MenturLogo size="md" className="mx-auto mb-4" />
+          <DiscateLogo size="md" className="mx-auto mb-4" />
           <CardTitle className="text-2xl font-headline font-bold">Welcome Back</CardTitle>
           <CardDescription>Enter your credentials to access Discate</CardDescription>
         </CardHeader>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect } from 'react';
@@ -43,7 +44,7 @@ export function NotificationManager() {
         // Listen for foreground messages
         onMessage(messaging, (payload) => {
           toast({
-            title: payload.notification?.title || 'Study Reminder',
+            title: payload.notification?.title || 'Discate Reminder',
             description: payload.notification?.body || 'Time for your next assessment!',
           });
         });

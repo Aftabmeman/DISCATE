@@ -66,7 +66,6 @@ export default function AssessmentsPage() {
   const [questionType, setQuestionType] = useState<string>("Mixed")
   const [questionCount, setQuestionCount] = useState<number>(10)
   
-  // Mixed Mode specific counts
   const [mcqCount, setMcqCount] = useState<number>(10)
   const [flashcardCount, setFlashcardCount] = useState<number>(10)
   const [essayCount, setEssayCount] = useState<number>(1)
@@ -117,7 +116,7 @@ export default function AssessmentsPage() {
         toast({ title: "Parsing Failed", description: response.error, variant: "destructive" });
       } else if (response.text) {
         setMaterial(response.text);
-        toast({ title: "Elite Material Loaded", description: "Your resource has been ingested successfully." });
+        toast({ title: "Elite Material Loaded", description: "Your resource has been ingested successfully by Discate." });
       }
     } catch (e) {
       toast({ title: "Error", description: "Failed to parse document.", variant: "destructive" });
@@ -184,7 +183,7 @@ export default function AssessmentsPage() {
         confetti({ particleCount: 150, spread: 70 });
       }
     } catch (e) {
-      toast({ title: "Error", description: "Professor is busy. Try again.", variant: "destructive" })
+      toast({ title: "Error", description: "Discate Professor is busy. Try again.", variant: "destructive" })
     } finally {
       setIsAnalyzingEssay(false)
     }
@@ -233,14 +232,14 @@ export default function AssessmentsPage() {
     if (db && user?.uid && coinsEarned > 0) {
       incrementUserStats(db, user.uid, coinsEarned, true);
     }
-    toast({ title: `${currentMode} Complete!`, description: `Earned ${coinsEarned} Coins.` });
+    toast({ title: `${currentMode} Complete!`, description: `Earned ${coinsEarned} Coins via Discate.` });
     confetti({ particleCount: 150, spread: 70 });
   }
 
   return (
     <div className="flex flex-col h-full space-y-6 sm:space-y-10 pb-40 animate-in fade-in duration-700 px-4 max-w-2xl mx-auto">
       <div className="px-1 text-center pt-6 sm:pt-10">
-        <h1 className="text-2xl sm:text-5xl font-black font-headline tracking-tighter text-slate-900 dark:text-white uppercase leading-tight text-balance">Academic Practice</h1>
+        <h1 className="text-2xl sm:text-5xl font-black font-headline tracking-tighter text-slate-900 dark:text-white uppercase leading-tight text-balance">Discate Practice</h1>
         <p className="text-[9px] font-black text-slate-400 mt-2 tracking-[0.4em] uppercase">Sequential Mastery Wizard</p>
       </div>
 
@@ -403,7 +402,7 @@ export default function AssessmentsPage() {
           </div>
           <div className="space-y-2">
             <h2 className="text-xl sm:text-3xl font-black font-headline tracking-tighter leading-tight">Evaluation Mix</h2>
-            <p className="text-slate-500 text-xs sm:text-base font-medium leading-relaxed max-w-xs mx-auto text-balance">Choose your preferred style for the Mentor's feedback.</p>
+            <p className="text-slate-500 text-xs sm:text-base font-medium leading-relaxed max-w-xs mx-auto text-balance">Choose your preferred style for the Discate Mentor's feedback.</p>
           </div>
           <div className="space-y-4 max-w-xs mx-auto">
             <Select value={preferredLanguage} onValueChange={setPreferredLanguage}>
@@ -456,7 +455,7 @@ export default function AssessmentsPage() {
               {isAnswerRevealed && (
                 <div className="pt-4 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="p-4 sm:p-5 bg-emerald-50 dark:bg-emerald-900/10 rounded-[1.2rem] border border-emerald-100 dark:border-emerald-800/50 text-[11px] sm:text-base text-emerald-800 dark:text-emerald-300 font-medium leading-relaxed shadow-inner italic text-balance">
-                    <p className="font-black mb-1 uppercase tracking-[0.4em] text-[7px] text-emerald-600 not-italic">Mentor's Perspective</p>
+                    <p className="font-black mb-1 uppercase tracking-[0.4em] text-[7px] text-emerald-600 not-italic">Discate's Perspective</p>
                     {result.mcqs[currentIdx].explanation}
                   </div>
                   <Button onClick={() => nextItem()} className="w-full h-12 sm:h-14 rounded-[1rem] sm:rounded-[1.2rem] bg-primary text-white font-black text-sm sm:text-base shadow-xl active:scale-95 transition-all">

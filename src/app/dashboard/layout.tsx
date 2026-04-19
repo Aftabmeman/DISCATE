@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { MenturLogo } from "@/components/MenturLogo"
+import { DiscateLogo } from "@/components/DiscateLogo"
 import { NotificationManager } from "@/components/NotificationManager"
 
 export const dynamic = 'force-dynamic';
@@ -35,7 +35,7 @@ export default function DashboardLayout({
       <NotificationManager />
       <header className="h-16 sm:h-20 border-b flex items-center justify-between px-4 sm:px-8 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl sticky top-0 z-50">
         <Link href="/dashboard" className="flex items-center gap-1.5 sm:gap-2">
-          <MenturLogo size="sm" />
+          <DiscateLogo size="sm" />
           <span className="font-black font-headline text-lg sm:text-xl tracking-tighter bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
             Discate
           </span>
