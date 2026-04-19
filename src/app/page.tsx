@@ -8,7 +8,7 @@ import { auth } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
 import { ChevronRight, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { DiscateLogo } from "@/components/MenturLogo"
+import { DiscateLogo } from "@/components/DiscateLogo"
 
 export default function Home() {
   const router = useRouter()

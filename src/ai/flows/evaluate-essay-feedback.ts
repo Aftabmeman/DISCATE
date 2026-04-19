@@ -1,10 +1,13 @@
 
 'use server';
 /**
- * @fileOverview Expert Mentor Professor for Deep Metrics Evaluation.
+ * @fileOverview Expert Mentor Professor for Deep Metrics Evaluation in Discate.
+ * Optimized for Cloudflare Edge Runtime.
  */
 
 import { z } from 'zod';
+
+export const runtime = 'edge';
 
 const EvaluateEssayFeedbackInputSchema = z.object({
   essayText: z.string(),

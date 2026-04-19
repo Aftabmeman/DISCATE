@@ -4,9 +4,11 @@
 import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
 
+export const runtime = 'edge';
+
 /**
  * Server Action to parse various file types and extract text content.
- * Supports PDF, DOCX, and TXT.
+ * Supports PDF, DOCX, and TXT. Optimized for Cloudflare Edge.
  */
 export async function parseFileToText(formData: FormData) {
   try {
@@ -26,8 +28,6 @@ export async function parseFileToText(formData: FormData) {
       extractedText = result.value;
     } else if (fileType === 'txt') {
       extractedText = buffer.toString('utf-8');
-    } else if (fileType === 'doc' || fileType === 'ppt' || fileType === 'pptx') {
-      throw new Error(`The format .${fileType} is supported via conversion. Please convert to PDF for elite accuracy.`);
     } else {
       throw new Error("Unsupported file format. Please use PDF, DOCX, or TXT.");
     }

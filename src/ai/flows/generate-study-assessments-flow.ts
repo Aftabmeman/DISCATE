@@ -2,10 +2,12 @@
 'use server';
 /**
  * @fileOverview High-performance academic assessment generator using Groq llama-3.1-8b-instant.
- * Supports granular counts for mixed modes.
+ * Optimized for Cloudflare Edge Runtime.
  */
 
 import { z } from 'zod';
+
+export const runtime = 'edge';
 
 const MCQSchema = z.object({
   question: z.string(),
@@ -73,7 +75,7 @@ export async function generateStudyAssessments(input: GenerateStudyAssessmentsIn
     ? `Generate EXACTLY: ${input.mcqCount || 0} MCQs, ${input.flashcardCount || 0} Flashcards, and ${input.essayCount || 0} Essay Prompts.`
     : `Generate EXACTLY ${input.questionCount} items of type ${input.assessmentTypes[0]}.`;
 
-  const systemPrompt = `You are a Senior Academic Content Developer.
+  const systemPrompt = `You are a Senior Academic Content Developer for Discate.
 Generate content ONLY from the provided material using llama-3.1-8b-instant.
 LEVEL: ${input.academicLevel} | DIFFICULTY: ${input.difficulty}
 ${countInstruction}

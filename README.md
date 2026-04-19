@@ -28,10 +28,16 @@ git remote add origin <YOUR_GITHUB_REPO_URL>
 git push -u origin main
 ```
 
+## Cloudflare Pages Deployment
+To deploy to Cloudflare Pages, use the following build settings:
+- **Build command**: `npm run build`
+- **Output directory**: `.vercel/output/static` (Note: Cloudflare next-on-pages produces a compatible output)
+- **Framework preset**: `None` or `Next.js`
+
 ## Core Features
+- **Edge Runtime Enabled**: AI generations and file parsing utilize Edge runtime for 10s+ stability on Cloudflare.
 - **Sequential Assessment Wizard**: 4-step process to generate MCQs, Flashcards, and Essays.
-- **Multi-Format Parsing**: Elite support for PDF, DOCX, and TXT uploads via server actions.
-- **Dynamic Limits**: 1 to 5 questions for Essay practice; 10 to 30 for objective modes.
+- **Multi-Format Parsing**: Elite support for PDF, DOCX, and TXT uploads.
 - **Professional Exam Report Card**: Animated Score Circle with deep metrics (Grammar, Depth, Relevancy).
 - **Regional Mix Support**: Mentorship in 10 language styles (Hinglish, Marathish, etc.) with an energetic "Baval" tone.
 - **Secure Architecture**: Built with Next.js, Firebase Auth, and Firestore user silos.

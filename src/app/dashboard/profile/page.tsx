@@ -26,7 +26,7 @@ import {
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { DiscateLogo } from "@/components/MenturLogo"
+import { DiscateLogo } from "@/components/DiscateLogo"
 import { useToast } from "@/hooks/use-toast"
 import { useDoc, useMemoFirebase } from "@/firebase"
 import { doc, updateDoc } from "firebase/firestore"
@@ -54,7 +54,7 @@ const aboutTranslations: Record<string, any> = {
     }
   },
   "Hinglish": {
-    title: "About Discate",
+    title: "Discate ke Baare Mein",
     vision: {
       head: "Hamara Vision",
       body: "Hum ek aisa world dekhte hain jahan traditional education ki limitations human-AI symbiosis se khatam ho jayein. Discate ka goal hai personalized intelligence ka global standard banna, taaki knowledge lene aur use master karne ka tareeka hamesha ke liye badal jaye. Hum ek aisa ecosystem bana rahe hain jahan har student ke paas ek elite, personal professor ho jo kabhi thakta nahi."
@@ -158,8 +158,7 @@ export default function ProfilePage() {
       <div className="flex flex-col items-center pt-8 sm:pt-10 pb-4">
         <div className="relative inline-block group">
           <div className="absolute inset-0 bg-primary/20 blur-[80px] rounded-full scale-150 transition-all" />
-          <DiscateLogo size="md" className="sm:hidden" />
-          <DiscateLogo size="lg" className="hidden sm:flex" />
+          <DiscateLogo size="lg" className="flex" />
           <div className="absolute -top-1 -right-1 z-10 h-8 w-8 sm:h-12 sm:w-12 bg-emerald-500 rounded-xl sm:rounded-[20px] border-2 sm:border-4 border-white dark:border-slate-900 flex items-center justify-center shadow-xl">
              <ShieldCheck className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
           </div>
