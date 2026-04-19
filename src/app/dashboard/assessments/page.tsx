@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -35,6 +34,7 @@ import { Progress } from "@/components/ui/progress"
 import { doc } from "firebase/firestore"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
+export const runtime = 'edge';
 export const maxDuration = 60;
 
 const academicLevels = [

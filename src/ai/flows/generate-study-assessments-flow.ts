@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview High-performance academic assessment generator using Groq llama-3.1-8b-instant.
@@ -6,8 +5,6 @@
  */
 
 import { z } from 'zod';
-
-export const runtime = 'edge';
 
 const MCQSchema = z.object({
   question: z.string(),

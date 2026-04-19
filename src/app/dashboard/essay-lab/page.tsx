@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -36,6 +35,7 @@ import { incrementUserStats } from "@/firebase/non-blocking-updates"
 import { doc } from "firebase/firestore"
 import { Progress } from "@/components/ui/progress"
 
+export const runtime = 'edge';
 export const maxDuration = 60;
 
 const academicLevels = [

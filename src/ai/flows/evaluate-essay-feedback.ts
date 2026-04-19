@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview Discate Scholar Professor for Deep Metrics Evaluation.
@@ -6,8 +5,6 @@
  */
 
 import { z } from 'zod';
-
-export const runtime = 'edge';
 
 const EvaluateEssayFeedbackInputSchema = z.object({
   essayText: z.string(),

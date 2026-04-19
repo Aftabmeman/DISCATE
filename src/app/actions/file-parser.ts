@@ -1,10 +1,7 @@
-
 'use server';
 
 import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
-
-export const runtime = 'edge';
 
 /**
  * Server Action to parse various file types and extract text content.
