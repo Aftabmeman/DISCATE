@@ -1,30 +1,51 @@
+
 'use server';
 
-import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
 
 /**
  * Server Action to parse various file types and extract text content.
  * Supports PDF, DOCX, and TXT. Optimized for Cloudflare Edge.
+ * Using pdfjs-dist for Edge compatibility.
  */
 export async function parseFileToText(formData: FormData) {
   try {
     const file = formData.get('file') as File;
     if (!file) throw new Error("No file uploaded");
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const arrayBuffer = await file.arrayBuffer();
     const fileType = file.name.split('.').pop()?.toLowerCase();
 
     let extractedText = "";
 
     if (fileType === 'pdf') {
-      const data = await pdf(buffer);
-      extractedText = data.text;
+      // Dynamic import to avoid build-time issues with Node built-ins in Edge
+      const pdfjs = await import('pdfjs-dist/build/pdf.mjs');
+      
+      const loadingTask = pdfjs.getDocument({
+        data: new Uint8Array(arrayBuffer),
+        useWorkerFetch: false,
+        isEvalSupported: false,
+      });
+      
+      const pdf = await loadingTask.promise;
+      let fullText = "";
+      
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items
+          .map((item: any) => ('str' in item ? item.str : ''))
+          .join(" ");
+        fullText += pageText + "\n";
+      }
+      extractedText = fullText;
     } else if (fileType === 'docx') {
-      const result = await mammoth.extractRawText({ buffer });
+      // Mammoth works with buffers correctly in EdgeAction
+      const result = await mammoth.extractRawText({ buffer: Buffer.from(arrayBuffer) });
       extractedText = result.value;
     } else if (fileType === 'txt') {
-      extractedText = buffer.toString('utf-8');
+      extractedText = new TextDecoder().decode(arrayBuffer);
     } else {
       throw new Error("Unsupported file format. Please use PDF, DOCX, or TXT.");
     }
