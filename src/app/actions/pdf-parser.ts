@@ -1,7 +1,7 @@
 
 'use server';
 /**
- * @fileOverview [DEPRECATED] PDF parsing is no longer supported in Mentur AI.
+ * @fileOverview [DEPRECATED] PDF parsing is no longer supported in Discate.
  * Strictly Text-only academic focus.
  */
 

@@ -7,8 +7,8 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider"
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'Mentur AI | Elite Academic Mentorship',
-  description: 'Elevate your learning with AI-powered assessment generation and essay evaluation.',
+  title: 'Discate | Elite Academic Mentorship',
+  description: 'Elevate your learning with Discate: AI-powered assessment generation and essay evaluation.',
   manifest: '/manifest.json',
   icons: {
     icon: [
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Mentur AI',
+    title: 'Discate',
   },
 };
 

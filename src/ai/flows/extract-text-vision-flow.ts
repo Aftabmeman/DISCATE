@@ -1,6 +1,6 @@
 
 /**
- * @fileOverview [DEPRECATED] OCR extraction is no longer supported in Mentur AI.
+ * @fileOverview [DEPRECATED] OCR extraction is no longer supported in Discate.
  * This file is kept as a stub to prevent build errors from stale imports.
  */
 

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from "react"
@@ -17,7 +18,7 @@ export default function Home() {
   const [isReturningUser, setIsReturningUser] = useState(false)
 
   useEffect(() => {
-    const hasSeenOnboarding = localStorage.getItem("mentur_onboarding_seen")
+    const hasSeenOnboarding = localStorage.getItem("discate_onboarding_seen")
     setIsReturningUser(!!hasSeenOnboarding)
 
     const timer = setTimeout(() => {
@@ -44,19 +45,19 @@ export default function Home() {
   }
 
   const handleFinishOnboarding = () => {
-    localStorage.setItem("mentur_onboarding_seen", "true")
+    localStorage.setItem("discate_onboarding_seen", "true")
     checkAuthAndRedirect()
   }
 
   const onboardingCards = [
     {
       title: "Meet Your AI Mentor",
-      desc: "Experience academic intelligence like never before with Mentur AI's deep-learning engine.",
+      desc: "Experience academic intelligence like never before with Discate's deep-learning engine.",
       icon: "robot"
     },
     {
       title: "Built for Your Future",
-      desc: "Created by Aftab Ghaswala to help you bridge the gap between hard work and smart success.",
+      desc: "Discate is created to help you bridge the gap between hard work and smart success.",
       icon: "heart"
     },
     {
@@ -66,7 +67,7 @@ export default function Home() {
     },
     {
       title: "Elevate Your Potential",
-      desc: "Join thousands of scholars using AI to unlock their peak academic performance.",
+      desc: "Join thousands of scholars using Discate to unlock their peak academic performance.",
       icon: "award"
     }
   ]
@@ -78,7 +79,7 @@ export default function Home() {
           <MenturLogo size="xl" />
           <div className="mt-8 text-center space-y-2">
             <h1 className="text-5xl font-black font-headline tracking-tighter bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent animate-gradient-x">
-              Mentur AI
+              Discate
             </h1>
             <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.4em] animate-pulse">
               {isReturningUser ? "Welcome Back" : "Human-AI Intelligence"}

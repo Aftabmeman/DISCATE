@@ -21,7 +21,7 @@ export default function VerifyEmailPage() {
     try {
       await reload(auth.currentUser!)
       if (auth.currentUser?.emailVerified) {
-        toast({ title: "Email Verified", description: "Welcome to Mentur AI!" })
+        toast({ title: "Email Verified", description: "Welcome to Discate!" })
         router.push("/dashboard")
       } else {
         toast({ title: "Still Unverified", description: "Please click the link in your email.", variant: "destructive" })

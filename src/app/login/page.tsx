@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -42,7 +43,7 @@ export default function LoginPage() {
         <CardHeader className="text-center pt-8">
           <MenturLogo size="md" className="mx-auto mb-4" />
           <CardTitle className="text-2xl font-headline font-bold">Welcome Back</CardTitle>
-          <CardDescription>Enter your credentials to access Mentur AI</CardDescription>
+          <CardDescription>Enter your credentials to access Discate</CardDescription>
         </CardHeader>
         <CardContent className="p-8">
           <form onSubmit={handleLogin} className="space-y-4">

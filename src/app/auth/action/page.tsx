@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect, useState, Suspense } from 'react';
@@ -12,7 +13,7 @@ import {
   Loader2, 
   ArrowRight, 
   Mail, 
-  ShieldCheck,
+  ShieldCheck, 
   LifeBuoy
 } from 'lucide-react';
 import { MenturLogo } from '@/components/MenturLogo';
@@ -55,7 +56,7 @@ function AuthActionHandler() {
         <CardHeader className="text-center pt-10 pb-4">
           <MenturLogo size="md" className="mx-auto mb-6" />
           <CardTitle className="text-3xl font-headline font-bold tracking-tight text-slate-900 dark:text-white">
-            Mentur AI
+            Discate
           </CardTitle>
           <CardDescription className="text-slate-500 font-medium">
             Securing your academic journey
@@ -131,7 +132,7 @@ function AuthActionHandler() {
                 <Button 
                   variant="ghost" 
                   className="w-full h-12 rounded-xl text-slate-500"
-                  onClick={() => window.open('mailto:support@menturai.com')}
+                  onClick={() => window.open('mailto:support@discate.com')}
                 >
                   <LifeBuoy className="mr-2 h-5 w-5" />
                   Contact Support

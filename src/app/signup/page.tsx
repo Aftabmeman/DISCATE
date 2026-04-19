@@ -73,7 +73,7 @@ export default function SignupPage() {
         <CardHeader className="text-center pt-8">
           <MenturLogo size="md" className="mx-auto mb-4" />
           <CardTitle className="text-2xl font-headline font-bold">Create Account</CardTitle>
-          <CardDescription>Join Mentur AI for elite academic mentorship</CardDescription>
+          <CardDescription>Join Discate for elite academic mentorship</CardDescription>
         </CardHeader>
         <CardContent className="p-8">
           {step === 1 ? (

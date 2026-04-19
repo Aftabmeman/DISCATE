@@ -1,3 +1,4 @@
+
 'use client';
 
 import { cn } from "@/lib/utils";
@@ -66,7 +67,7 @@ export function MenturLogo({
           "font-black font-headline tracking-tighter bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent",
           textClasses[size]
         )}>
-          Mentur AI
+          Discate
         </span>
       )}
     </div>

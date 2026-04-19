@@ -55,7 +55,7 @@ export async function evaluateEssayFeedback(input: EvaluateEssayFeedbackInput): 
 
   const languagePrompt = `Use ${input.preferredLanguage} style for feedback. If it is a "Mix" style (e.g., Hinglish, Marathish), use the regional mix with English. Tone: "Baval" (energetic, encouraging but strictly academic).`;
 
-  const systemPrompt = `You are the Mentur AI 'Expert Mentor Professor'. Evaluate the student's answer.
+  const systemPrompt = `You are the Discate 'Expert Mentor Professor'. Evaluate the student's answer.
 ${languagePrompt}
 
 METRICS:

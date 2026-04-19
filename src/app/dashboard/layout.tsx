@@ -37,7 +37,7 @@ export default function DashboardLayout({
         <Link href="/dashboard" className="flex items-center gap-1.5 sm:gap-2">
           <MenturLogo size="sm" />
           <span className="font-black font-headline text-lg sm:text-xl tracking-tighter bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-            Mentur AI
+            Discate
           </span>
         </Link>
         

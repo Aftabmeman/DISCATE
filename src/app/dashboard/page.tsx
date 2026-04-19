@@ -94,7 +94,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8 sm:space-y-14 animate-in fade-in duration-700 pb-40 max-w-2xl mx-auto px-4">
       <div className="flex flex-col gap-2 sm:gap-4 text-center sm:text-left pt-6 sm:pt-10">
-        <h1 className="text-2xl sm:text-5xl font-black tracking-tighter text-slate-900 dark:text-white font-headline leading-tight">
+        <h1 className="text-2xl sm:text-5xl font-black tracking-tighter text-slate-900 dark:text-white font-headline leading-tight text-balance">
           Welcome, {user?.displayName?.split(' ')[0] || 'Scholar'}
         </h1>
         <p className="text-slate-500 text-sm sm:text-lg font-medium leading-relaxed">Your academic journey is looking bright today.</p>
@@ -187,7 +187,7 @@ export default function DashboardPage() {
 
       <footer className="pt-20 pb-10 text-center opacity-40">
         <p className="text-[9px] font-black uppercase tracking-[0.5em] text-slate-300 dark:text-slate-600 flex items-center justify-center gap-3">
-          <Sparkles className="h-5 w-5" /> Mentur AI Engine — Peak Performance
+          <Sparkles className="h-5 w-5" /> Discate Engine — Peak Performance
         </p>
       </footer>
     </div>

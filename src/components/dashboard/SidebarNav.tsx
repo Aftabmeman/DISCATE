@@ -48,7 +48,7 @@ export function SidebarNav() {
           <div className="bg-primary p-2 rounded-xl">
             <Sparkles className="h-6 w-6 text-primary-foreground" />
           </div>
-          <span className="text-xl font-bold font-headline text-sidebar-foreground tracking-tight">Mentur AI</span>
+          <span className="text-xl font-bold font-headline text-sidebar-foreground tracking-tight">Discate</span>
         </div>
       </SidebarHeader>
       

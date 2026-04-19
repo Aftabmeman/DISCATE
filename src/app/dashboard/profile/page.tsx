@@ -39,10 +39,10 @@ const languages = [
 
 const aboutTranslations: Record<string, any> = {
   "English": {
-    title: "About Mentur AI",
+    title: "About Discate",
     vision: {
       head: "Our Vision",
-      body: "We envision a world where the cognitive limitations of traditional education are dissolved through seamless human-AI symbiosis. Mentur AI aims to be the global standard for personalized intelligence, transforming how knowledge is perceived, ingested, and mastered. We strive to create an ecosystem where every student has access to an elite, personal professor that never tires and always inspires."
+      body: "We envision a world where the cognitive limitations of traditional education are dissolved through seamless human-AI symbiosis. Discate aims to be the global standard for personalized intelligence, transforming how knowledge is perceived, ingested, and mastered. We strive to create an ecosystem where every student has access to an elite, personal professor that never tires and always inspires."
     },
     mission: {
       head: "Our Mission",
@@ -54,10 +54,10 @@ const aboutTranslations: Record<string, any> = {
     }
   },
   "Hinglish": {
-    title: "About Mentur AI",
+    title: "About Discate",
     vision: {
       head: "Hamara Vision",
-      body: "Hum ek aisa world dekhte hain jahan traditional education ki limitations human-AI symbiosis se khatam ho jayein. Mentur AI ka goal hai personalized intelligence ka global standard banna, taaki knowledge lene aur use master karne ka tareeka hamesha ke liye badal jaye. Hum ek aisa ecosystem bana rahe hain jahan har student ke paas ek elite, personal professor ho jo kabhi thakta nahi."
+      body: "Hum ek aisa world dekhte hain jahan traditional education ki limitations human-AI symbiosis se khatam ho jayein. Discate ka goal hai personalized intelligence ka global standard banna, taaki knowledge lene aur use master karne ka tareeka hamesha ke liye badal jaye. Hum ek aisa ecosystem bana rahe hain jahan har student ke paas ek elite, personal professor ho jo kabhi thakta nahi."
     },
     mission: {
       head: "Hamara Mission",
@@ -69,10 +69,10 @@ const aboutTranslations: Record<string, any> = {
     }
   },
   "Marathish": {
-    title: "Mentur AI बद्दल",
+    title: "Discate बद्दल",
     vision: {
       head: "आमचे व्हिजन",
-      body: "आम्ही अशा जगाची कल्पना करतो जिथे पारंपारिक शिक्षणाच्या मर्यादा मानवी-AI सहजीवनाद्वारे नाहीशा होतील. Mentur AI चे उद्दिष्ट वैयक्तिकृत बुद्धिमत्तेसाठी जागतिक मानक बनणे आहे, ज्यामुळे ज्ञानाकडे पाहण्याचा आणि ते आत्मसात करण्याचा दृष्टिकोन बदलेल. आम्ही अशी परिसंस्था निर्माण करण्याचा प्रयत्न करतो जिथे प्रत्येक विद्यार्थ्याला एका उच्चभ्रू, वैयक्तिक प्राध्यापकाचा प्रवेश मिळेल जो कधीही थकत नाही."
+      body: "आम्ही अशा जगाची कल्पना करतो जिथे पारंपारिक शिक्षणाच्या मर्यादा मानवी-AI सहजीवनाद्वारे नाहीशा होतील. Discate चे उद्दिष्ट वैयक्तिकृत बुद्धिमत्तेसाठी जागतिक मानक बनणे आहे, ज्यामुळे ज्ञानाकडे पाहण्याचा आणि ते आत्मसात करण्याचा दृष्टिकोन बदलेल. आम्ही अशी परिसंस्था निर्माण करण्याचा प्रयत्न करतो जिथे प्रत्येक विद्यार्थ्याला एका उच्चभ्रू, वैयक्तिक प्राध्यापकाचा प्रवेश मिळेल जो कधीही थकत नाही."
     },
     mission: {
       head: "आमचे मिशन",
@@ -84,10 +84,10 @@ const aboutTranslations: Record<string, any> = {
     }
   },
   "Hindi": {
-    title: "Mentur AI के बारे में",
+    title: "Discate के बारे में",
     vision: {
       head: "हमारा विजन",
-      body: "हम एक ऐसी दुनिया की कल्पना करते हैं जहां पारंपरिक शिक्षा की संज्ञानात्मक सीमाएं मानव-एआई सहजीवन के माध्यम से समाप्त हो जाएं। Mentur AI का लक्ष्य व्यक्तिगत बुद्धिमत्ता के लिए वैश्विक मानक बनना है, जिससे ज्ञान को समझने और उसमें महारत हासिल करने का तरीका बदल जाए। हम एक पारिस्थितिकी तंत्र बनाने का प्रयास करते हैं जहां हर छात्र के पास एक विशिष्ट, व्यक्तिगत प्रोफेसर तक पहुंच हो जो कभी थकता नहीं है।"
+      body: "हम एक ऐसी दुनिया की कल्पना करते हैं जहां पारंपरिक शिक्षा की संज्ञानात्मक सीमाएं मानव-एआई सहजीवन के माध्यम से समाप्त हो जाएं। Discate का लक्ष्य व्यक्तिगत बुद्धिमत्ता के लिए वैश्विक मानक बनना है, जिससे ज्ञान को समझने और उसमें महारत हासिल करने का तरीका बदल जाए। हम एक पारिस्थितिकी तंत्र बनाने का प्रयास करते हैं जहां हर छात्र के पास एक विशिष्ट, व्यक्तिगत प्रोफेसर तक पहुंच हो जो कभी थकता नहीं है।"
     },
     mission: {
       head: "हमारा मिशन",

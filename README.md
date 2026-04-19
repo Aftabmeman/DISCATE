@@ -1,7 +1,7 @@
 
-# Mentur AI | Elite Academic Mentorship
+# Discate | Elite Academic Mentorship
 
-Mentur AI is an advanced academic mentorship platform that leverages AI to generate personalized assessments and provide deep evaluation of student work.
+Discate is an advanced academic mentorship platform that leverages AI to generate personalized assessments and provide deep evaluation of student work.
 
 ## GitHub Terminal Instructions
 
@@ -15,7 +15,7 @@ git init
 git add .
 
 # 3. Create a commit with a message
-git commit -m "Initial commit - Mentur AI Elite Academic Mentorship"
+git commit -m "Initial commit - Discate Elite Academic Mentorship"
 
 # 4. Set the default branch to main
 git branch -M main
