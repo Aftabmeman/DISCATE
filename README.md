@@ -1,11 +1,10 @@
-
 # Discate | Elite Academic Mentorship
 
 Discate is an advanced academic mentorship platform that leverages AI to generate personalized assessments and provide deep evaluation of student work.
 
 ## GitHub & Deployment Instructions
 
-Follow these exact commands to sync your lockfile and push your code. This is required because Cloudflare uses `npm ci`, which will fail if the `package-lock.json` is not in sync with the recent dependency fixes.
+Follow these exact commands to sync your lockfile and push your code. This is required because Cloudflare uses `npm clean-install`, which will fail if the `package-lock.json` is not in sync with the recent dependency fixes.
 
 ### 1. Sync Lockfile Locally
 Run this command in your local terminal:
@@ -16,7 +15,7 @@ npm install --legacy-peer-deps
 ### 2. Push to GitHub
 ```bash
 git add .
-git commit -m "Fix: Firebase no-options error and Next.js version compatibility for Cloudflare"
+git commit -m "Fix: Sync dependencies for Cloudflare and branding update"
 git push origin main
 ```
 

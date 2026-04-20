@@ -6,42 +6,34 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore'
 
 /**
- * Initializes Firebase with a fallback for build environments where 
- * configuration might be missing.
+ * Initializes Firebase with extreme safety for build environments.
+ * Prevents crashes during static generation if API keys are not present.
  */
 export function initializeFirebase() {
+  // In Next.js App Router, some client components might execute on the server 
+  // during build or initial render. We guard against this.
   if (typeof window === 'undefined') {
-     // Return dummy SDKs for server-side build steps if necessary
-     // but most logic is client-side.
+     return { firebaseApp: null as any, auth: null as any, firestore: null as any };
   }
 
-  if (!getApps().length) {
-    let firebaseApp: FirebaseApp;
-    
-    // Check if configuration is available
-    const hasConfig = !!firebaseConfig.apiKey;
+  const hasConfig = !!firebaseConfig.apiKey && 
+                    firebaseConfig.apiKey !== 'undefined' && 
+                    firebaseConfig.apiKey.length > 10;
 
-    try {
-      // Priority 1: Firebase App Hosting Automatic Init
-      firebaseApp = initializeApp();
-    } catch (e) {
-      if (hasConfig) {
-        // Priority 2: Standard fallback using config object
-        firebaseApp = initializeApp(firebaseConfig);
-      } else {
-        // Priority 3: Fail gracefully during build/tracing if env vars are missing
-        if (process.env.NODE_ENV === "production") {
-          console.warn('Firebase initialization skipped: No configuration detected. This is expected during some build stages if environment variables are not injected.');
-        }
-        return {
-          firebaseApp: null as any,
-          auth: null as any,
-          firestore: null as any
-        };
-      }
+  if (!getApps().length) {
+    if (!hasConfig) {
+      // Return empty services if no config is found to prevent build-time crashes.
+      return { firebaseApp: null as any, auth: null as any, firestore: null as any };
     }
 
-    return getSdks(firebaseApp);
+    try {
+      // Manual initialization with config object
+      const firebaseApp = initializeApp(firebaseConfig);
+      return getSdks(firebaseApp);
+    } catch (e) {
+      console.warn('Firebase initialization failed during build fallback:', e);
+      return { firebaseApp: null as any, auth: null as any, firestore: null as any };
+    }
   }
 
   return getSdks(getApp());

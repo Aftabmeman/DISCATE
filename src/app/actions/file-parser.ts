@@ -1,4 +1,3 @@
-
 'use server';
 
 import mammoth from 'mammoth';
@@ -6,7 +5,7 @@ import mammoth from 'mammoth';
 /**
  * Server Action to parse various file types and extract text content.
  * Supports PDF, DOCX, and TXT. Optimized for Cloudflare Edge.
- * Using pdfjs-dist for Edge compatibility.
+ * Strictly avoids Node.js built-ins like fs/http for Edge stability.
  */
 export async function parseFileToText(formData: FormData) {
   try {
@@ -19,13 +18,15 @@ export async function parseFileToText(formData: FormData) {
     let extractedText = "";
 
     if (fileType === 'pdf') {
-      // Dynamic import to avoid build-time issues with Node built-ins in Edge
+      // Dynamic import of pdfjs-dist for Edge compatibility
+      // We use the minified bundle to avoid Node dependencies
       const pdfjs = await import('pdfjs-dist/build/pdf.mjs');
       
       const loadingTask = pdfjs.getDocument({
         data: new Uint8Array(arrayBuffer),
         useWorkerFetch: false,
         isEvalSupported: false,
+        disableFontFace: true // Prevents attempts to load fonts which can trigger fs errors
       });
       
       const pdf = await loadingTask.promise;
@@ -41,7 +42,6 @@ export async function parseFileToText(formData: FormData) {
       }
       extractedText = fullText;
     } else if (fileType === 'docx') {
-      // Mammoth works with buffers correctly in EdgeAction
       const result = await mammoth.extractRawText({ buffer: Buffer.from(arrayBuffer) });
       extractedText = result.value;
     } else if (fileType === 'txt') {
