@@ -3,31 +3,26 @@
 
 Discate is an advanced academic mentorship platform that leverages AI to generate personalized assessments and provide deep evaluation of student work.
 
-## GitHub Terminal Instructions
+## GitHub & Deployment Instructions
 
 Follow these exact commands to sync your lockfile and push your code. This is required because Cloudflare uses `npm ci`, which will fail if the `package-lock.json` is not in sync with the recent dependency fixes.
 
+### 1. Sync Lockfile Locally
+Run this command in your local terminal:
 ```bash
-# 1. Sync lockfile (IMPORTANT for Cloudflare)
 npm install --legacy-peer-deps
+```
 
-# 2. Add all files to the staging area
+### 2. Push to GitHub
+```bash
 git add .
-
-# 3. Create a commit with a message
-git commit -m "Fix dependency conflicts and lockfile sync for Cloudflare"
-
-# 4. Set the default branch to main
-git branch -M main
-
-# 5. Push the code to your repository
-# git remote add origin <YOUR_GITHUB_REPO_URL>
-git push -u origin main
+git commit -m "Fix: Firebase no-options error and Next.js version compatibility for Cloudflare"
+git push origin main
 ```
 
 ## Cloudflare Pages Deployment
 To deploy to Cloudflare Pages, use the following build settings:
-- **Build command**: `npm run build`
+- **Build command**: `npx @cloudflare/next-on-pages`
 - **Output directory**: `.vercel/output/static`
 - **Framework preset**: `Next.js`
 
