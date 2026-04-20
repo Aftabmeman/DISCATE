@@ -26,7 +26,7 @@ To deploy to Cloudflare Pages, use the following build settings:
 - **Framework preset**: `Next.js`
 
 ## Core Features
-- **Edge Runtime Enabled**: AI generations and file parsing utilize Edge runtime for stability on Cloudflare.
+- **Node.js Runtime**: Optimized for OpenNext and Cloudflare stability.
 - **Sequential Assessment Wizard**: 4-step process to generate MCQs, Flashcards, and Essays.
 - **Multi-Format Parsing**: Elite support for PDF, DOCX, and TXT uploads using `pdfjs-dist`.
 - **Scholar Report Card**: Animated Score Circle with deep metrics (Grammar, Depth, Relevancy).
