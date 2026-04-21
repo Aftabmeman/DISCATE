@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -18,7 +19,9 @@ import {
   Trophy,
   Zap,
   Globe,
-  Target
+  Target,
+  Brain,
+  Lightbulb
 } from "lucide-react"
 import { Slider } from "@/components/ui/slider"
 import { generateStudyAssessments, type GenerateStudyAssessmentsOutput } from "@/ai/flows/generate-study-assessments-flow"
@@ -33,6 +36,15 @@ import { incrementUserStats } from "@/firebase/non-blocking-updates"
 import { Progress } from "@/components/ui/progress"
 import { doc } from "firebase/firestore"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 export const runtime = 'nodejs';
 
@@ -74,6 +86,7 @@ export default function AssessmentsPage() {
   const [difficulty, setDifficulty] = useState<string>("Medium")
   const [preferredLanguage, setPreferredLanguage] = useState("English")
   const [showLangConfirm, setShowLangConfirm] = useState(false)
+  const [showFlashcardHonesty, setShowFlashcardHonesty] = useState(false)
   
   const [isLoading, setIsLoading] = useState(false)
   const [isParsing, setIsParsing] = useState(false)
@@ -205,6 +218,10 @@ export default function AssessmentsPage() {
       setShowLangConfirm(true)
       return;
     }
+    if (mode === 'Flashcard') {
+      setShowFlashcardHonesty(true)
+      return;
+    }
     launchMode(mode)
   }
 
@@ -216,6 +233,7 @@ export default function AssessmentsPage() {
     setEssayContent("")
     setMcqCorrectCount(0)
     setShowLangConfirm(false)
+    setShowFlashcardHonesty(false)
   }
 
   const nextItem = () => {
@@ -249,6 +267,30 @@ export default function AssessmentsPage() {
 
   return (
     <div className="flex flex-col h-full space-y-6 sm:space-y-10 pb-40 animate-in fade-in duration-700 px-4 max-w-2xl mx-auto">
+      <AlertDialog open={showFlashcardHonesty} onOpenChange={setShowFlashcardHonesty}>
+        <AlertDialogContent className="rounded-[2rem] border-none shadow-3xl bg-white dark:bg-slate-900 p-8">
+          <AlertDialogHeader className="space-y-4">
+            <div className="h-16 w-16 bg-amber-100 dark:bg-amber-900/20 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+              <Lightbulb className="h-8 w-8 text-amber-600" />
+            </div>
+            <AlertDialogTitle className="text-2xl font-black font-headline text-center tracking-tight">Honesty is Mastery</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-500 dark:text-slate-400 text-center text-base leading-relaxed">
+              Flashcards are designed for **active recall**. If you flip a card and realize you didn't truly know the answer, be honest with yourself—click **'I Learned It'**. 
+              <br/><br/>
+              Don't just chase points; chase real knowledge. Ready to be a true scholar?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-6">
+            <AlertDialogAction 
+              onClick={() => launchMode('Flashcard')}
+              className="w-full h-14 rounded-xl bg-primary text-white font-black text-lg shadow-xl hover:bg-primary/90 transition-all"
+            >
+              Begin Honestly
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="px-1 text-center pt-6 sm:pt-10">
         <h1 className="text-2xl sm:text-5xl font-black font-headline tracking-tighter text-slate-900 dark:text-white uppercase leading-tight text-balance">Discate Practice</h1>
         <p className="text-[9px] font-black text-slate-400 mt-2 tracking-[0.4em] uppercase">Sequential Mastery Wizard</p>
@@ -479,18 +521,47 @@ export default function AssessmentsPage() {
           )}
 
           {activeMode === 'Flashcard' && result?.flashcards && (
-            <div className="perspective-1000 w-full min-h-[300px] sm:min-h-[350px] cursor-pointer" onClick={() => setIsAnswerRevealed(!isAnswerRevealed)}>
-              <div className={cn("relative w-full h-full min-h-[300px] sm:min-h-[350px] transition-all duration-1000 preserve-3d shadow-2xl rounded-[1.8rem] sm:rounded-[2.5rem]", isAnswerRevealed ? "rotate-y-180" : "")}>
-                <div className="absolute inset-0 backface-hidden bg-white dark:bg-slate-900 rounded-[1.8rem] sm:rounded-[2.5rem] p-6 sm:p-8 flex flex-col items-center justify-center text-center border border-slate-100 dark:border-white/5">
-                  <Badge className="bg-primary/10 text-primary mb-4 sm:mb-6 font-black uppercase text-[7px] tracking-[0.4em] px-5 sm:px-6 py-2 rounded-full">Recall Prompt</Badge>
-                  <h3 className="text-base sm:text-3xl font-black font-headline text-slate-900 dark:text-white leading-relaxed text-balance">{result.flashcards[currentIdx]?.front}</h3>
-                </div>
-                <div className="absolute inset-0 backface-hidden rotate-y-180 bg-slate-950 rounded-[1.8rem] sm:rounded-[2.5rem] p-6 sm:p-8 flex flex-col items-center justify-center text-center border border-white/5">
-                  <Badge className="bg-emerald-500/10 text-emerald-400 mb-4 sm:mb-6 font-black uppercase text-[7px] tracking-[0.4em] px-5 sm:px-6 py-2 rounded-full">Mastery Point</Badge>
-                  <p className="text-sm sm:text-2xl font-black text-slate-100 leading-relaxed italic text-balance">"{result.flashcards[currentIdx]?.back}"</p>
-                  <Button onClick={(e) => { e.stopPropagation(); nextItem(); }} className="mt-6 sm:mt-8 h-11 sm:h-12 px-6 sm:px-8 rounded-[0.8rem] sm:rounded-[1rem] bg-white text-slate-950 font-black text-xs sm:text-lg shadow-xl hover:bg-slate-50 active:scale-95 transition-all">Mastered <Check className="ml-2 h-4 w-4 sm:h-5 sm:w-5" /></Button>
+            <div className="flex flex-col items-center space-y-8 w-full max-w-md mx-auto">
+              <div className="perspective-1000 w-full min-h-[350px] sm:min-h-[400px] cursor-pointer" onClick={() => setIsAnswerRevealed(!isAnswerRevealed)}>
+                <div className={cn("relative w-full h-full min-h-[350px] sm:min-h-[400px] transition-all duration-700 preserve-3d shadow-3xl rounded-[2.5rem]", isAnswerRevealed ? "rotate-y-180" : "")}>
+                  <div className="absolute inset-0 backface-hidden bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 sm:p-10 flex flex-col items-center justify-center text-center border border-slate-100 dark:border-white/5 overflow-hidden">
+                    <Badge className="bg-primary/10 text-primary mb-6 font-black uppercase text-[8px] tracking-[0.4em] px-6 py-2 rounded-full shrink-0">Recall Prompt</Badge>
+                    <div className="flex-1 flex items-center justify-center w-full">
+                       <h3 className="text-xl sm:text-3xl font-black font-headline text-slate-900 dark:text-white leading-tight text-wrap break-words">{result.flashcards[currentIdx]?.front}</h3>
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 backface-hidden rotate-y-180 bg-slate-950 rounded-[2.5rem] p-8 sm:p-10 flex flex-col items-center justify-center text-center border border-white/5 overflow-hidden">
+                    <Badge className="bg-emerald-500/10 text-emerald-400 mb-6 font-black uppercase text-[8px] tracking-[0.4em] px-6 py-2 rounded-full shrink-0">Mastery Point</Badge>
+                    <div className="flex-1 flex items-center justify-center w-full">
+                       <p className="text-base sm:text-2xl font-black text-slate-100 leading-relaxed italic text-wrap break-words">"{result.flashcards[currentIdx]?.back}"</p>
+                    </div>
+                  </div>
                 </div>
               </div>
+              
+              {isAnswerRevealed && (
+                <div className="w-full flex gap-3 animate-in fade-in zoom-in-95 duration-500">
+                  <Button 
+                    onClick={() => { nextItem(); }} 
+                    variant="outline"
+                    className="flex-1 h-14 sm:h-16 rounded-[1.2rem] bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-white/10 font-black text-sm sm:text-lg shadow-xl hover:bg-slate-50 transition-all flex flex-col gap-0.5"
+                  >
+                    <Lightbulb className="h-4 w-4 text-amber-500" />
+                    <span>I Learned It</span>
+                  </Button>
+                  <Button 
+                    onClick={() => { nextItem(); }} 
+                    className="flex-1 h-14 sm:h-16 rounded-[1.2rem] bg-primary text-white font-black text-sm sm:text-lg shadow-3xl hover:bg-primary/90 transition-all flex flex-col gap-0.5"
+                  >
+                    <Brain className="h-4 w-4 text-white" />
+                    <span>I Know It</span>
+                  </Button>
+                </div>
+              )}
+              
+              {!isAnswerRevealed && (
+                <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.4em] animate-pulse">Tap Card to reveal</p>
+              )}
             </div>
           )}
 
