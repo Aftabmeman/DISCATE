@@ -4,7 +4,7 @@ Discate is an advanced academic mentorship platform that leverages AI to generat
 
 ## GitHub & Deployment Instructions
 
-Follow these exact commands to sync your lockfile and push your code. This is required because Cloudflare uses `npm clean-install`, which will fail if the `package-lock.json` is not in sync with the recent dependency fixes.
+Follow these exact commands to sync your lockfile and push your code. This is required because Cloudflare uses `npm clean-install`, and Render also benefits from a clean state.
 
 ### 1. Sync Lockfile Locally
 Run this command in your local terminal:
@@ -15,7 +15,7 @@ npm install --legacy-peer-deps
 ### 2. Push to GitHub
 ```bash
 git add .
-git commit -m "Fix: Sync dependencies for Cloudflare and branding update"
+git commit -m "Fix: PDF parsing worker error and dependency sync"
 git push origin main
 ```
 
