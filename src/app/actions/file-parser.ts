@@ -1,16 +1,13 @@
 'use server';
 
 import mammoth from 'mammoth';
-import * as pdfjs from 'pdfjs-dist';
-
-// Set the worker source to a stable CDN to bypass environment-specific filesystem issues
-pdfjs.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs';
+import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 /**
  * Server Action to parse various file types and extract text content.
- * Forced to use external CDN for PDF worker to ensure stability on Render/Cloudflare.
+ * Uses the Legacy Build of pdfjs-dist for native Node.js compatibility on Render/Cloudflare.
  */
 export async function parseFileToText(formData: FormData) {
   try {
@@ -28,9 +25,10 @@ export async function parseFileToText(formData: FormData) {
 
     if (fileType === 'pdf') {
       try {
+        // Using legacy build ensures it works natively in Node.js ESM environments
+        // without requiring an external HTTPS worker script.
         const loadingTask = pdfjs.getDocument({
           data: new Uint8Array(arrayBuffer),
-          useWorkerFetch: true, // Crucial: Fetch worker from the defined CDN URL
           isEvalSupported: false,
           disableFontFace: true,
           verbosity: 0
@@ -52,7 +50,7 @@ export async function parseFileToText(formData: FormData) {
         extractedText = fullText;
       } catch (pdfError: any) {
         console.error("PDF Parsing Error:", pdfError);
-        throw new Error(`PDF Engine Error: ${pdfError.message || "Failed to parse PDF pages."}`);
+        throw new Error(`PDF Engine Error: ${pdfError.message || "Native parsing failed."}`);
       }
     } else if (fileType === 'docx') {
       const result = await mammoth.extractRawText({ buffer: Buffer.from(arrayBuffer) });
