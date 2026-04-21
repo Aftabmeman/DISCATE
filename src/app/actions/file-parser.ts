@@ -7,8 +7,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 /**
  * Server Action to parse various file types and extract text content.
- * Supports PDF, DOCX, and TXT. Optimized for Cloudflare Edge and Render.
- * Strictly avoids Node.js built-ins like fs/http for Edge stability where possible.
+ * Optimized for high-stability across Node.js (Render) and Edge-like environments.
  */
 export async function parseFileToText(formData: FormData) {
   try {
@@ -25,28 +24,28 @@ export async function parseFileToText(formData: FormData) {
     let extractedText = "";
 
     if (fileType === 'pdf') {
-      // Dynamic import of pdfjs-dist
+      // Use the standard distribution for better compatibility in Node
       const pdfjs = await import('pdfjs-dist/build/pdf.mjs');
       
-      // We must disable the worker to avoid "Cannot find module" errors in server environments
-      // This forces the PDF engine to run in a single-threaded mode.
       const loadingTask = pdfjs.getDocument({
         data: new Uint8Array(arrayBuffer),
         useWorkerFetch: false,
         isEvalSupported: false,
-        disableFontFace: true,
-        disableWorker: true, // CRITICAL: Fixes worker loading failure
+        disableFontFace: true, // Saves memory
+        disableWorker: true,    // Run in main thread for stability in serverless
         verbosity: 0
       });
       
       const pdf = await loadingTask.promise;
       let fullText = "";
       
+      // Process pages sequentially to avoid memory spikes
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
         const pageText = textContent.items
-          .map((item: any) => ('str' in item ? item.str : ''))
+          .filter((item: any) => 'str' in item)
+          .map((item: any) => item.str)
           .join(" ");
         fullText += pageText + "\n";
       }
@@ -57,22 +56,18 @@ export async function parseFileToText(formData: FormData) {
     } else if (fileType === 'txt') {
       extractedText = new TextDecoder().decode(arrayBuffer);
     } else {
-      throw new Error("Unsupported file format. Please use PDF, DOCX, or TXT.");
+      throw new Error("Unsupported format. Use PDF, DOCX, or TXT.");
     }
 
-    if (!extractedText || extractedText.trim().length < 10) {
-      throw new Error("Could not extract meaningful text from the file.");
+    const trimmedText = extractedText.trim();
+    if (!trimmedText || trimmedText.length < 10) {
+      throw new Error("The document seems to be empty or contains no readable text.");
     }
 
-    return { text: extractedText.trim() };
+    return { text: trimmedText };
   } catch (error: any) {
-    console.error("File Parsing Error:", error.message);
-    
-    // Improved error reporting
-    if (error.message.includes('PDF') || error.message.includes('worker')) {
-      return { error: "PDF parsing issue. Please try a different PDF or copy-paste your text." };
-    }
-    
-    return { error: error.message || "Failed to parse file." };
+    console.error("Discate Parser Error:", error.message);
+    // Return the specific error message to the UI for better debugging
+    return { error: error.message || "Failed to parse document." };
   }
 }
