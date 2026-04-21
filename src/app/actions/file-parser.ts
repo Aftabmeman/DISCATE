@@ -1,6 +1,9 @@
+
 'use server';
 
 import mammoth from 'mammoth';
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 /**
  * Server Action to parse various file types and extract text content.
@@ -12,6 +15,10 @@ export async function parseFileToText(formData: FormData) {
     const file = formData.get('file') as File;
     if (!file) throw new Error("No file uploaded");
 
+    if (file.size > MAX_FILE_SIZE) {
+      throw new Error("File is too large. Max size is 5MB.");
+    }
+
     const arrayBuffer = await file.arrayBuffer();
     const fileType = file.name.split('.').pop()?.toLowerCase();
 
@@ -22,13 +29,13 @@ export async function parseFileToText(formData: FormData) {
       const pdfjs = await import('pdfjs-dist/build/pdf.mjs');
       
       // We must disable the worker to avoid "Cannot find module" errors in server environments
-      // This forces the PDF engine to run in a single-threaded "fake worker" mode which is stable for Server Actions.
+      // This forces the PDF engine to run in a single-threaded mode.
       const loadingTask = pdfjs.getDocument({
         data: new Uint8Array(arrayBuffer),
         useWorkerFetch: false,
         isEvalSupported: false,
         disableFontFace: true,
-        disableWorker: true, // CRITICAL: Fixes the worker loading failure on Render/Cloudflare
+        disableWorker: true, // CRITICAL: Fixes worker loading failure
         verbosity: 0
       });
       
@@ -60,10 +67,12 @@ export async function parseFileToText(formData: FormData) {
     return { text: extractedText.trim() };
   } catch (error: any) {
     console.error("File Parsing Error:", error.message);
-    // If it's still a worker error, give a clear alternative
-    if (error.message.includes('fake worker') || error.message.includes('worker')) {
-      return { error: "PDF Engine is currently busy. Please copy-paste your text directly." };
+    
+    // Improved error reporting
+    if (error.message.includes('PDF') || error.message.includes('worker')) {
+      return { error: "PDF parsing issue. Please try a different PDF or copy-paste your text." };
     }
+    
     return { error: error.message || "Failed to parse file." };
   }
 }

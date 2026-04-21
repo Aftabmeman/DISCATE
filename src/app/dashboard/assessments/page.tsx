@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -35,6 +36,8 @@ import { doc } from "firebase/firestore"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export const runtime = 'nodejs';
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 const academicLevels = [
   "Class 8th", "Class 9th", "Class 10th", "Class 11th", "Class 12th",
@@ -104,6 +107,16 @@ export default function AssessmentsPage() {
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    if (file.size > MAX_FILE_SIZE) {
+      toast({ 
+        title: "File Too Large", 
+        description: "Please upload a document smaller than 5MB.", 
+        variant: "destructive" 
+      });
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
 
     setIsParsing(true);
     const formData = new FormData();
@@ -269,6 +282,7 @@ export default function AssessmentsPage() {
                            <FileUp className="h-5 w-5 sm:h-8 sm:w-8 text-primary group-hover:scale-110 transition-transform" />
                            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-primary">Upload Document</span>
                            <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">PDF, DOCX, TXT</span>
+                           <span className="text-[8px] font-black text-emerald-500 uppercase tracking-[0.2em] mt-1">MAX 5MB</span>
                         </div>
                       )}
                     </Button>
