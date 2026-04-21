@@ -16,7 +16,7 @@ npm install --legacy-peer-deps
 ### 2. Push to GitHub
 ```bash
 git add .
-git commit -m "Fix: Final PDF robustness and direct error reporting"
+git commit -m "Fix: Forced CDN PDF worker for environment stability"
 git push origin main
 ```
 
