@@ -21,12 +21,12 @@ import {
   Info,
   Rocket,
   Target,
-  Heart
+  Heart,
+  User
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { DiscateLogo } from "@/components/DiscateLogo"
 import { useToast } from "@/hooks/use-toast"
 import { useDoc, useMemoFirebase } from "@/firebase"
 import { doc, updateDoc } from "firebase/firestore"
@@ -157,17 +157,19 @@ export default function ProfilePage() {
     <div className="space-y-8 sm:space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-40 px-4 max-w-2xl mx-auto">
       <div className="flex flex-col items-center pt-8 sm:pt-10 pb-4">
         <div className="relative inline-block group">
-          <div className="absolute inset-0 bg-primary/20 blur-[80px] rounded-full scale-150 transition-all" />
-          <DiscateLogo size="lg" className="flex" />
-          <div className="absolute -top-1 -right-1 z-10 h-8 w-8 sm:h-12 sm:w-12 bg-emerald-500 rounded-xl sm:rounded-[20px] border-2 sm:border-4 border-white dark:border-slate-900 flex items-center justify-center shadow-xl">
-             <ShieldCheck className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+          <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full scale-125 transition-all opacity-50" />
+          <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-[2.5rem] bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-white/5 flex items-center justify-center shadow-2xl relative z-10 overflow-hidden">
+             <User className="h-12 w-12 sm:h-16 sm:w-16 text-primary" />
+          </div>
+          <div className="absolute -top-1 -right-1 z-20 h-8 w-8 sm:h-10 sm:w-10 bg-emerald-500 rounded-xl sm:rounded-2xl border-4 border-white dark:border-slate-950 flex items-center justify-center shadow-[0_8px_20px_rgba(16,185,129,0.4)] animate-in zoom-in-50 delay-300">
+             <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
           </div>
         </div>
-        <div className="mt-6 sm:mt-10 text-center space-y-1 sm:space-y-2">
-          <h1 className="text-2xl sm:text-4xl font-black font-headline tracking-tighter text-slate-900 dark:text-white uppercase leading-none">
+        <div className="mt-6 text-center space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-black font-headline tracking-tighter text-slate-900 dark:text-white uppercase leading-none">
             {user?.displayName ?? "Scholar"}
           </h1>
-          <p className="text-slate-500 text-[10px] sm:text-xs font-black uppercase tracking-[0.3em]">
+          <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
             Elite Academic Voyager
           </p>
         </div>

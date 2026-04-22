@@ -64,10 +64,7 @@ function AuthActionHandler() {
         
         <CardHeader className="text-center pt-12 pb-4">
           <DiscateLogo size="md" className="mx-auto mb-6" />
-          <CardTitle className="text-3xl font-headline font-bold tracking-tight text-slate-900 dark:text-white uppercase">
-            Discate
-          </CardTitle>
-          <CardDescription className="text-slate-500 font-medium">
+          <CardDescription className="text-slate-500 font-medium uppercase tracking-[0.2em] text-[10px]">
             Academic verification portal
           </CardDescription>
         </CardHeader>

@@ -34,11 +34,8 @@ export default function DashboardLayout({
     <div className="flex flex-col h-screen w-full bg-background transition-colors duration-300 overflow-hidden relative">
       <NotificationManager />
       <header className="h-16 sm:h-20 border-b flex items-center justify-between px-4 sm:px-8 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl sticky top-0 z-50">
-        <Link href="/dashboard" className="flex items-center gap-1.5 sm:gap-2">
+        <Link href="/dashboard" className="flex items-center">
           <DiscateLogo size="sm" />
-          <span className="font-black font-headline text-lg sm:text-xl tracking-tighter bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-            Discate
-          </span>
         </Link>
         
         <div className="flex items-center gap-1 sm:gap-2">
