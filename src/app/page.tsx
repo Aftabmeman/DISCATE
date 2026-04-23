@@ -3,9 +3,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { auth, firestore } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { 
   ChevronRight, 
@@ -33,7 +32,7 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserName(user.displayName?.split(' ')[0] || "Scholar");
         setUserState('authenticated');
@@ -94,7 +93,6 @@ export default function Home() {
   // Original Landing Page for guest/first-time users
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFD] dark:bg-slate-950 font-body transition-colors duration-500">
-      {/* Navigation */}
       <nav className="h-20 border-b bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl sticky top-0 z-50 flex items-center justify-between px-6 md:px-12">
         <DiscateLogo size="sm" />
         <div className="flex items-center gap-4">
@@ -108,7 +106,6 @@ export default function Home() {
       </nav>
 
       <main className="flex-1">
-        {/* Hero Section */}
         <section className="relative py-20 md:py-32 px-6 overflow-hidden">
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] -mr-40 -mt-40 opacity-70"></div>
           <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[120px] -ml-40 -mb-40 opacity-50"></div>
@@ -133,10 +130,9 @@ export default function Home() {
               <Button className="h-16 md:h-20 px-10 md:px-14 rounded-2xl bg-primary text-white font-black text-xl md:text-2xl shadow-2xl shadow-primary/30 hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all group" asChild>
                 <Link href="/login">
                   Get Started
-                  <ChevronRight className="ml-2 h-6 w-6 group-hover:translate-x-2 transition-transform" />
+                  <ChevronRight className="ml-2 h-6 w-6 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
-              
               <p className="text-[10px] md:text-xs text-slate-400 font-medium max-w-sm mx-auto leading-relaxed text-balance">
                 We use your Google account information only to securely manage your academic dashboard and sync your progress.
               </p>
@@ -144,7 +140,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Features Section */}
         <section className="py-24 px-6 bg-white dark:bg-slate-900/50">
           <div className="max-w-6xl mx-auto space-y-16">
             <div className="text-center space-y-4">
@@ -189,7 +184,6 @@ export default function Home() {
         </section>
       </main>
 
-      {/* Verification Compliant Footer */}
       <footer className="py-16 border-t bg-white dark:bg-slate-950 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start justify-between gap-12">
           <div className="flex flex-col items-start gap-4 max-w-sm">
@@ -199,7 +193,7 @@ export default function Home() {
             </p>
             <div className="flex items-center gap-2 text-primary font-black text-sm pt-2">
               <Mail className="h-4 w-4" />
-              <Link href="mailto:appdevelopmentlearning@gmail.com" className="hover:underline">appdevelopmentlearning@gmail.com</Link>
+              <Link href="mailto:aftabghaswalaofficial@gmail.com" className="hover:underline">aftabghaswalaofficial@gmail.com</Link>
             </div>
           </div>
           
