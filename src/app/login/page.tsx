@@ -2,7 +2,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { signInWithRedirect, getRedirectResult, GoogleAuthProvider, signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth"
+import { 
+  signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult, 
+  GoogleAuthProvider, 
+  signInWithEmailAndPassword, 
+  onAuthStateChanged 
+} from "firebase/auth"
 import { auth, firestore } from "@/lib/firebase"
 import { doc, getDoc } from "firebase/firestore"
 import { useRouter } from "next/navigation"
@@ -17,7 +24,7 @@ import { Separator } from "@/components/ui/separator"
 
 /**
  * Enhanced Login Page for Discate AI.
- * Handles Google Redirect result and pro-actively checks for existing profiles.
+ * Uses Popup as primary and Redirect as fallback for maximum stability.
  */
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -30,22 +37,28 @@ export default function LoginPage() {
   useEffect(() => {
     if (!auth || !firestore) return;
 
-    // Monitor auth state changes - This is the primary redirect driver
+    // Handle Redirect Result (Fallback)
+    getRedirectResult(auth).then(async (result) => {
+      if (result) {
+        const user = result.user;
+        const profileRef = doc(firestore!, "users", user.uid, "profile", "stats");
+        const profileSnap = await getDoc(profileRef);
+        if (profileSnap.exists()) {
+          router.push("/dashboard");
+        } else {
+          router.push("/signup");
+        }
+      }
+    }).catch(console.error);
+
+    // Global listener to catch session
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        try {
-          const profileRef = doc(firestore, "users", user.uid, "profile", "stats");
-          const profileSnap = await getDoc(profileRef);
-          
-          if (profileSnap.exists()) {
-            // User exists, go to dashboard
-            router.push("/dashboard");
-          } else {
-            // New user signed in via Google, send to signup for profile completion
-            router.push("/signup");
-          }
-        } catch (e) {
-          console.error("Profile check error:", e);
+        const profileRef = doc(firestore!, "users", user.uid, "profile", "stats");
+        const profileSnap = await getDoc(profileRef);
+        if (profileSnap.exists()) {
+          router.push("/dashboard");
+        } else {
           setGoogleLoading(false);
         }
       } else {
@@ -53,47 +66,43 @@ export default function LoginPage() {
       }
     });
 
-    // Handle Google Redirect Result as a backup verification
-    getRedirectResult(auth)
-      .then(async (result) => {
-        if (result) {
-          const user = result.user;
-          const profileRef = doc(firestore, "users", user.uid, "profile", "stats");
-          const profileSnap = await getDoc(profileRef);
-
-          if (profileSnap.exists()) {
-            toast({ title: "Welcome Back", description: `Signed in as ${user.displayName}` });
-            router.push("/dashboard");
-          } else {
-            router.push("/signup");
-          }
-        }
-      })
-      .catch((error: any) => {
-        if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-closure-redirect') {
-          console.error("Redirect Error:", error);
-          toast({ variant: "destructive", title: "Authentication Error", description: error.message });
-        }
-        setGoogleLoading(false);
-      });
-
     return () => unsubscribe();
-  }, [router, toast]);
+  }, [router]);
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     if (!auth) return;
     setGoogleLoading(true);
     const provider = new GoogleAuthProvider();
-    // Using redirect for maximum stability across all browsers
-    signInWithRedirect(auth, provider);
+    
+    try {
+      // Try Popup first (Better experience, no loop)
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const profileRef = doc(firestore!, "users", user.uid, "profile", "stats");
+      const profileSnap = await getDoc(profileRef);
+
+      if (profileSnap.exists()) {
+        router.push("/dashboard");
+      } else {
+        router.push("/signup");
+      }
+    } catch (error: any) {
+      // If popup is blocked, fallback to Redirect
+      if (error.code === 'auth/popup-blocked') {
+        signInWithRedirect(auth, provider);
+      } else {
+        toast({ variant: "destructive", title: "Error", description: error.message });
+        setGoogleLoading(false);
+      }
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     try {
-      await signInWithEmailAndPassword(auth!, email, password)
-      // Redirection is handled by onAuthStateChanged listener above
+      if (!auth) throw new Error("Auth not initialized");
+      await signInWithEmailAndPassword(auth, email, password)
     } catch (error: any) {
       toast({
         title: "Login Failed",
@@ -108,7 +117,7 @@ export default function LoginPage() {
     return (
       <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.4em] animate-pulse">Authenticating Scholar...</p>
+        <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.4em] animate-pulse">Checking Profile...</p>
       </div>
     );
   }
