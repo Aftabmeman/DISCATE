@@ -1,7 +1,8 @@
 
 'use server';
 /**
- * @fileOverview Discate Scholar Professor for Deep Metrics Evaluation.
+ * @fileOverview DISCATE AI - Elite Academic Mentor (Inspired by Rancho).
+ * Handles deep-metric evaluation with personality-driven feedback.
  */
 
 import { z } from 'zod';
@@ -53,17 +54,18 @@ export async function evaluateEssayFeedback(input: EvaluateEssayFeedbackInput): 
     suggestedRewrite: ""
   };
 
-  const languagePrompt = `Use ${input.preferredLanguage} style for feedback. If it is a "Mix" style (e.g., Hinglish, Marathish), use the regional mix with English. Tone: "Baval" (energetic, encouraging but strictly academic).`;
+  const systemPrompt = `You are 'DISCATE AI', an elite academic mentor inspired by 'Rancho' from 3 Idiots. 
+Your goal is excellence, not just degrees. "Success ke piche mat bhago, Excellence ka picha karo, Success jhak maarkey tumhare piche ayegi."
 
-  const systemPrompt = `You are the Discate 'Scholar Professor'. Evaluate the student's answer.
-${languagePrompt}
+TONE: Brilliant, encouraging, logical, and slightly witty. Respond in ${input.preferredLanguage}.
 
-METRICS:
-1. Grammar Accuracy Rate: Check grammar/spelling (0-100%).
-2. Content Depth: How solid and deep are the points (0-100%)?
-3. Relevancy Score: How well does it answer the specific question (0-100%)?
-4. Overall Score: Average of metrics (0-100%).
-5. Coins Earned: Calculate based on overall score (e.g., Score * 0.5).
+THE "ANTI-PARAGRAPH" RULE:
+If the student submits a single long paragraph without structure, criticize it firmly. Real scholars use points, headings, and clear divisions.
+
+LEVEL-BASED CRITERIA:
+1. 8th-10th Standard: Must have Intro, Points (Body), and Simple Conclusion. Focus on clarity.
+2. 11th-Graduation: Must have Professional Intro, Body with 1-2 Real-world Examples, and a Forward-looking Conclusion. Focus on application.
+3. Competitive Exams (UPSC/GATE etc.): Must have Contextual Intro, Body with Sub-headings/Facts, and a Balanced Conclusion. Focus on multidimensional thinking.
 
 JSON FORMAT ONLY:
 {
@@ -75,16 +77,16 @@ JSON FORMAT ONLY:
     "coinsEarned": number,
     "status": "Mastered" | "Improving" | "Needs Practice"
   },
-  "professorFeedback": "string in ${input.preferredLanguage} style",
-  "suggestedRewrite": "string - The Perfect Model Answer"
+  "professorFeedback": "Rancho-style feedback (Elaborated critique of structure/logic, no rattu-popat allowed)",
+  "suggestedRewrite": "The Ideal Path: Structured [Introduction] -> [Main Body with points/examples] -> [Conclusion]"
 }`;
 
   const userPrompt = `
+Academic Level: ${input.academicLevel}
 Topic: ${input.topic}
-Level: ${input.academicLevel}
 Question: ${input.question || 'Practice'}
 
-Student Answer:
+Student's Submission:
 """
 ${input.essayText}
 """`;
@@ -103,7 +105,7 @@ ${input.essayText}
           { role: 'user', content: userPrompt }
         ],
         response_format: { type: 'json_object' },
-        temperature: 0.1,
+        temperature: 0.2,
       }),
     });
 
@@ -121,9 +123,9 @@ ${input.essayText}
     });
   } catch (error: any) {
     return { 
-      error: "Evaluation failed. Please try again.", 
+      error: "Evaluation failed. Rancho is busy solving a machine problem. Try again.", 
       evaluationData: { type: 'Essay', overallScore: 0, grammarScore: 0, contentDepthScore: 0, relevancyScore: 0, coinsEarned: 0, status: 'Needs Practice' },
-      professorFeedback: "Technical interruption. Please resubmit.",
+      professorFeedback: "Technical interruption. Excellence requires a stable connection.",
       suggestedRewrite: ""
     };
   }
