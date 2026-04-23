@@ -48,7 +48,7 @@ export default function SignupPage() {
   useEffect(() => {
     if (!auth || !firestore) return;
 
-    // Monitor auth state changes pro-actively
+    // Monitor auth state changes pro-actively to catch the redirect session
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
@@ -59,7 +59,7 @@ export default function SignupPage() {
             // Existing user, send to dashboard
             router.push("/dashboard");
           } else {
-            // Logged in but no profile (Google naya user) -> Go to Step 2
+            // Logged in but no profile (new Google user) -> Go to Step 2 for profile completion
             setName(user.displayName || "");
             setEmail(user.email || "");
             setStep(2);
@@ -70,11 +70,12 @@ export default function SignupPage() {
           setGoogleLoading(false);
         }
       } else {
+        // No user found, allow manual signup
         setGoogleLoading(false);
       }
     });
 
-    // Handle Google Redirect Result
+    // Handle Google Redirect Result explicitly
     getRedirectResult(auth)
       .then(async (result) => {
         if (result) {

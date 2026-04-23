@@ -84,7 +84,7 @@ export default function LoginPage() {
     if (!auth) return;
     setGoogleLoading(true);
     const provider = new GoogleAuthProvider();
-    // Using redirect for maximum stability
+    // Using redirect for maximum stability across all browsers
     signInWithRedirect(auth, provider);
   };
 
@@ -93,7 +93,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await signInWithEmailAndPassword(auth!, email, password)
-      // Redirection is handled by onAuthStateChanged listener
+      // Redirection is handled by onAuthStateChanged listener above
     } catch (error: any) {
       toast({
         title: "Login Failed",
