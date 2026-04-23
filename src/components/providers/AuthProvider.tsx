@@ -19,14 +19,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Public routes that don't require authentication
+  const publicRoutes = ["/", "/login", "/signup", "/privacy", "/terms", "/auth/action"];
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
 
-      if (!user && !["/login", "/signup"].includes(pathname)) {
+      // Redirect to login if not authenticated and not on a public route
+      if (!user && !publicRoutes.includes(pathname)) {
         router.push("/login");
-      } else if (user && !user.emailVerified && pathname.startsWith("/dashboard") && pathname !== "/dashboard/verify-email") {
+      } 
+      // Redirect to verify email if user exists but is not verified (only for dashboard routes)
+      else if (user && !user.emailVerified && pathname.startsWith("/dashboard") && pathname !== "/dashboard/verify-email") {
         router.push("/dashboard/verify-email");
       }
     });
