@@ -18,32 +18,11 @@ import { cn } from "@/lib/utils";
 import { DiscateLogo } from "@/components/DiscateLogo";
 import Link from "next/link";
 
+/**
+ * Public Landing Page for DISCATE AI.
+ * This page is accessible to everyone (no login wall) to meet Google Verification standards.
+ */
 export default function Home() {
-  const [showSplash, setShowSplash] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (showSplash) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 overflow-hidden">
-        <div className="relative flex flex-col items-center animate-in zoom-in-95 duration-1000">
-          <DiscateLogo size="xl" />
-          <div className="mt-8 text-center space-y-2">
-            <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.4em] animate-pulse">
-              Academic Intelligence
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFD] dark:bg-slate-950 font-body transition-colors duration-500">
       {/* Navigation */}
@@ -53,7 +32,7 @@ export default function Home() {
           <Button variant="ghost" className="font-bold text-slate-600 dark:text-slate-300" asChild>
             <Link href="/login">Login</Link>
           </Button>
-          <Button className="bg-primary hover:bg-primary/90 rounded-xl font-bold px-6" asChild>
+          <Button className="bg-primary hover:bg-primary/90 rounded-xl font-bold px-6 shadow-lg shadow-primary/20" asChild>
             <Link href="/signup">Sign Up</Link>
           </Button>
         </div>
@@ -83,7 +62,7 @@ export default function Home() {
             
             <div className="pt-8 flex flex-col items-center justify-center gap-6">
               <Button className="h-16 md:h-20 px-10 md:px-14 rounded-2xl bg-primary text-white font-black text-xl md:text-2xl shadow-2xl shadow-primary/30 hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all group" asChild>
-                <Link href="/signup">
+                <Link href="/login">
                   Get Started
                   <ChevronRight className="ml-2 h-6 w-6 group-hover:translate-x-2 transition-transform" />
                 </Link>
@@ -139,23 +118,9 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        {/* CTA Section */}
-        <section className="py-24 px-6">
-          <div className="max-w-4xl mx-auto bg-slate-900 dark:bg-primary rounded-[3rem] p-12 md:p-20 text-center space-y-8 shadow-3xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
-            <h2 className="text-3xl md:text-5xl font-black font-headline text-white tracking-tight leading-tight">Ready to Elevate Your Potential?</h2>
-            <p className="text-slate-300 dark:text-white/80 text-lg font-medium max-w-xl mx-auto leading-relaxed">
-              Join the elite circle of scholars using DISCATE AI to master their subjects with precision.
-            </p>
-            <Button className="h-16 px-12 rounded-2xl bg-white text-slate-900 hover:bg-slate-50 font-black text-xl shadow-xl hover:scale-105 active:scale-95 transition-all" asChild>
-              <Link href="/signup">Begin Your Journey</Link>
-            </Button>
-          </div>
-        </section>
       </main>
 
-      {/* Footer */}
+      {/* Verification Compliant Footer */}
       <footer className="py-16 border-t bg-white dark:bg-slate-950 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start justify-between gap-12">
           <div className="flex flex-col items-start gap-4 max-w-sm">
@@ -165,24 +130,24 @@ export default function Home() {
             </p>
             <div className="flex items-center gap-2 text-primary font-black text-sm pt-2">
               <Mail className="h-4 w-4" />
-              <Link href="mailto:aftabghaswalaofficial@gmail.com">aftabghaswalaofficial@gmail.com</Link>
+              <Link href="mailto:aftabghaswalaofficial@gmail.com" className="hover:underline">aftabghaswalaofficial@gmail.com</Link>
             </div>
           </div>
           
           <div className="flex flex-wrap gap-12">
             <div className="space-y-4">
               <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 dark:text-white">Legal</h4>
-              <ul className="space-y-2">
-                <li><Link href="/privacy" className="text-slate-500 hover:text-primary font-bold text-sm transition-colors">Privacy Policy</Link></li>
-                <li><Link href="/terms" className="text-slate-500 hover:text-primary font-bold text-sm transition-colors">Terms of Service</Link></li>
+              <ul className="space-y-3">
+                <li><Link href="/privacy" className="text-slate-500 hover:text-primary font-bold text-sm transition-colors block">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="text-slate-500 hover:text-primary font-bold text-sm transition-colors block">Terms of Service</Link></li>
               </ul>
             </div>
             
             <div className="space-y-4">
               <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 dark:text-white">Platform</h4>
-              <ul className="space-y-2">
-                <li><Link href="/login" className="text-slate-500 hover:text-primary font-bold text-sm transition-colors">Login</Link></li>
-                <li><Link href="/signup" className="text-slate-500 hover:text-primary font-bold text-sm transition-colors">Signup</Link></li>
+              <ul className="space-y-3">
+                <li><Link href="/login" className="text-slate-500 hover:text-primary font-bold text-sm transition-colors block">Login</Link></li>
+                <li><Link href="/signup" className="text-slate-500 hover:text-primary font-bold text-sm transition-colors block">Signup</Link></li>
               </ul>
             </div>
           </div>

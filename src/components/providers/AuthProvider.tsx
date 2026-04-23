@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Public routes that don't require authentication
+  // Public routes that MUST be accessible without login for Google Verification
   const publicRoutes = ["/", "/login", "/signup", "/privacy", "/terms", "/auth/action"];
 
   useEffect(() => {
@@ -27,11 +27,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(user);
       setLoading(false);
 
-      // Redirect to login if not authenticated and not on a public route
-      if (!user && !publicRoutes.includes(pathname)) {
+      // Redirect to login only if accessing a protected route (like /dashboard/*)
+      const isPublicRoute = publicRoutes.includes(pathname);
+      
+      if (!user && !isPublicRoute) {
         router.push("/login");
       } 
-      // Redirect to verify email if user exists but is not verified (only for dashboard routes)
+      // Handle email verification redirect for dashboard users
       else if (user && !user.emailVerified && pathname.startsWith("/dashboard") && pathname !== "/dashboard/verify-email") {
         router.push("/dashboard/verify-email");
       }
