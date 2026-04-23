@@ -7,6 +7,7 @@ import { useTheme } from "@/components/providers/ThemeProvider"
 import { auth, firestore } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import Link from "next/link"
 import { 
   LogOut, 
   ShieldCheck, 
@@ -22,7 +23,9 @@ import {
   Rocket,
   Target,
   Heart,
-  User
+  User,
+  FileText,
+  Scale
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
@@ -81,7 +84,7 @@ const aboutTranslations: Record<string, any> = {
     motive: {
       head: "आमचा हेतू",
       body: "आमचा ठाम विश्वास आहे की क्षमता सार्वत्रिक आहे परंतु संधी नाही. आमचा हेतू आधुनिक विद्वानांना कोणत्याही विषयाचा सामना करण्याचा आत्मविश्वास देणे हा आहे, मग त्यांची पार्श्वभूमी किंवा प्रादेशिक भाषा कोणतीही असो. आम्ही बौद्धिक कुतूहलाची ठिणगी पेटवण्यासाठी आणि शैक्षणिक कामगिरीच्या शिखरावर पोहोचण्यासाठी आवश्यक शिडी प्रदान करण्यासाठी अस्तित्वात आहोत."
-    }
+    },
   },
   "Hindi": {
     title: "Discate के बारे में",
@@ -267,6 +270,34 @@ export default function ProfilePage() {
             </div>
             <ChevronRight className="h-5 w-5 sm:h-7 sm:w-7 text-slate-200 group-hover:translate-x-1 transition-transform" />
           </Card>
+        </div>
+
+        <div className="space-y-3 sm:space-y-4">
+          <h3 className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] px-2 flex items-center gap-2">
+            <ShieldCheck className="h-3 w-3 text-primary" /> Legal &amp; Support
+          </h3>
+          <Link href="/privacy">
+            <Card className="flex items-center justify-between p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all border-none shadow-xl bg-white dark:bg-slate-900 group mb-3">
+              <div className="flex items-center gap-4 sm:gap-6">
+                <div className="p-3 sm:p-5 bg-slate-50 dark:bg-slate-800 rounded-xl shadow-sm group-hover:scale-110 transition-transform">
+                  <ShieldCheck className="h-5 w-5 sm:h-7 sm:w-7 text-indigo-500" />
+                </div>
+                <span className="font-black text-lg sm:text-xl text-slate-800 dark:text-slate-100">Privacy Policy</span>
+              </div>
+              <ChevronRight className="h-5 w-5 sm:h-7 sm:w-7 text-slate-200 group-hover:translate-x-1 transition-transform" />
+            </Card>
+          </Link>
+          <Link href="/terms">
+            <Card className="flex items-center justify-between p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all border-none shadow-xl bg-white dark:bg-slate-900 group">
+              <div className="flex items-center gap-4 sm:gap-6">
+                <div className="p-3 sm:p-5 bg-slate-50 dark:bg-slate-800 rounded-xl shadow-sm group-hover:scale-110 transition-transform">
+                  <FileText className="h-5 w-5 sm:h-7 sm:w-7 text-blue-500" />
+                </div>
+                <span className="font-black text-lg sm:text-xl text-slate-800 dark:text-slate-100">Terms of Service</span>
+              </div>
+              <ChevronRight className="h-5 w-5 sm:h-7 sm:w-7 text-slate-200 group-hover:translate-x-1 transition-transform" />
+            </Card>
+          </Link>
         </div>
 
         <div className="pt-4 sm:pt-6">
