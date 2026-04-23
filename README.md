@@ -5,13 +5,19 @@ Discate is an advanced academic mentorship platform that leverages AI to generat
 
 ## 🚀 Critical Deployment Fixes (Read First)
 
-### 1. Fix Email Verification 404
+### 1. Fix Google Sign-In (Unauthorized Domain)
+If Google Sign-in shows an "unauthorized-domain" error:
+- Go to **Firebase Console** -> **Authentication** -> **Settings** -> **Authorized Domains**.
+- Click **Add Domain** and add `discate.com`.
+- Also add `www.discate.com` if applicable.
+
+### 2. Fix Email Verification 404
 If verification links point to an old URL, you **MUST** update the Firebase Console:
 - Go to **Firebase Console** -> **Authentication** -> **Templates** -> **Email Verification**.
 - Edit the template and set the **Action URL** to: `https://discate.com/auth/action`
 - Add `discate.com` to **Authorized Domains** in the Authentication settings tab.
 
-### 2. GitHub & Sync
+### 3. GitHub & Sync
 Follow these exact commands to sync your lockfile and push your code. This is required for stable Cloudflare/Render builds.
 
 ```bash
