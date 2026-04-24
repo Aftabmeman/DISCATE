@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from "react";
@@ -25,13 +24,15 @@ import Link from "next/link";
 /**
  * Smart Landing Page for DISCATE AI.
  * Shows 'Welcome Back' to logged-in users and 'Landing Page' to guests.
+ * Initial state is 'guest' to ensure SEO/Verification bots see the landing page in the HTML source.
  */
 export default function Home() {
-  const [userState, setUserState] = useState<'loading' | 'authenticated' | 'guest'>('loading');
+  const [userState, setUserState] = useState<'loading' | 'authenticated' | 'guest'>('guest');
   const [userName, setUserName] = useState("");
   const router = useRouter();
 
   useEffect(() => {
+    // Check auth status on mount
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserName(user.displayName?.split(' ')[0] || "Scholar");
@@ -42,14 +43,6 @@ export default function Home() {
     });
     return () => unsubscribe();
   }, []);
-
-  if (userState === 'loading') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
-        <Loader2 className="h-10 w-10 animate-spin text-primary/30" />
-      </div>
-    );
-  }
 
   // Welcome Back Screen for persistent sessions
   if (userState === 'authenticated') {
@@ -91,6 +84,7 @@ export default function Home() {
   }
 
   // Original Landing Page for guest/first-time users
+  // This is rendered by default on the server for bot indexing and verification.
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFD] dark:bg-slate-950 font-body transition-colors duration-500">
       <nav className="h-20 border-b bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl sticky top-0 z-50 flex items-center justify-between px-6 md:px-12">
@@ -193,7 +187,7 @@ export default function Home() {
             </p>
             <div className="flex items-center gap-2 text-primary font-black text-sm pt-2">
               <Mail className="h-4 w-4" />
-              <Link href="mailto:aftabghaswalaofficial@gmail.com" className="hover:underline">aftabghaswalaofficial@gmail.com</Link>
+              <a href="mailto:aftabghaswalaofficial@gmail.com" className="hover:underline">aftabghaswalaofficial@gmail.com</a>
             </div>
           </div>
           
@@ -201,8 +195,8 @@ export default function Home() {
             <div className="space-y-4">
               <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 dark:text-white">Legal</h4>
               <ul className="space-y-3">
-                <li><Link href="/privacy" className="text-slate-500 hover:text-primary font-bold text-sm transition-colors block">Privacy Policy</Link></li>
-                <li><Link href="/terms" className="text-slate-500 hover:text-primary font-bold text-sm transition-colors block">Terms of Service</Link></li>
+                <li><a href="/privacy" className="text-slate-500 hover:text-primary font-bold text-sm transition-colors block">Privacy Policy</a></li>
+                <li><a href="/terms" className="text-slate-500 hover:text-primary font-bold text-sm transition-colors block">Terms of Service</a></li>
               </ul>
             </div>
             
