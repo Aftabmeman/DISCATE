@@ -3,8 +3,9 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { applyActionCode, isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { applyActionCode, isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged } from 'firebase/auth';
+import { auth, firestore } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -12,10 +13,10 @@ import {
   XCircle, 
   Loader2, 
   ArrowRight, 
-  Mail, 
   ShieldCheck, 
   LifeBuoy,
-  Wand2
+  Wand2,
+  Mail
 } from 'lucide-react';
 import { DiscateLogo } from '@/components/DiscateLogo';
 import { useToast } from '@/hooks/use-toast';
@@ -25,42 +26,63 @@ function AuthActionHandler() {
   const router = useRouter();
   const { toast } = useToast();
   
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'prompt_email'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
+  const [confirmEmail, setConfirmEmail] = useState('');
 
   const mode = searchParams.get('mode');
   const oobCode = searchParams.get('oobCode');
+
+  const completeEmailSignIn = async (email: string) => {
+    if (!auth) return;
+    setStatus('loading');
+    try {
+      await signInWithEmailLink(auth, email, window.location.href);
+      window.localStorage.removeItem('emailForSignIn');
+      
+      // Post-login redirection logic
+      const user = auth.currentUser;
+      if (user) {
+        const profileRef = doc(firestore!, "users", user.uid, "profile", "stats");
+        const profileSnap = await getDoc(profileRef);
+        
+        if (profileSnap.exists()) {
+          router.push("/dashboard");
+        } else {
+          router.push("/onboarding");
+        }
+        setStatus('success');
+      }
+    } catch (error: any) {
+      console.error("Magic Link Error:", error);
+      setStatus('error');
+      setErrorMessage(error.message || "Failed to sign in. The link may have expired.");
+    }
+  };
 
   useEffect(() => {
     const handleAuthAction = async () => {
       if (!auth) return;
 
-      // 1. Handle Magic Link (Passwordless)
+      // 1. Detect Magic Link (Firebase uses a specific set of URL params for this)
       if (isSignInWithEmailLink(auth, window.location.href)) {
         let email = window.localStorage.getItem('emailForSignIn');
         
         if (!email) {
-          // If the link was opened on a different device/browser
-          email = window.prompt('Please provide your email for verification');
-        }
-
-        try {
-          await signInWithEmailLink(auth, email || '', window.location.href);
-          window.localStorage.removeItem('emailForSignIn');
-          setStatus('success');
-          toast({ title: "Magic Authenticated", description: "Welcome to the elite scholarship." });
-        } catch (error: any) {
-          setStatus('error');
-          setErrorMessage(error.message || "Failed to sign in with this link.");
+          // Cross-browser case: email missing from storage
+          setStatus('prompt_email');
+        } else {
+          await completeEmailSignIn(email);
         }
         return;
       }
 
-      // 2. Handle standard verification modes
+      // 2. Handle standard modes (Verify Email, Reset Password)
       if (mode === 'verifyEmail' && oobCode) {
         try {
           await applyActionCode(auth, oobCode);
           setStatus('success');
+          toast({ title: "Email Verified", description: "Your elite profile is now active." });
         } catch (error: any) {
           setStatus('error');
           setErrorMessage(error.message || "Email verification failed.");
@@ -68,8 +90,14 @@ function AuthActionHandler() {
       } else if (mode === 'resetPassword') {
         router.push(`/reset-password?oobCode=${oobCode}`);
       } else {
-        setStatus('error');
-        setErrorMessage('The action link is invalid or expired.');
+        // If we reach here, it might be a transient state or truly invalid
+        // We wait a bit to ensure Next.js has parsed the URL
+        setTimeout(() => {
+          if (status === 'loading') {
+            setStatus('error');
+            setErrorMessage('The action link is invalid, broken, or has expired.');
+          }
+        }, 2000);
       }
     };
 
@@ -99,6 +127,36 @@ function AuthActionHandler() {
             </div>
           )}
 
+          {status === 'prompt_email' && (
+            <div className="flex flex-col items-center py-6 space-y-6 animate-in fade-in duration-500">
+              <div className="bg-primary/10 h-16 w-16 rounded-2xl flex items-center justify-center">
+                <Mail className="text-primary h-8 w-8" />
+              </div>
+              <div className="text-center space-y-2">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">Confirm Email</h3>
+                <p className="text-xs text-slate-500 px-4">
+                  Security check: Please provide the email address where the magic link was sent.
+                </p>
+              </div>
+              <div className="w-full space-y-4">
+                <input 
+                  type="email" 
+                  placeholder="scholar@discate.com"
+                  className="w-full h-12 rounded-xl bg-slate-50 dark:bg-slate-800 border-none px-4 text-sm shadow-inner outline-none focus:ring-2 focus:ring-primary/20"
+                  value={confirmEmail}
+                  onChange={(e) => setConfirmEmail(e.target.value)}
+                />
+                <Button 
+                  className="w-full h-12 rounded-xl font-bold bg-primary shadow-lg"
+                  onClick={() => completeEmailSignIn(confirmEmail)}
+                  disabled={!confirmEmail.includes('@')}
+                >
+                  Verify & Log In
+                </Button>
+              </div>
+            </div>
+          )}
+
           {status === 'success' && (
             <div className="flex flex-col items-center py-6 space-y-8 animate-in slide-in-from-bottom-8 duration-700 ease-out">
               <div className="bg-emerald-500 h-20 w-20 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30">
@@ -115,7 +173,7 @@ function AuthActionHandler() {
               <div className="w-full space-y-4">
                 <Button 
                   className="w-full h-14 rounded-2xl font-bold text-lg bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20 group"
-                  onClick={() => router.push('/onboarding')}
+                  onClick={() => router.push('/dashboard')}
                 >
                   Enter Dashboard
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -136,7 +194,7 @@ function AuthActionHandler() {
               </div>
 
               <div className="text-center space-y-3">
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Link Invalid</h3>
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Invalid Link</h3>
                 <p className="text-slate-500 text-sm px-4">
                   {errorMessage}
                 </p>

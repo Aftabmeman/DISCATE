@@ -38,27 +38,15 @@ export default function LoginPage() {
   useEffect(() => {
     if (!auth || !firestore) return;
 
-    getRedirectResult(auth).then(async (result) => {
-      if (result) {
-        const user = result.user;
-        const profileRef = doc(firestore!, "users", user.uid, "profile", "stats");
-        const profileSnap = await getDoc(profileRef);
-        if (profileSnap.exists()) {
-          router.push("/onboarding");
-        } else {
-          router.push("/signup");
-        }
-      }
-    }).catch(console.error);
-
+    // Handle initial auth state or redirect results
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const profileRef = doc(firestore!, "users", user.uid, "profile", "stats");
         const profileSnap = await getDoc(profileRef);
         if (profileSnap.exists()) {
-          router.push("/onboarding");
+          router.push("/dashboard");
         } else {
-          setGoogleLoading(false);
+          router.push("/onboarding");
         }
       } else {
         setGoogleLoading(false);
@@ -74,19 +62,13 @@ export default function LoginPage() {
     const provider = new GoogleAuthProvider();
     
     try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      const profileRef = doc(firestore!, "users", user.uid, "profile", "stats");
-      const profileSnap = await getDoc(profileRef);
-
-      if (profileSnap.exists()) {
-        router.push("/onboarding");
-      } else {
-        router.push("/signup");
-      }
+      // Try popup first (best UX)
+      await signInWithPopup(auth, provider);
+      // onAuthStateChanged will handle redirection
     } catch (error: any) {
-      if (error.code === 'auth/popup-blocked') {
-        signInWithRedirect(auth, provider);
+      if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
+        // Fallback to redirect if popup is blocked
+        await signInWithRedirect(auth, provider);
       } else {
         toast({ variant: "destructive", title: "Error", description: error.message });
         setGoogleLoading(false);
@@ -102,6 +84,7 @@ export default function LoginPage() {
 
       if (useMagicLink) {
         const actionCodeSettings = {
+          // IMPORTANT: Must match the authorized domain
           url: window.location.origin + '/auth/action',
           handleCodeInApp: true,
         };
@@ -109,12 +92,12 @@ export default function LoginPage() {
         window.localStorage.setItem('emailForSignIn', email);
         toast({
           title: "Magic Link Dispatched",
-          description: "Check your email for an elite login link.",
+          description: "Check your email for an elite login link. Please open it in this device for seamless login.",
         });
         setLoading(false);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
-        router.push("/onboarding");
+        // onAuthStateChanged will handle redirection
       }
     } catch (error: any) {
       toast({
