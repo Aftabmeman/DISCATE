@@ -24,13 +24,14 @@ import { DiscateLogo } from "@/components/DiscateLogo"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(true)
-  const [useMagicLink, setUseMagicLink] = useState(false)
+  const [useMagicLink, setUseMagicLink] = useState(false) // Logic preserved, UI paused
   
   const router = useRouter()
   const { toast } = useToast()
@@ -84,7 +85,6 @@ export default function LoginPage() {
 
       if (useMagicLink) {
         const actionCodeSettings = {
-          // IMPORTANT: Must match the authorized domain
           url: window.location.origin + '/auth/action',
           handleCodeInApp: true,
         };
@@ -152,16 +152,15 @@ export default function LoginPage() {
             </div>
 
             <form onSubmit={handleLogin} className="space-y-6">
+              {/* Magic Link UI Paused */}
               <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
-                  {useMagicLink ? <Wand2 className="h-4 w-4 text-primary" /> : <KeyRound className="h-4 w-4 text-slate-400" />}
-                  <Label htmlFor="magic-link-toggle" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Magic Link Mode</Label>
+                  <Wand2 className="h-4 w-4 text-slate-300" />
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Magic Link Mode</Label>
                 </div>
-                <Switch 
-                  id="magic-link-toggle"
-                  checked={useMagicLink}
-                  onCheckedChange={setUseMagicLink}
-                />
+                <Badge variant="outline" className="text-[8px] font-black uppercase tracking-[0.2em] border-slate-200 text-slate-400 bg-slate-50/50 px-2 py-0.5 rounded-full">
+                  Coming Soon
+                </Badge>
               </div>
 
               <div className="space-y-4">
@@ -192,7 +191,7 @@ export default function LoginPage() {
                 )}
                 
                 <Button type="submit" className="w-full h-14 rounded-2xl font-black text-lg shadow-xl shadow-primary/20 bg-primary hover:bg-primary/90 transition-all active:scale-[0.98]" disabled={loading}>
-                  {loading ? <Loader2 className="animate-spin h-6 w-6" /> : (useMagicLink ? "Send Magic Link" : "Sign In")}
+                  {loading ? <Loader2 className="animate-spin h-6 w-6" /> : "Sign In"}
                 </Button>
               </div>
             </form>
