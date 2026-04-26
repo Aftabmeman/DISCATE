@@ -67,7 +67,7 @@ export default function DashboardLayout({
                   "p-2 sm:p-3 rounded-xl sm:rounded-2xl transition-all duration-300",
                   isActive ? "bg-primary text-white shadow-lg -translate-y-1.5 sm:-translate-y-2 scale-105 sm:scale-110" : "text-slate-400 hover:text-primary"
                 )}>
-                  <item.icon className={cn("h-5 w-5 sm:h-6 sm:w-6", isActive ? "stroke-[2.5px]" : "stroke-2")} />
+                  <item.icon className={cn("h-5 w-5", isActive ? "stroke-[2.5px]" : "stroke-2")} />
                 </div>
                 {!isActive ? (
                   <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-[0.1em] text-slate-400/80">
