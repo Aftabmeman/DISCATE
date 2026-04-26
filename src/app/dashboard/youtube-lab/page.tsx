@@ -2,6 +2,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,13 +11,14 @@ import {
   Loader2, 
   Sparkles, 
   FileText, 
-  ClipboardList, 
   ArrowRight,
   Zap,
   Info,
   ExternalLink,
   Target,
-  AlertCircle
+  AlertCircle,
+  Cpu,
+  BrainCircuit
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { processYoutubeToNotes } from "@/app/actions/youtube-processor"
@@ -31,6 +33,7 @@ export default function YoutubeLabPage() {
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
+  const router = useRouter()
 
   const handleGenerate = async () => {
     if (!url.includes("youtube.com") && !url.includes("youtu.be")) {
@@ -46,17 +49,24 @@ export default function YoutubeLabPage() {
       const data = await processYoutubeToNotes(url);
       if (data.error) {
         setError(data.error);
-        toast({ title: "Generation Failed", description: "Check the error console below.", variant: "destructive" });
+        toast({ title: "Generation Failed", description: "System limits or API error.", variant: "destructive" });
       } else {
         setResult(data);
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-        toast({ title: "Intelligence Forged", description: `Notes generated using ${data.method} extraction.` });
+        toast({ title: "Intelligence Forged", description: `Session complete via ${data.method}.` });
       }
     } catch (e: any) {
-      setError(e.message || "Something went wrong with the neural link.");
-      toast({ title: "System Error", description: "Connectivity issue detected.", variant: "destructive" });
+      setError(e.message || "Connectivity issue detected.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleLaunchMastery = () => {
+    // Store in session storage for the assessments page to pick up
+    if (result?.content) {
+      window.sessionStorage.setItem('youtube_notes_transfer', result.content);
+      router.push('/dashboard/assessments');
     }
   };
 
@@ -118,15 +128,31 @@ export default function YoutubeLabPage() {
               )}
             </Button>
           </div>
-
-          <div className="flex items-center justify-center gap-2 text-[8px] font-black text-slate-300 uppercase tracking-[0.4em]">
-             <Zap className="h-3 w-3" /> Powered by Whisper &amp; Llama 3.1
-          </div>
         </CardContent>
       </Card>
 
       {result && (
         <div className="space-y-8 animate-in slide-in-from-bottom-8 duration-700">
+          {/* Developer Insights Section */}
+          <Card className="border-none bg-slate-900 text-white rounded-[2rem] overflow-hidden">
+            <div className="p-6 space-y-4">
+              <div className="flex items-center gap-2 text-primary">
+                <Cpu className="h-4 w-4" />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Developer Insights</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Extraction Path</p>
+                  <p className="text-sm font-bold">{result.method}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Neural Engines</p>
+                  <p className="text-sm font-bold">{result.aiUsed}</p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
           <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 overflow-hidden">
             <CardHeader className="bg-slate-50/50 dark:bg-slate-800/50 border-b dark:border-white/5 p-8 flex flex-row items-center justify-between">
                <div className="flex items-center gap-3">
@@ -137,15 +163,30 @@ export default function YoutubeLabPage() {
                </div>
                <Badge className="bg-emerald-500/10 text-emerald-500 font-black uppercase text-[8px] tracking-[0.2em] px-4 py-1.5 rounded-full">Success</Badge>
             </CardHeader>
-            <CardContent className="p-8 sm:p-10">
+            <CardContent className="p-8 sm:p-10 space-y-10">
               <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-headline prose-headings:font-black prose-p:font-medium prose-p:text-slate-600 dark:prose-p:text-slate-300 prose-p:leading-relaxed whitespace-pre-wrap">
                 {result.content}
               </div>
 
-              <div className="mt-12 pt-8 border-t border-slate-100 dark:border-white/5 space-y-4">
+              <div className="space-y-6 pt-10 border-t border-slate-100 dark:border-white/5">
+                <div className="bg-primary/5 dark:bg-primary/10 p-8 rounded-[2rem] text-center space-y-6">
+                  <div className="h-16 w-16 bg-white dark:bg-slate-900 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+                    <BrainCircuit className="h-8 w-8 text-primary" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-black font-headline tracking-tight">Start Your Journey</h3>
+                    <p className="text-sm text-slate-500 max-w-sm mx-auto font-medium">Use these notes to generate adaptive MCQs, Flashcards, and Essays in the Mastery Wizard.</p>
+                  </div>
+                  <Button onClick={handleLaunchMastery} className="w-full h-16 rounded-2xl bg-primary text-white font-black text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all">
+                    Launch Mastery Wizard <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="pt-8 border-t border-slate-100 dark:border-white/5 space-y-4">
                 <div className="flex items-center gap-2 text-primary">
                    <Target className="h-4 w-4" />
-                   <h4 className="text-[10px] font-black uppercase tracking-[0.3em]">Groq Neural Usage (Llama 3.1 8b)</h4>
+                   <h4 className="text-[10px] font-black uppercase tracking-[0.3em]">Groq Neural Usage (Scout & Whisper)</h4>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                    <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-white/5">
@@ -164,13 +205,6 @@ export default function YoutubeLabPage() {
               </div>
             </CardContent>
           </Card>
-
-          <div className="flex flex-col items-center gap-4 py-10 opacity-30">
-             <div className="h-1 w-20 bg-slate-200 dark:bg-slate-800 rounded-full" />
-             <p className="text-[8px] font-black uppercase tracking-[0.5em] text-slate-400 flex items-center gap-2">
-                <Info className="h-3 w-3" /> Discate Neural Extraction Sequence End
-             </p>
-          </div>
         </div>
       )}
     </div>

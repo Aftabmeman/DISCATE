@@ -49,8 +49,6 @@ import {
 
 export const runtime = 'nodejs';
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-
 const academicLevels = [
   "Class 8th", "Class 9th", "Class 10th", "Class 11th", "Class 12th",
   "UPSC", "JEE", "NEET", "GATE", "CAT", "CLAT", "SSC", "NDA"
@@ -116,6 +114,16 @@ export default function AssessmentsPage() {
   const [essayResult, setEssayResult] = useState<EvaluateEssayFeedbackOutput | null>(null)
   const [showMasterclass, setShowMasterclass] = useState(false)
 
+  // Effect to pick up content from YouTube Lab
+  useEffect(() => {
+    const transferredContent = window.sessionStorage.getItem('youtube_notes_transfer');
+    if (transferredContent) {
+      setMaterial(transferredContent);
+      window.sessionStorage.removeItem('youtube_notes_transfer');
+      toast({ title: "YouTube Notes Imported", description: "Your forged manuscript is ready for mastery." });
+    }
+  }, [toast]);
+
   useEffect(() => {
     if (profile?.preferredLanguage) {
       setPreferredLanguage(profile.preferredLanguage);
@@ -129,11 +137,7 @@ export default function AssessmentsPage() {
     if (!file) return;
 
     if (file.size > MAX_FILE_SIZE) {
-      toast({ 
-        title: "File Too Large", 
-        description: "Please upload a document smaller than 5MB.", 
-        variant: "destructive" 
-      });
+      toast({ title: "File Too Large", description: "Max size is 5MB.", variant: "destructive" });
       event.target.value = '';
       return;
     }
@@ -148,7 +152,6 @@ export default function AssessmentsPage() {
         toast({ title: "Parsing Failed", description: response.error, variant: "destructive" });
       } else if (response.text) {
         setMaterial(response.text);
-        toast({ title: "Elite Material Loaded", description: "Your resource has been ingested successfully by Discate AI." });
       }
     } catch (e) {
       toast({ title: "Error", description: "Failed to parse document.", variant: "destructive" });
@@ -667,7 +670,7 @@ export default function AssessmentsPage() {
                   </div>
 
                   <Button onClick={() => nextItem()} className="w-full h-14 sm:h-16 rounded-[1rem] sm:rounded-[1.2rem] bg-primary text-white font-black text-base sm:text-lg shadow-xl active:scale-95 transition-all">
-                    Next Challenge <ChevronRight className="ml-2 h-5 w-5" />
+                    Next Challenge <ChevronRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                   </Button>
                 </div>
               )}
