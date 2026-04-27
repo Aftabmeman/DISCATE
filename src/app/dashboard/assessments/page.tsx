@@ -72,6 +72,8 @@ const honestyTranslations: Record<string, { title: string, desc: string, btn: st
   }
 };
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
 export default function AssessmentsPage() {
   const { user } = useUser()
   const db = useFirestore()
@@ -496,7 +498,7 @@ export default function AssessmentsPage() {
             </div>
           </div>
 
-          {activeMode === 'MCQ' && result?.mcqs && (
+          {activeMode === 'MCQ' && result?.mcqs && result.mcqs.length > 0 && (
             <Card className="border-none shadow-2xl rounded-[1.8rem] sm:rounded-[2rem] bg-white dark:bg-slate-900 p-5 sm:p-8 flex flex-col space-y-6 min-h-[380px] sm:min-h-[400px] relative overflow-hidden">
               <div className="space-y-6 flex-1">
                 <div className="h-1 bg-slate-50 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -535,7 +537,7 @@ export default function AssessmentsPage() {
             </Card>
           )}
 
-          {activeMode === 'Flashcard' && result?.flashcards && (
+          {activeMode === 'Flashcard' && result?.flashcards && result.flashcards.length > 0 && (
             <div className="flex flex-col items-center space-y-8 w-full max-w-md mx-auto">
               <div className="perspective-1000 w-full min-h-[350px] sm:min-h-[400px] cursor-pointer" onClick={() => setIsAnswerRevealed(!isAnswerRevealed)}>
                 <div className={cn("relative w-full h-full min-h-[350px] sm:min-h-[400px] transition-all duration-700 preserve-3d shadow-3xl rounded-[2.5rem]", isAnswerRevealed ? "rotate-y-180" : "")}>
@@ -580,7 +582,7 @@ export default function AssessmentsPage() {
             </div>
           )}
 
-          {activeMode === 'Essay' && result?.essayPrompts && (
+          {activeMode === 'Essay' && result?.essayPrompts && result.essayPrompts.length > 0 && (
             <div className="flex flex-col space-y-6">
               <Card className="border-none shadow-xl rounded-[1.2rem] sm:rounded-[1.5rem] bg-white dark:bg-slate-900 p-5 sm:p-8 border border-slate-100 dark:border-white/5">
                 <Badge className="bg-primary/10 text-primary mb-3 font-black uppercase text-[7px] tracking-[0.4em] px-5 sm:px-6 py-1.5 sm:py-2 rounded-full">Writing Lab Prompt</Badge>
@@ -695,7 +697,8 @@ export default function AssessmentsPage() {
               { id: 'Essay', icon: ClipboardList, label: 'Writing Lab', list: result?.essayPrompts, color: 'text-emerald-500' }
             ].map((m) => {
               const isSelected = questionType === "Mixed" || questionType === m.id;
-              if (!isSelected || !m.list?.length) return null;
+              // Crucial: check if array exists and has elements
+              if (!isSelected || !m.list || m.list.length === 0) return null;
               
               return (
                 <Button key={m.id} variant="outline" onClick={() => startMode(m.id as any)} className="h-14 sm:h-20 rounded-[1.2rem] sm:rounded-[1.8rem] justify-start px-4 sm:px-6 group relative overflow-hidden border-none bg-slate-50 dark:bg-slate-900/40 hover:bg-white transition-all active:scale-95">

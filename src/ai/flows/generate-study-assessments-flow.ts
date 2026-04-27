@@ -2,7 +2,7 @@
 'use server';
 /**
  * @fileOverview High-performance academic assessment generator using Groq llama-3.1-8b-instant.
- * Optimized for mixed-mode with strict count enforcement.
+ * Optimized for mixed-mode with strict count enforcement and explicit multi-format output.
  */
 
 import { z } from 'zod';
@@ -38,9 +38,9 @@ const GenerateStudyAssessmentsInputSchema = z.object({
 export type GenerateStudyAssessmentsInput = z.infer<typeof GenerateStudyAssessmentsInputSchema>;
 
 const GenerateStudyAssessmentsOutputSchema = z.object({
-  mcqs: z.array(MCQSchema).optional(),
-  flashcards: z.array(FlashcardSchema).optional(),
-  essayPrompts: z.array(EssayPromptSchema).optional(),
+  mcqs: z.array(MCQSchema).default([]),
+  flashcards: z.array(FlashcardSchema).default([]),
+  essayPrompts: z.array(EssayPromptSchema).default([]),
   totalTokens: z.number().optional(),
   error: z.string().optional(),
 });
@@ -75,23 +75,34 @@ export async function generateStudyAssessments(input: GenerateStudyAssessmentsIn
   const targetFlash = isMixed ? (input.flashcardCount || 0) : (input.assessmentTypes.includes('Flashcard') ? input.questionCount : 0);
   const targetEssay = isMixed ? (input.essayCount || 0) : (input.assessmentTypes.includes('Essay') ? input.questionCount : 0);
 
-  const countInstruction = `CRITICAL: You MUST generate EXACTLY ${targetMcq} MCQs, EXACTLY ${targetFlash} Flashcards, and EXACTLY ${targetEssay} Essay Prompts. Do not skip any items.`;
+  const countInstruction = `CRITICAL TASK: 
+1. Generate EXACTLY ${targetMcq} MCQs.
+2. Generate EXACTLY ${targetFlash} Flashcards.
+3. Generate EXACTLY ${targetEssay} Essay Prompts.
+
+Do not skip any format. Even if you generate many MCQs, you MUST provide the requested ${targetEssay} Essay Prompt(s).`;
 
   const systemPrompt = `You are a Senior Academic Content Developer for Discate AI.
 Generate high-quality academic content ONLY from the provided material.
 LEVEL: ${input.academicLevel} | DIFFICULTY: ${input.difficulty}
-${countInstruction}
-Ensure each MCQ has 4 unique options and one clearly correct answer.
-Each Flashcard must facilitate active recall.
-Each Essay Prompt must be thought-provoking and relevant.
-Return ONLY valid JSON following the schema provided.`;
 
-  const userPrompt = `Material:
+${countInstruction}
+
+JSON STRUCTURE RULES:
+- "mcqs": Array of MCQ objects.
+- "flashcards": Array of Flashcard objects.
+- "essayPrompts": Array of Essay objects.
+- ALL three keys MUST exist in the JSON output, even if empty.
+- Ensure each MCQ has 4 unique options and one clearly correct answer.
+- Each Flashcard must facilitate active recall.
+- Each Essay Prompt must be thought-provoking and relevant to the material.`;
+
+  const userPrompt = `Material to process:
 """
 ${material}
 """
 
-JSON Schema:
+STRICT JSON OUTPUT FORMAT:
 {
   "mcqs": [{"question": "string", "options": ["string"], "correctAnswer": "string", "explanation": "string"}],
   "flashcards": [{"front": "string", "back": "string"}],
@@ -116,17 +127,26 @@ JSON Schema:
       }),
     });
 
-    if (!response.ok) throw new Error("API Failure");
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({}));
+      console.error("Groq API Error:", errBody);
+      throw new Error("API Failure");
+    }
     
     const data = await response.json();
     const content = extractJson(data.choices[0].message.content);
     
-    // Final check for empty arrays vs expected counts
-    const output = GenerateStudyAssessmentsOutputSchema.parse(content);
-    
-    return output;
+    // Ensure the keys exist even if model missed them
+    const normalizedContent = {
+      mcqs: content.mcqs || [],
+      flashcards: content.flashcards || [],
+      essayPrompts: content.essayPrompts || [],
+      totalTokens: data.usage?.total_tokens
+    };
+
+    return GenerateStudyAssessmentsOutputSchema.parse(normalizedContent);
   } catch (error: any) {
     console.error("AI Generation Error:", error.message);
-    return { error: "Failed to generate assessment. The material might be too complex for a large set. Try reducing item counts." };
+    return { error: "Failed to generate session. The request might be too large for a single pass. Try reducing item counts or material length." };
   }
 }
