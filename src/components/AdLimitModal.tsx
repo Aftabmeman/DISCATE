@@ -55,8 +55,8 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
   }, [view, timer, isGranting]);
 
   const handleStartAd = () => {
-    // Open direct ad link in new tab
-    window.open('https://omg10.com/4/10932388', '_blank');
+    // Open temporary link in new tab (replacing omg10 with google)
+    window.open('https://google.com', '_blank');
     // Switch current tab to verification state
     setView('verifying');
     setTimer(10);
