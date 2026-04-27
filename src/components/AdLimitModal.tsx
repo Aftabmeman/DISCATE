@@ -24,7 +24,7 @@ interface AdLimitModalProps {
 
 /**
  * Just-In-Time Reward Ad Modal for Discate.
- * Appears when limits are hit. Shows a dummy 5-second ad.
+ * Fixed overlap between quote and claim button.
  */
 export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLimitModalProps) {
   const { user } = useUser();
@@ -35,7 +35,6 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
   const [timer, setTimer] = useState(5);
   const [isGranting, setIsGranting] = useState(false);
 
-  // Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
       setView('prompt');
@@ -44,15 +43,12 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
     }
   }, [isOpen]);
 
-  // Handle countdown logic
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (view === 'playing' && timer > 0) {
       interval = setInterval(() => {
         setTimer((prev) => prev - 1);
       }, 1000);
-    } else if (view === 'playing' && timer === 0) {
-      // Auto-transition to claim step
     }
     return () => clearInterval(interval);
   }, [view, timer]);
@@ -116,37 +112,43 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
         )}
 
         {view === 'playing' && (
-          <div className="relative min-h-[400px] flex flex-col items-center justify-center bg-slate-950 p-10 text-center overflow-hidden">
+          <div className="relative min-h-[450px] flex flex-col items-center justify-between bg-slate-950 p-8 sm:p-10 text-center overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20 animate-pulse" />
             
-            <div className="relative z-10 space-y-8">
-              <div className="space-y-2">
+            <div className="relative z-10 space-y-6 w-full">
+              <div className="space-y-1">
                 <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">Elite Sponsor Session</p>
                 <h3 className="text-2xl font-black text-white font-headline uppercase tracking-tight">Intelligence Buffering</h3>
               </div>
               
-              <div className="relative h-32 w-32 flex items-center justify-center mx-auto">
+              <div className="relative h-28 w-28 flex items-center justify-center mx-auto">
                  <svg className="absolute inset-0 h-full w-full rotate-[-90deg]" viewBox="0 0 100 100">
                     <circle cx="50" cy="50" r="45" fill="transparent" stroke="rgba(255,255,255,0.1)" strokeWidth="6" />
                     <circle cx="50" cy="50" r="45" fill="transparent" stroke="currentColor" strokeWidth="6" strokeDasharray="282.7" strokeDashoffset={282.7 - (282.7 * (5 - timer)) / 5} strokeLinecap="round" className="text-primary transition-all duration-1000 ease-linear" />
                  </svg>
-                 <span className="text-5xl font-black text-white tabular-nums">{timer}</span>
-              </div>
-
-              <div className="p-4 bg-white/5 rounded-2xl backdrop-blur-sm border border-white/10">
-                <p className="text-xs text-slate-400 font-medium italic">"Real scholars don't wait for resets, they create opportunities."</p>
+                 <span className="text-4xl font-black text-white tabular-nums">{timer}</span>
               </div>
             </div>
 
-            {timer === 0 && (
-              <Button 
-                onClick={handleClaimReward}
-                disabled={isGranting}
-                className="absolute bottom-10 left-1/2 -translate-x-1/2 h-14 px-10 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-lg shadow-2xl shadow-emerald-500/30 animate-in zoom-in-50 duration-500"
-              >
-                {isGranting ? <Loader2 className="animate-spin h-6 w-6" /> : "Claim +1 Bonus Coin"}
-              </Button>
-            )}
+            <div className="relative z-10 w-full flex flex-col items-center gap-6 pb-4">
+              <div className="p-4 bg-white/5 rounded-2xl backdrop-blur-sm border border-white/10 w-full">
+                <p className="text-[10px] text-slate-400 font-medium italic">"Real scholars don't wait for resets, they create opportunities."</p>
+              </div>
+
+              {timer === 0 ? (
+                <Button 
+                  onClick={handleClaimReward}
+                  disabled={isGranting}
+                  className="w-full h-14 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-lg shadow-2xl shadow-emerald-500/30 animate-in zoom-in-50 duration-500"
+                >
+                  {isGranting ? <Loader2 className="animate-spin h-6 w-6" /> : "Claim +1 Bonus Coin"}
+                </Button>
+              ) : (
+                <div className="h-14 w-full flex items-center justify-center">
+                   <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Reward unlocking in {timer}s...</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
