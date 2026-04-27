@@ -37,7 +37,7 @@ export function setDocumentNonBlocking(docRef: DocumentReference, data: any, opt
  * Validates wallet balance and daily limits, then deducts coins.
  * Returns true if deduction was successful, false otherwise.
  */
-export async function validateAndDeductCoins(db: Firestore, userId: string, cost: number): Promise<{ success: boolean; error?: string }> {
+export async function validateAndDeductCoins(db: Firestore, userId: string, cost: number): Promise<{ success: boolean; error?: string; code?: 'LIMIT_REACHED' | 'NO_COINS' }> {
   const profileRef = doc(db, 'users', userId, 'profile', 'stats');
   const profileSnap = await getDoc(profileRef);
   
@@ -46,7 +46,6 @@ export async function validateAndDeductCoins(db: Firestore, userId: string, cost
   const data = profileSnap.data();
   const now = new Date();
   
-  // MIGRATION: If coinBalance doesn't exist, give them the Welcome Kit (50)
   let currentBalance = typeof data.coinBalance === 'number' ? data.coinBalance : 50;
   let dailyUsed = data.dailyCoinsUsed || 0;
   let lastResetStr = data.lastDailyReset;
@@ -71,14 +70,22 @@ export async function validateAndDeductCoins(db: Firestore, userId: string, cost
 
   // 3. Limit Checks
   if (dailyUsed + cost > 5) {
-    return { success: false, error: "Daily limit reached! You can only use 5 coins per day. Upgrade to Premium for unlimited access." };
+    return { 
+      success: false, 
+      error: "Daily limit reached! You can only use 5 coins per day.",
+      code: 'LIMIT_REACHED'
+    };
   }
   
   if (currentBalance < cost) {
-    return { success: false, error: "Insufficient coins! Please wait for your monthly allowance or upgrade." };
+    return { 
+      success: false, 
+      error: "Insufficient coins! Please wait for your monthly allowance.",
+      code: 'NO_COINS'
+    };
   }
 
-  // 4. Update Database (Pure Consumption)
+  // 4. Update Database
   try {
     await updateDoc(profileRef, {
       coinBalance: currentBalance - cost,
@@ -89,29 +96,20 @@ export async function validateAndDeductCoins(db: Firestore, userId: string, cost
     });
     return { success: true };
   } catch (e) {
-    try {
-       await setDoc(profileRef, {
-          coinBalance: currentBalance - cost,
-          dailyCoinsUsed: dailyUsed + cost,
-          lastDailyReset: lastResetStr || now.toISOString(),
-          lastMonthlyAllowance: lastAllowanceStr || now.toISOString(),
-          updatedAt: now.toISOString()
-       }, { merge: true });
-       return { success: true };
-    } catch (e2) {
-       return { success: false, error: "Sync error. Please try again." };
-    }
+    return { success: false, error: "Sync error. Please try again." };
   }
 }
 
 /**
- * Increments coin balance after a rewarded ad.
+ * Increments coin balance after an ad AND decrements daily used count 
+ * to allow one more free task immediately (Bypass logic).
  */
 export async function grantAdReward(db: Firestore, userId: string) {
   const profileRef = doc(db, 'users', userId, 'profile', 'stats');
   try {
     await updateDoc(profileRef, {
       coinBalance: increment(1),
+      dailyCoinsUsed: increment(-1), // Unlocks a slot in the 5-coin daily cap
       updatedAt: new Date().toISOString()
     });
     return { success: true };

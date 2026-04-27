@@ -19,7 +19,6 @@ import Link from "next/link"
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase"
 import { doc } from "firebase/firestore"
 import { cn } from "@/lib/utils"
-import { RewardedAdButton } from "@/components/RewardedAdButton"
 
 export default function DashboardPage() {
   const { user } = useUser()
@@ -112,23 +111,6 @@ export default function DashboardPage() {
           </Card>
         ))}
       </div>
-
-      {/* Ad Refill Card */}
-      <Card className="border-none shadow-2xl rounded-[2.5rem] bg-amber-50 dark:bg-amber-900/10 border-2 border-amber-200 dark:border-amber-800/30 overflow-hidden relative group">
-        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-125 transition-transform duration-700">
-           <Coins className="h-32 w-32 text-amber-500" />
-        </div>
-        <CardContent className="p-8 sm:p-12 relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="text-center sm:text-left space-y-2">
-            <h3 className="text-xl sm:text-2xl font-black font-headline text-amber-800 dark:text-amber-400">Refill Academic Credits</h3>
-            <p className="text-amber-700/70 dark:text-amber-500/70 text-sm font-medium max-w-xs">Watch a brief rewarded session to add 1 Coin to your wallet instantly.</p>
-          </div>
-          <RewardedAdButton 
-            variant="default"
-            className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white border-none h-14 sm:h-16 px-10 rounded-[1.2rem] shadow-xl shadow-amber-500/20"
-          />
-        </CardContent>
-      </Card>
 
       <div className="space-y-8 sm:space-y-12">
         <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-slate-950 text-white relative border border-white/5">

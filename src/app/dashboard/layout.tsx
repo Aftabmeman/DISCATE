@@ -12,7 +12,6 @@ import { NotificationManager } from "@/components/NotificationManager"
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase"
 import { doc } from "firebase/firestore"
 import { Badge } from "@/components/ui/badge"
-import { RewardedAdButton } from "@/components/RewardedAdButton"
 
 export const dynamic = 'force-dynamic';
 
@@ -58,10 +57,6 @@ export default function DashboardLayout({
         
         <div className="flex items-center gap-2 sm:gap-4">
           <div className="hidden sm:flex items-center gap-3">
-            <RewardedAdButton 
-              label="+1 Coin" 
-              className="h-9 px-4 rounded-xl border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100" 
-            />
             <div className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 rounded-full border border-amber-100 dark:border-amber-800/30">
                <Coins className="h-4 w-4 text-amber-500" />
                <span className="text-xs font-black text-amber-700 dark:text-amber-400">{currentBalance} Coins</span>
@@ -96,10 +91,6 @@ export default function DashboardLayout({
                   <span className="text-[9px] font-black uppercase tracking-tighter text-primary">Daily: {quotaRemaining}/5</span>
                </div>
            </div>
-           <RewardedAdButton 
-             label="Get +1 Free Coin" 
-             className="w-full max-w-[280px] h-10 border-amber-200 bg-white shadow-sm" 
-           />
         </div>
         
         <div className="max-w-2xl mx-auto">

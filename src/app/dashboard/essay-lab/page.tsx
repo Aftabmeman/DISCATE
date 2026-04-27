@@ -35,6 +35,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase"
 import { incrementUserStats, validateAndDeductCoins } from "@/firebase/non-blocking-updates"
 import { doc } from "firebase/firestore"
 import { Progress } from "@/components/ui/progress"
+import { AdLimitModal } from "@/components/AdLimitModal"
 
 export const runtime = 'nodejs';
 
@@ -70,6 +71,10 @@ export default function WritingWizardPage() {
   const [result, setResult] = useState<EvaluateEssayFeedbackOutput | null>(null)
   const [showMasterclass, setShowMasterclass] = useState(false)
 
+  // Ad Limit Modal State
+  const [showAdModal, setShowAdModal] = useState(false)
+  const [adReason, setAdReason] = useState<'LIMIT_REACHED' | 'NO_COINS'>('LIMIT_REACHED')
+
   useEffect(() => {
     if (profile?.preferredLanguage) {
       setPreferredLanguage(profile.preferredLanguage);
@@ -82,10 +87,15 @@ export default function WritingWizardPage() {
       return
     }
 
-    // Wallet Check: Writing Lab costs 1 Coin
+    // Wallet Check
     const walletCheck = await validateAndDeductCoins(db!, user!.uid, 1);
     if (!walletCheck.success) {
-      toast({ title: "Access Denied", description: walletCheck.error, variant: "destructive" });
+      if (walletCheck.code === 'LIMIT_REACHED' || walletCheck.code === 'NO_COINS') {
+        setAdReason(walletCheck.code);
+        setShowAdModal(true);
+      } else {
+        toast({ title: "Access Denied", description: walletCheck.error, variant: "destructive" });
+      }
       return;
     }
 
@@ -119,6 +129,8 @@ export default function WritingWizardPage() {
 
   return (
     <div className="flex flex-col h-full space-y-6 sm:space-y-8 pb-40 animate-in fade-in duration-700 px-4 max-w-2xl mx-auto">
+      <AdLimitModal isOpen={showAdModal} onClose={() => setShowAdModal(false)} reason={adReason} />
+
       <div className="px-1 text-center pt-6 sm:pt-8">
         <h1 className="text-2xl sm:text-4xl font-black font-headline tracking-tighter text-slate-900 dark:text-white uppercase leading-tight">Writing Lab</h1>
         <p className="text-[9px] font-black text-slate-400 mt-2 tracking-[0.4em] uppercase">Focus & Mastery</p>

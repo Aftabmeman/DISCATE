@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -23,6 +22,7 @@ import confetti from 'canvas-confetti'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useUser, useFirestore } from "@/firebase"
 import { validateAndDeductCoins } from "@/firebase/non-blocking-updates"
+import { AdLimitModal } from "@/components/AdLimitModal"
 
 export default function YoutubeLabPage() {
   const { user } = useUser()
@@ -34,9 +34,25 @@ export default function YoutubeLabPage() {
   const { toast } = useToast()
   const router = useRouter()
 
+  // Ad Limit Modal State
+  const [showAdModal, setShowAdModal] = useState(false)
+  const [adReason, setAdReason] = useState<'LIMIT_REACHED' | 'NO_COINS'>('LIMIT_REACHED')
+
   const handleGenerate = async () => {
     if (!url.includes("youtube.com") && !url.includes("youtu.be")) {
       toast({ title: "Invalid Link", description: "Please provide a valid YouTube URL.", variant: "destructive" });
+      return;
+    }
+
+    // Step 1: Limit Check (Approx cost 2 for check)
+    const walletCheck = await validateAndDeductCoins(db!, user!.uid, 2);
+    if (!walletCheck.success) {
+      if (walletCheck.code === 'LIMIT_REACHED' || walletCheck.code === 'NO_COINS') {
+        setAdReason(walletCheck.code);
+        setShowAdModal(true);
+      } else {
+        toast({ title: "Access Denied", description: walletCheck.error, variant: "destructive" });
+      }
       return;
     }
 
@@ -45,37 +61,15 @@ export default function YoutubeLabPage() {
     setError(null);
 
     try {
-      // Step 1: Pre-process to get metadata (duration) and check coins
-      // YouTube Cost: Under 30m = 2 Coins, 30m+ = 4 Coins.
-      // We call the processor but it will handle the final deduction after Llama generation.
-      // However, to satisfy "Check BEFORE", we call the processor with a check flag.
-      
       const data = await processYoutubeToNotes(url);
       
       if (data.error) {
         setError(data.error);
         toast({ title: "Generation Failed", description: data.error, variant: "destructive" });
       } else {
-        // Coin Deduction Logic (Integrated within Processor or called here based on returned duration)
-        // Since ytdl-core duration is on server, let's assume processor handled the coin check or returned duration.
-        // The processor currently generates notes. Let's refactor to return duration for strict client-side deduction if needed.
-        // For MVP, we use the returned data and let the processor handle limits if we add them there.
-        // ACTUALLY: Let's do the deduction here based on a dummy duration check until processor returns it.
-        
-        // Deduction logic using the result of the processor
-        const cost = 2; // Default for now, refactoring processor to return duration next
-        const walletCheck = await validateAndDeductCoins(db!, user!.uid, cost);
-        
-        if (!walletCheck.success) {
-          setError(walletCheck.error || "Insufficient Coins.");
-          toast({ title: "Access Denied", description: walletCheck.error, variant: "destructive" });
-          setIsLoading(false);
-          return;
-        }
-
         setResult(data);
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-        toast({ title: "Intelligence Forged", description: `Session complete. Deducted ${cost} Coins.` });
+        toast({ title: "Intelligence Forged", description: `Session complete.` });
       }
     } catch (e: any) {
       setError(e.message || "Connectivity issue detected.");
@@ -93,6 +87,8 @@ export default function YoutubeLabPage() {
 
   return (
     <div className="flex flex-col h-full space-y-8 pb-40 animate-in fade-in duration-700 px-4 max-w-2xl mx-auto">
+      <AdLimitModal isOpen={showAdModal} onClose={() => setShowAdModal(false)} reason={adReason} />
+
       <div className="px-1 text-center pt-6">
         <h1 className="text-3xl sm:text-5xl font-black font-headline tracking-tighter text-slate-900 dark:text-white uppercase leading-tight">YouTube Lab</h1>
         <p className="text-[9px] font-black text-slate-400 mt-2 tracking-[0.4em] uppercase">Video to Academic Intelligence</p>

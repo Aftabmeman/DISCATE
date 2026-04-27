@@ -45,6 +45,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { AdLimitModal } from "@/components/AdLimitModal"
 
 export const runtime = 'nodejs';
 
@@ -115,6 +116,10 @@ export default function AssessmentsPage() {
   const [essayResult, setEssayResult] = useState<EvaluateEssayFeedbackOutput | null>(null)
   const [showMasterclass, setShowMasterclass] = useState(false)
 
+  // Ad Limit Modal State
+  const [showAdModal, setShowAdModal] = useState(false)
+  const [adReason, setAdReason] = useState<'LIMIT_REACHED' | 'NO_COINS'>('LIMIT_REACHED')
+
   useEffect(() => {
     const transferredContent = window.sessionStorage.getItem('youtube_notes_transfer');
     if (transferredContent) {
@@ -167,10 +172,15 @@ export default function AssessmentsPage() {
       return;
     }
 
-    // Wallet System: Text/PDF Assessment cost is 1 Coin
+    // Wallet System
     const walletCheck = await validateAndDeductCoins(db!, user!.uid, 1);
     if (!walletCheck.success) {
-      toast({ title: "Access Denied", description: walletCheck.error, variant: "destructive" });
+      if (walletCheck.code === 'LIMIT_REACHED' || walletCheck.code === 'NO_COINS') {
+        setAdReason(walletCheck.code);
+        setShowAdModal(true);
+      } else {
+        toast({ title: "Access Denied", description: walletCheck.error, variant: "destructive" });
+      }
       return;
     }
 
@@ -278,6 +288,8 @@ export default function AssessmentsPage() {
 
   return (
     <div className="flex flex-col h-full space-y-6 sm:space-y-10 pb-40 animate-in fade-in duration-700 px-4 max-w-2xl mx-auto">
+      <AdLimitModal isOpen={showAdModal} onClose={() => setShowAdModal(false)} reason={adReason} />
+      
       <AlertDialog open={showFlashcardHonesty} onOpenChange={setShowFlashcardHonesty}>
         <AlertDialogContent className="rounded-[2rem] border-none shadow-3xl bg-white dark:bg-slate-900 p-8">
           <AlertDialogHeader className="space-y-4">
@@ -480,7 +492,7 @@ export default function AssessmentsPage() {
               </SelectContent>
             </Select>
             <Button onClick={() => launchMode('Essay')} className="w-full h-13 sm:h-14 rounded-[1rem] sm:rounded-[1.2rem] bg-primary text-white font-black text-sm sm:text-xl shadow-xl active:scale-95 transition-all">
-              Enter Writing Lab <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Enter Writing Lab <ArrowRight className="ml-2 h-4 w-4 sm:h-5 w-5" />
             </Button>
           </div>
         </Card>
@@ -525,7 +537,7 @@ export default function AssessmentsPage() {
                     {result.mcqs[currentIdx].explanation}
                   </div>
                   <Button onClick={() => nextItem()} className="w-full h-12 sm:h-14 rounded-[1rem] sm:rounded-[1.2rem] bg-primary text-white font-black text-sm sm:text-base shadow-xl active:scale-95 transition-all">
-                    Next Challenge <ChevronRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                    Next Challenge <ChevronRight className="ml-2 h-4 w-4 sm:h-5 w-5" />
                   </Button>
                 </div>
               )}
@@ -657,7 +669,7 @@ export default function AssessmentsPage() {
                   </div>
 
                   <Button onClick={() => nextItem()} className="w-full h-12 sm:h-14 rounded-[1rem] sm:rounded-[1.2rem] bg-primary text-white font-black text-sm sm:text-base shadow-xl active:scale-95 transition-all">
-                    Next Challenge <ChevronRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                    Next Challenge <ChevronRight className="ml-2 h-4 w-4 sm:h-5 w-5" />
                   </Button>
                 </div>
               )}
