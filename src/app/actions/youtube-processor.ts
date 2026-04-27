@@ -5,9 +5,9 @@ import { YoutubeTranscript } from 'youtube-transcript';
 import ytdl from '@distube/ytdl-core';
 
 /**
- * YouTube Link to Notes Processor (Refactored for High TPM & Tracking)
+ * YouTube Link to Notes Processor (Refactored for Full Video Support)
  * Model: meta-llama/llama-4-scout-17b-16e-instruct (30k TPM)
- * Fallback: whisper-large-v3-turbo
+ * Optimized for processing large transcripts (up to 80k characters)
  */
 
 export async function processYoutubeToNotes(videoUrl: string, academicLevel: string = "Class 10th") {
@@ -45,13 +45,13 @@ export async function processYoutubeToNotes(videoUrl: string, academicLevel: str
       throw new Error("Could not extract enough content from this video.");
     }
 
-    // --- FINAL STEP: Generate Notes with Llama 4 Scout ---
+    // --- FINAL STEP: Generate Notes with Llama 4 Scout (Large Context) ---
     const systemPrompt = `You are an Expert Academic Evaluator. Transform the following transcript into high-quality Detailed Study Notes and 5 Deep Analytical Questions.
     LEVEL: ${academicLevel}
     
     FORMAT: 
     # STUDY NOTES
-    [Provide structured, detailed notes with clear headings and logical bullet points]
+    [Provide structured, detailed notes with clear headings and logical bullet points. Ensure NO CORE LOGIC is missed.]
     
     # 5 DEEP ANALYTICAL QUESTIONS
     1. [Provide a high-level question that tests deep understanding]
@@ -59,6 +59,7 @@ export async function processYoutubeToNotes(videoUrl: string, academicLevel: str
     
     TONE: Brilliant, encouraging, and highly professional. Ensure technical accuracy.`;
 
+    // Supporting up to 80,000 characters for "Full Video" coverage
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -69,15 +70,16 @@ export async function processYoutubeToNotes(videoUrl: string, academicLevel: str
         model: 'meta-llama/llama-4-scout-17b-16e-instruct',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Transcript:\n"""\n${transcriptText.substring(0, 15000)}\n"""` }
+          { role: 'user', content: `Transcript:\n"""\n${transcriptText.substring(0, 80000)}\n"""` }
         ],
         temperature: 0.3,
-        max_tokens: 3000,
+        max_tokens: 4000,
       }),
     });
 
     if (!response.ok) {
-      return { error: "Error: Groq Llama generation failed." };
+      const errorData = await response.json().catch(() => ({}));
+      return { error: `Error: Groq Llama generation failed. ${errorData.error?.message || ''}` };
     }
 
     const data = await response.json();
@@ -118,7 +120,7 @@ async function transcribeWithWhisper(videoUrl: string, apiKey: string): Promise<
   const audioBlob = await audioResponse.blob();
   
   if (audioBlob.size > 25 * 1024 * 1024) {
-    throw new Error("Audio file too large (Max 25MB).");
+    throw new Error("Audio file too large (Max 25MB). Use shorter videos for audio-fallback mode.");
   }
   
   const formData = new FormData();
