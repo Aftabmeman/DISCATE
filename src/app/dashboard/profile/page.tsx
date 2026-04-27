@@ -155,6 +155,9 @@ export default function ProfilePage() {
 
   const currentLang = profile?.preferredLanguage || "English";
   const content = aboutTranslations[currentLang] || aboutTranslations["English"];
+  
+  // MIGRATION DISPLAY: If balance missing, show 50
+  const coinBalance = typeof profile?.coinBalance === 'number' ? profile.coinBalance : 50;
 
   return (
     <div className="space-y-8 sm:space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-40 px-4 max-w-2xl mx-auto">
@@ -180,7 +183,7 @@ export default function ProfilePage() {
 
       <div className="grid grid-cols-3 gap-3 sm:gap-5">
         {[
-          { icon: Coins, label: "Coins", val: profile?.totalCoins?.toString() ?? "0", color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-900/10" },
+          { icon: Coins, label: "Coins", val: coinBalance.toString(), color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-900/10" },
           { icon: Award, label: "Level", val: profile?.level ?? "Lvl 1", color: "text-primary", bg: "bg-primary/10" },
           { icon: BookMarked, label: "Sets", val: profile?.assessmentsDone?.toString() ?? "0", color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/10" }
         ].map((stat, i) => (
@@ -276,7 +279,7 @@ export default function ProfilePage() {
           <h3 className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] px-2 flex items-center gap-2">
             <ShieldCheck className="h-3 w-3 text-primary" /> Legal &amp; Support
           </h3>
-          <Link href="/privacy">
+          <a href="/privacy">
             <Card className="flex items-center justify-between p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all border-none shadow-xl bg-white dark:bg-slate-900 group mb-3">
               <div className="flex items-center gap-4 sm:gap-6">
                 <div className="p-3 sm:p-5 bg-slate-50 dark:bg-slate-800 rounded-xl shadow-sm group-hover:scale-110 transition-transform">
@@ -286,8 +289,8 @@ export default function ProfilePage() {
               </div>
               <ChevronRight className="h-5 w-5 sm:h-7 sm:w-7 text-slate-200 group-hover:translate-x-1 transition-transform" />
             </Card>
-          </Link>
-          <Link href="/terms">
+          </a>
+          <a href="/terms">
             <Card className="flex items-center justify-between p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all border-none shadow-xl bg-white dark:bg-slate-900 group">
               <div className="flex items-center gap-4 sm:gap-6">
                 <div className="p-3 sm:p-5 bg-slate-50 dark:bg-slate-800 rounded-xl shadow-sm group-hover:scale-110 transition-transform">
@@ -297,7 +300,7 @@ export default function ProfilePage() {
               </div>
               <ChevronRight className="h-5 w-5 sm:h-7 sm:w-7 text-slate-200 group-hover:translate-x-1 transition-transform" />
             </Card>
-          </Link>
+          </a>
         </div>
 
         <div className="pt-4 sm:pt-6">

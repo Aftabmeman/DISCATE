@@ -37,6 +37,7 @@ export function setDocumentNonBlocking(docRef: DocumentReference, data: any, opt
 /**
  * Validates wallet balance and daily limits, then deducts coins.
  * Returns true if deduction was successful, false otherwise.
+ * ALSO handles migration for old users who don't have the coin field yet.
  */
 export async function validateAndDeductCoins(db: Firestore, userId: string, cost: number): Promise<{ success: boolean; error?: string }> {
   const profileRef = doc(db, 'users', userId, 'profile', 'stats');
@@ -47,24 +48,27 @@ export async function validateAndDeductCoins(db: Firestore, userId: string, cost
   const data = profileSnap.data();
   const now = new Date();
   
-  let currentBalance = data.coinBalance || 0;
+  // MIGRATION: If coinBalance doesn't exist, give them the Welcome Kit (50)
+  let currentBalance = typeof data.coinBalance === 'number' ? data.coinBalance : 50;
   let dailyUsed = data.dailyCoinsUsed || 0;
-  let lastReset = new Date(data.lastDailyReset || now);
-  let lastAllowance = new Date(data.lastMonthlyAllowance || now);
+  let lastResetStr = data.lastDailyReset;
+  let lastAllowanceStr = data.lastMonthlyAllowance;
 
   // 1. Daily Reset Check
-  const isNewDay = now.toDateString() !== lastReset.toDateString();
+  const isNewDay = !lastResetStr || (now.toDateString() !== new Date(lastResetStr).toDateString());
   if (isNewDay) {
     dailyUsed = 0;
-    lastReset = now;
+    lastResetStr = now.toISOString();
   }
 
   // 2. Monthly Allowance Check (30 days)
   const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+  const lastAllowance = lastAllowanceStr ? new Date(lastAllowanceStr) : now;
   const isNewMonth = (now.getTime() - lastAllowance.getTime()) > thirtyDaysInMs;
+  
   if (isNewMonth) {
     currentBalance += 30;
-    lastAllowance = now;
+    lastAllowanceStr = now.toISOString();
   }
 
   // 3. Limit Checks
@@ -81,26 +85,37 @@ export async function validateAndDeductCoins(db: Firestore, userId: string, cost
     await updateDoc(profileRef, {
       coinBalance: currentBalance - cost,
       dailyCoinsUsed: dailyUsed + cost,
-      lastDailyReset: lastReset.toISOString(),
-      lastMonthlyAllowance: lastAllowance.toISOString(),
+      lastDailyReset: lastResetStr || now.toISOString(),
+      lastMonthlyAllowance: lastAllowanceStr || now.toISOString(),
       updatedAt: now.toISOString()
     });
     return { success: true };
   } catch (e) {
-    return { success: false, error: "Sync error. Please try again." };
+    // If updateDoc fails (maybe first time adding these fields), try setDoc with merge
+    try {
+       await setDoc(profileRef, {
+          coinBalance: currentBalance - cost,
+          dailyCoinsUsed: dailyUsed + cost,
+          lastDailyReset: lastResetStr || now.toISOString(),
+          lastMonthlyAllowance: lastAllowanceStr || now.toISOString(),
+          updatedAt: now.toISOString()
+       }, { merge: true });
+       return { success: true };
+    } catch (e2) {
+       return { success: false, error: "Sync error. Please try again." };
+    }
   }
 }
 
 /**
- * Increments user coins and assessment counts in Firestore.
- * Legacy function kept for compatibility, but now typically coins are deducted not added via UI.
+ * Increments user coins (Rewards) and assessment counts in Firestore.
  */
 export function incrementUserStats(db: Firestore, userId: string, coins: number, isAssessment: boolean = true) {
   const profileRef = doc(db, 'users', userId, 'profile', 'stats'); 
   
   setDoc(profileRef, {
     id: userId,
-    coinBalance: increment(coins), // Rewards also go to coinBalance
+    coinBalance: increment(coins), 
     assessmentsDone: isAssessment ? increment(1) : increment(0),
     updatedAt: new Date().toISOString()
   }, { merge: true }).catch(error => {
