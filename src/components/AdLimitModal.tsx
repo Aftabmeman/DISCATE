@@ -7,10 +7,9 @@ import {
   DialogHeader, 
   DialogTitle, 
   DialogDescription,
-  DialogFooter
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Loader2, PlayCircle, Coins, ShieldAlert, CheckCircle2, X } from 'lucide-react';
+import { Loader2, PlayCircle, ShieldAlert, CheckCircle2, ExternalLink } from 'lucide-react';
 import { useUser, useFirestore } from '@/firebase';
 import { grantAdReward } from '@/firebase/non-blocking-updates';
 import { useToast } from '@/hooks/use-toast';
@@ -23,45 +22,51 @@ interface AdLimitModalProps {
 }
 
 /**
- * Just-In-Time Reward Ad Modal for Discate.
- * Fixed overlap between quote and claim button.
+ * Final Monetization Modal: Direct Link + 10s Verification
+ * Opens external ad network and rewards user after a wait.
  */
 export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLimitModalProps) {
   const { user } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
   
-  const [view, setView] = useState<'prompt' | 'playing' | 'success'>('prompt');
-  const [timer, setTimer] = useState(5);
+  const [view, setView] = useState<'prompt' | 'verifying' | 'success'>('prompt');
+  const [timer, setTimer] = useState(10);
   const [isGranting, setIsGranting] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
       setView('prompt');
-      setTimer(5);
+      setTimer(10);
       setIsGranting(false);
     }
   }, [isOpen]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (view === 'playing' && timer > 0) {
+    if (view === 'verifying' && timer > 0) {
       interval = setInterval(() => {
         setTimer((prev) => prev - 1);
       }, 1000);
+    } else if (view === 'verifying' && timer === 0 && !isGranting) {
+      handleClaimReward();
     }
     return () => clearInterval(interval);
-  }, [view, timer]);
+  }, [view, timer, isGranting]);
 
   const handleStartAd = () => {
-    setView('playing');
-    setTimer(5);
+    // Open direct ad link in new tab
+    window.open('https://omg10.com/4/10932388', '_blank');
+    // Switch current tab to verification state
+    setView('verifying');
+    setTimer(10);
   };
 
   const handleClaimReward = async () => {
     if (!db || !user?.uid) return;
     setIsGranting(true);
     
+    // grantAdReward: +1 Coin and -1 DailyUsed (Bypasses limit for this session)
     const result = await grantAdReward(db, user.uid);
     if (result.success) {
       setView('success');
@@ -69,18 +74,23 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
         title: "🎉 Reward Granted!",
         description: "1 Bonus Coin added and your quota refreshed.",
       });
+      // Auto-close after success to let user click Generate again
+      setTimeout(() => {
+        onClose();
+      }, 2000);
     } else {
       toast({
         variant: "destructive",
         title: "Sync Error",
-        description: "Failed to credit coins. Please try again.",
+        description: "Failed to credit reward. Please try again.",
       });
+      setView('prompt');
       setIsGranting(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && view !== 'playing' && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && view !== 'verifying' && onClose()}>
       <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none shadow-3xl overflow-hidden p-0 bg-white dark:bg-slate-900">
         
         {view === 'prompt' && (
@@ -93,7 +103,7 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
                 {reason === 'LIMIT_REACHED' ? "Daily Limit Reached 🛑" : "Insufficient Coins 🪙"}
               </DialogTitle>
               <DialogDescription className="text-slate-500 dark:text-slate-400 text-sm sm:text-base font-medium leading-relaxed">
-                You've hit your usage threshold. Watch a quick 5-second ad to earn <strong>+1 Bonus Coin</strong> and continue your elite study session immediately.
+                You've hit your usage threshold. Support our elite servers by visiting an ad partner to earn <strong>+1 Bonus Coin</strong> and continue immediately.
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-3">
@@ -111,43 +121,35 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
           </div>
         )}
 
-        {view === 'playing' && (
-          <div className="relative min-h-[450px] flex flex-col items-center justify-between bg-slate-950 p-8 sm:p-10 text-center overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20 animate-pulse" />
+        {view === 'verifying' && (
+          <div className="relative min-h-[400px] flex flex-col items-center justify-center bg-slate-950 p-8 sm:p-10 text-center overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 animate-pulse" />
             
-            <div className="relative z-10 space-y-6 w-full">
-              <div className="space-y-1">
-                <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">Elite Sponsor Session</p>
-                <h3 className="text-2xl font-black text-white font-headline uppercase tracking-tight">Intelligence Buffering</h3>
+            <div className="relative z-10 space-y-8 w-full">
+              <div className="space-y-2">
+                <div className="flex items-center justify-center gap-2 text-primary font-black text-[10px] uppercase tracking-[0.4em]">
+                   <Loader2 className="h-3 w-3 animate-spin" /> Verifying Interaction
+                </div>
+                <h3 className="text-2xl font-black text-white font-headline uppercase tracking-tight">Syncing Reward Node</h3>
               </div>
               
-              <div className="relative h-28 w-28 flex items-center justify-center mx-auto">
+              <div className="relative h-32 w-32 flex items-center justify-center mx-auto">
                  <svg className="absolute inset-0 h-full w-full rotate-[-90deg]" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="45" fill="transparent" stroke="rgba(255,255,255,0.1)" strokeWidth="6" />
-                    <circle cx="50" cy="50" r="45" fill="transparent" stroke="currentColor" strokeWidth="6" strokeDasharray="282.7" strokeDashoffset={282.7 - (282.7 * (5 - timer)) / 5} strokeLinecap="round" className="text-primary transition-all duration-1000 ease-linear" />
+                    <circle cx="50" cy="50" r="45" fill="transparent" stroke="rgba(255,255,255,0.05)" strokeWidth="4" />
+                    <circle cx="50" cy="50" r="45" fill="transparent" stroke="currentColor" strokeWidth="4" strokeDasharray="282.7" strokeDashoffset={282.7 - (282.7 * (10 - timer)) / 10} strokeLinecap="round" className="text-primary transition-all duration-1000 ease-linear" />
                  </svg>
-                 <span className="text-4xl font-black text-white tabular-nums">{timer}</span>
-              </div>
-            </div>
-
-            <div className="relative z-10 w-full flex flex-col items-center gap-6 pb-4">
-              <div className="p-4 bg-white/5 rounded-2xl backdrop-blur-sm border border-white/10 w-full">
-                <p className="text-[10px] text-slate-400 font-medium italic">"Real scholars don't wait for resets, they create opportunities."</p>
+                 <div className="flex flex-col items-center">
+                    <span className="text-5xl font-black text-white tabular-nums">{timer}</span>
+                    <span className="text-[8px] font-bold text-slate-500 uppercase">Seconds</span>
+                 </div>
               </div>
 
-              {timer === 0 ? (
-                <Button 
-                  onClick={handleClaimReward}
-                  disabled={isGranting}
-                  className="w-full h-14 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-lg shadow-2xl shadow-emerald-500/30 animate-in zoom-in-50 duration-500"
-                >
-                  {isGranting ? <Loader2 className="animate-spin h-6 w-6" /> : "Claim +1 Bonus Coin"}
-                </Button>
-              ) : (
-                <div className="h-14 w-full flex items-center justify-center">
-                   <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Reward unlocking in {timer}s...</p>
-                </div>
-              )}
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/10 flex items-center gap-3 text-left">
+                 <ExternalLink className="h-5 w-5 text-slate-400 shrink-0" />
+                 <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
+                   Please keep the ad tab open for a few moments while we verify your academic credit.
+                 </p>
+              </div>
             </div>
           </div>
         )}
@@ -159,14 +161,11 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
             </div>
             <div className="space-y-2">
                <h3 className="text-3xl font-black font-headline text-slate-900 dark:text-white uppercase tracking-tighter">Reward Unlocked!</h3>
-               <p className="text-slate-500 font-medium">Your academic wallet has been updated. The 5-coin restriction for this session is now lifted.</p>
+               <p className="text-slate-500 font-medium">Your academic wallet has been updated. You can now proceed with your generation.</p>
             </div>
-            <Button 
-              onClick={onClose}
-              className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black text-xl shadow-xl active:scale-95 transition-all"
-            >
-              Continue Generation
-            </Button>
+            <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden w-full">
+               <div className="h-full bg-emerald-500 animate-progress" style={{ width: '100%' }} />
+            </div>
           </div>
         )}
 

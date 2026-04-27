@@ -69,6 +69,7 @@ export async function validateAndDeductCoins(db: Firestore, userId: string, cost
   }
 
   // 3. Limit Checks
+  // Note: grantAdReward decrements dailyUsed, effectively bypassing this check for +1 task
   if (dailyUsed + cost > 5) {
     return { 
       success: false, 
@@ -102,14 +103,14 @@ export async function validateAndDeductCoins(db: Firestore, userId: string, cost
 
 /**
  * Increments coin balance after an ad AND decrements daily used count 
- * to allow one more free task immediately.
+ * to allow one more free task immediately (Limit Bypass).
  */
 export async function grantAdReward(db: Firestore, userId: string) {
   const profileRef = doc(db, 'users', userId, 'profile', 'stats');
   try {
     await updateDoc(profileRef, {
       coinBalance: increment(1),
-      dailyCoinsUsed: increment(-1),
+      dailyCoinsUsed: increment(-1), // Effectively increases daily cap by 1 for this user
       updatedAt: new Date().toISOString()
     });
     return { success: true };
