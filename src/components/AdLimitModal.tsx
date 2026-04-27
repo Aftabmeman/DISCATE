@@ -22,8 +22,8 @@ interface AdLimitModalProps {
 }
 
 /**
- * Final Monetization Modal: Direct Link + 10s Verification
- * Opens external ad network and rewards user after a wait.
+ * Final Monetization Modal: Direct Adsterra Link + 10s Verification
+ * Opens external ad network and rewards user after interaction verification.
  */
 export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLimitModalProps) {
   const { user } = useUser();
@@ -55,8 +55,9 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
   }, [view, timer, isGranting]);
 
   const handleStartAd = () => {
-    // Open temporary link in new tab (replacing omg10 with google)
-    window.open('https://google.com', '_blank');
+    // Open Final Adsterra Direct Link in new tab
+    window.open('https://www.profitablecpmratenetwork.com/j9ay58s17?key=b750504caa4b020b0a5da18b474f98bb', '_blank');
+    
     // Switch current tab to verification state
     setView('verifying');
     setTimer(10);
@@ -66,15 +67,15 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
     if (!db || !user?.uid) return;
     setIsGranting(true);
     
-    // grantAdReward: +1 Coin and -1 DailyUsed (Bypasses limit for this session)
+    // grantAdReward: +1 Coin and -1 DailyUsed (Effectively bypasses the 5-coin limit for this session)
     const result = await grantAdReward(db, user.uid);
     if (result.success) {
       setView('success');
       toast({
-        title: "🎉 Reward Granted!",
-        description: "1 Bonus Coin added and your quota refreshed.",
+        title: "🎉 +1 Bonus Coin Added!",
+        description: "Your academic wallet has been updated. You may now continue.",
       });
-      // Auto-close after success to let user click Generate again
+      // Auto-close after success to let user proceed
       setTimeout(() => {
         onClose();
       }, 2000);
