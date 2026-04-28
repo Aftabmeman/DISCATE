@@ -20,13 +20,22 @@ import { processYoutubeToNotes } from "@/app/actions/youtube-processor"
 import { Badge } from "@/components/ui/badge"
 import confetti from 'canvas-confetti'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { useUser, useFirestore } from "@/firebase"
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase"
 import { validateAndDeductCoins } from "@/firebase/non-blocking-updates"
 import { AdLimitModal } from "@/components/AdLimitModal"
+import { doc } from "firebase/firestore"
 
 export default function YoutubeLabPage() {
   const { user } = useUser()
   const db = useFirestore()
+  
+  const profileRef = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return doc(db, "users", user.uid, "profile", "stats");
+  }, [db, user?.uid]);
+  
+  const { data: profile } = useDoc(profileRef);
+
   const [url, setUrl] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
@@ -34,7 +43,6 @@ export default function YoutubeLabPage() {
   const { toast } = useToast()
   const router = useRouter()
 
-  // Ad Limit Modal State
   const [showAdModal, setShowAdModal] = useState(false)
   const [adReason, setAdReason] = useState<'LIMIT_REACHED' | 'NO_COINS'>('LIMIT_REACHED')
 
@@ -44,7 +52,6 @@ export default function YoutubeLabPage() {
       return;
     }
 
-    // Step 1: Limit Check (Approx cost 2 for check)
     const walletCheck = await validateAndDeductCoins(db!, user!.uid, 2);
     if (!walletCheck.success) {
       if (walletCheck.code === 'LIMIT_REACHED' || walletCheck.code === 'NO_COINS') {
@@ -61,7 +68,11 @@ export default function YoutubeLabPage() {
     setError(null);
 
     try {
-      const data = await processYoutubeToNotes(url);
+      const data = await processYoutubeToNotes(
+        url, 
+        profile?.level || "Class 10th", 
+        profile?.preferredLanguage || "English"
+      );
       
       if (data.error) {
         setError(data.error);

@@ -3,12 +3,16 @@
 import { YoutubeTranscript } from 'youtube-transcript';
 
 /**
- * YouTube Link to Notes Processor (Final Optimized Logic)
- * Focus: High-tier Native Subtitles only to ensure zero latency and no Whisper limit issues.
+ * YouTube Link to Notes Processor (Multi-Language Optimized)
+ * Focus: High-tier Native Subtitles with multi-language support.
  * Model: meta-llama/llama-4-scout-17b-16e-instruct
  */
 
-export async function processYoutubeToNotes(videoUrl: string, academicLevel: string = "Class 10th") {
+export async function processYoutubeToNotes(
+  videoUrl: string, 
+  academicLevel: string = "Class 10th",
+  preferredLanguage: string = "English"
+) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) return { error: "AI credentials missing in environment." };
 
@@ -18,15 +22,18 @@ export async function processYoutubeToNotes(videoUrl: string, academicLevel: str
 
     let transcriptText = "";
 
-    // --- NATIVE SUBTITLES ONLY ---
+    // --- NATIVE SUBTITLES (Multi-Language Fallback) ---
     try {
       console.log(`Discate Engine: Fetching subtitles for ${videoId}...`);
       
-      const transcript = await YoutubeTranscript.fetchTranscript(videoId).catch(async () => {
-        // Fallback: try English specifically if default fails
-        return await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' });
-      });
+      // Attempt 1: Fetch default transcript
+      let transcript = await YoutubeTranscript.fetchTranscript(videoId).catch(() => null);
       
+      // Attempt 2: If default fails, try common regional (Hindi)
+      if (!transcript) {
+        transcript = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'hi' }).catch(() => null);
+      }
+
       if (transcript && transcript.length > 0) {
         transcriptText = transcript.map(t => t.text).join(' ');
       } else {
@@ -35,7 +42,7 @@ export async function processYoutubeToNotes(videoUrl: string, academicLevel: str
     } catch (e) {
       console.error("Subtitle Fetch Error:", e);
       return { 
-        error: "Subtitles are disabled for this video. Discate requires videos with active captions (English/Auto-generated) for elite notes generation." 
+        error: "This video doesn't have active captions (English or Hindi). Discate requires subtitled videos for elite intelligence generation." 
       };
     }
 
@@ -46,7 +53,9 @@ export async function processYoutubeToNotes(videoUrl: string, academicLevel: str
     // --- FINAL STEP: Generate Notes with Llama 4 Scout ---
     const systemPrompt = `You are an Expert Academic Evaluator for Discate AI. 
     Transform the following transcript into high-quality Detailed Study Notes and 5 Deep Analytical Questions.
+    
     LEVEL: ${academicLevel}
+    RESPONSE LANGUAGE/STYLE: ${preferredLanguage}
     
     FORMAT: 
     # STUDY NOTES
@@ -55,7 +64,7 @@ export async function processYoutubeToNotes(videoUrl: string, academicLevel: str
     # 5 DEEP ANALYTICAL QUESTIONS
     [Provide 5 questions that test deep concept mastery, not just memory.]
     
-    TONE: Brilliant, professional, and encouraging.`;
+    TONE: Brilliant, professional, and encouraging. Use the specified regional mix style if provided.`;
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -67,7 +76,7 @@ export async function processYoutubeToNotes(videoUrl: string, academicLevel: str
         model: 'meta-llama/llama-4-scout-17b-16e-instruct',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Transcript:\n"""\n${transcriptText.substring(0, 80000)}\n"""` }
+          { role: 'user', content: `Transcript Content (May be in any language):\n"""\n${transcriptText.substring(0, 80000)}\n"""` }
         ],
         temperature: 0.3,
         max_tokens: 4000,
@@ -77,7 +86,7 @@ export async function processYoutubeToNotes(videoUrl: string, academicLevel: str
     if (!response.ok) {
       const errData = await response.json();
       console.error("Groq Error:", errData);
-      return { error: "AI Generation failed. The transcript might be too complex for a single pass." };
+      return { error: "AI Generation failed. The session was too intense for the current node." };
     }
 
     const data = await response.json();
@@ -85,7 +94,7 @@ export async function processYoutubeToNotes(videoUrl: string, academicLevel: str
     return {
       content: data.choices[0].message.content,
       tokenUsage: data.usage,
-      method: "Native Subtitles"
+      method: "Multi-Lang Subtitles"
     };
 
   } catch (error: any) {
