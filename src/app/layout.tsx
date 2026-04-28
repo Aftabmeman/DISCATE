@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from "@/components/providers/AuthProvider"
 import { ThemeProvider } from "@/components/providers/ThemeProvider"
 import { FirebaseClientProvider } from '@/firebase';
+import { PWALoader } from "@/components/PWALoader";
 
 export const metadata: Metadata = {
   title: 'DISCATE AI | Elite Academic Mentorship',
@@ -91,6 +92,7 @@ export default function RootLayout({
         <FirebaseClientProvider>
           <ThemeProvider>
             <AuthProvider>
+              <PWALoader />
               {children}
               <Toaster />
             </AuthProvider>
