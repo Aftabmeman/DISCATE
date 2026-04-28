@@ -1,70 +1,61 @@
 'use server';
 
 import { YoutubeTranscript } from 'youtube-transcript';
-import ytdl from '@distube/ytdl-core';
 
 /**
- * YouTube Link to Notes Processor (Optimized Logic)
- * Priority: 1. Native Subtitles (Multi-lang fallback) -> 2. AI Audio Fallback (Whisper)
- * Model: meta-llama/llama-4-scout-17b-16e-instruct (30k TPM)
+ * YouTube Link to Notes Processor (Final Optimized Logic)
+ * Focus: High-tier Native Subtitles only to ensure zero latency and no Whisper limit issues.
+ * Model: meta-llama/llama-4-scout-17b-16e-instruct
  */
 
 export async function processYoutubeToNotes(videoUrl: string, academicLevel: string = "Class 10th") {
   const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) return { error: "AI credentials (GROQ_API_KEY) missing in environment." };
+  if (!apiKey) return { error: "AI credentials missing in environment." };
 
   try {
     const videoId = extractVideoId(videoUrl);
     if (!videoId) throw new Error("Invalid YouTube link format. Please provide a standard URL.");
 
     let transcriptText = "";
-    let methodUsed = "none";
 
-    // --- ATTEMPT 1: Native Subtitles (Fast & Free) ---
+    // --- NATIVE SUBTITLES ONLY ---
     try {
-      console.log(`Discate Engine: Attempting subtitle fetch for ${videoId}...`);
-      // Trying to fetch without specific language first to get whatever is available
+      console.log(`Discate Engine: Fetching subtitles for ${videoId}...`);
+      
       const transcript = await YoutubeTranscript.fetchTranscript(videoId).catch(async () => {
-        // Fallback for some videos where default might fail
+        // Fallback: try English specifically if default fails
         return await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' });
       });
       
       if (transcript && transcript.length > 0) {
         transcriptText = transcript.map(t => t.text).join(' ');
-        methodUsed = "Native Subtitles";
       } else {
-        throw new Error("Empty transcript");
+        throw new Error("No Subtitles Found");
       }
     } catch (e) {
-      console.log("Discate Engine: Subtitles failed. Switching to AI Audio Fallback...");
-      
-      // --- ATTEMPT 2: AI Audio Fallback (Whisper) ---
-      try {
-        methodUsed = "AI Audio Fallback (Whisper)";
-        transcriptText = await transcribeWithWhisper(videoUrl, apiKey);
-      } catch (whisperError: any) {
-        console.error("Whisper Error:", whisperError.message);
-        return { error: `Transcription Failed: Video audio exceeds 25MB limits or Whisper service busy.` };
-      }
+      console.error("Subtitle Fetch Error:", e);
+      return { 
+        error: "Subtitles are disabled for this video. Discate requires videos with active captions (English/Auto-generated) for elite notes generation." 
+      };
     }
 
     if (!transcriptText || transcriptText.trim().length < 50) {
-      throw new Error("Could not extract enough content from this video to generate quality notes.");
+      throw new Error("The subtitles for this video are too short to generate quality notes.");
     }
 
-    // --- FINAL STEP: Generate Notes with Llama 4 Scout (30k TPM) ---
-    const systemPrompt = `You are an Expert Academic Evaluator. Transform the following transcript into high-quality Detailed Study Notes and 5 Deep Analytical Questions.
+    // --- FINAL STEP: Generate Notes with Llama 4 Scout ---
+    const systemPrompt = `You are an Expert Academic Evaluator for Discate AI. 
+    Transform the following transcript into high-quality Detailed Study Notes and 5 Deep Analytical Questions.
     LEVEL: ${academicLevel}
     
     FORMAT: 
     # STUDY NOTES
-    [Provide structured, detailed notes with clear headings and logical bullet points. Ensure NO CORE LOGIC is missed.]
+    [Structured notes with headings and logical bullet points. Capture all core logic.]
     
     # 5 DEEP ANALYTICAL QUESTIONS
-    1. [Provide a high-level question that tests deep understanding]
-    ...etc.
+    [Provide 5 questions that test deep concept mastery, not just memory.]
     
-    TONE: Brilliant, encouraging, and highly professional. Ensure technical accuracy.`;
+    TONE: Brilliant, professional, and encouraging.`;
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -76,7 +67,7 @@ export async function processYoutubeToNotes(videoUrl: string, academicLevel: str
         model: 'meta-llama/llama-4-scout-17b-16e-instruct',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Transcript (${methodUsed}):\n"""\n${transcriptText.substring(0, 80000)}\n"""` }
+          { role: 'user', content: `Transcript:\n"""\n${transcriptText.substring(0, 80000)}\n"""` }
         ],
         temperature: 0.3,
         max_tokens: 4000,
@@ -84,7 +75,9 @@ export async function processYoutubeToNotes(videoUrl: string, academicLevel: str
     });
 
     if (!response.ok) {
-      return { error: "Error: Groq Llama generation failed." };
+      const errData = await response.json();
+      console.error("Groq Error:", errData);
+      return { error: "AI Generation failed. The transcript might be too complex for a single pass." };
     }
 
     const data = await response.json();
@@ -92,12 +85,12 @@ export async function processYoutubeToNotes(videoUrl: string, academicLevel: str
     return {
       content: data.choices[0].message.content,
       tokenUsage: data.usage,
-      method: methodUsed
+      method: "Native Subtitles"
     };
 
   } catch (error: any) {
     console.error("YouTube Processor Error:", error.message);
-    return { error: error.message || "An unexpected error occurred." };
+    return { error: error.message || "An unexpected system error occurred." };
   }
 }
 
@@ -105,38 +98,4 @@ function extractVideoId(url: string) {
   const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
   const match = url.match(regExp);
   return (match && match[7].length == 11) ? match[7] : null;
-}
-
-async function transcribeWithWhisper(videoUrl: string, apiKey: string): Promise<string> {
-  const info = await ytdl.getInfo(videoUrl);
-  
-  // Explicitly choosing lowest bitrate audio to stay under 25MB Groq limit
-  const audioFormat = ytdl.chooseFormat(info.formats, { 
-    quality: 'lowestaudio',
-    filter: 'audioonly'
-  });
-  
-  if (!audioFormat.url) throw new Error("No valid audio stream found.");
-
-  const audioResponse = await fetch(audioFormat.url);
-  const audioBlob = await audioResponse.blob();
-  
-  if (audioBlob.size > 25 * 1024 * 1024) {
-    throw new Error("Audio file too large (>25MB).");
-  }
-  
-  const formData = new FormData();
-  formData.append('file', audioBlob, 'audio.mp3');
-  formData.append('model', 'whisper-large-v3-turbo');
-
-  const whisperResponse = await fetch('https://api.groq.com/audio/transcriptions', {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${apiKey}` },
-    body: formData,
-  });
-
-  if (!whisperResponse.ok) throw new Error("Whisper API failed.");
-
-  const result = await whisperResponse.json();
-  return result.text;
 }

@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview High-performance academic assessment generator using Groq llama-3.1-8b-instant.
@@ -49,65 +48,55 @@ export type GenerateStudyAssessmentsOutput = z.infer<typeof GenerateStudyAssessm
 function extractJson(text: string) {
   try {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) return JSON.parse(jsonMatch[0]);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      return parsed;
+    }
     return JSON.parse(text);
   } catch (e) {
-    throw new Error("Failed to parse AI response.");
+    console.error("JSON Extraction Error:", e, text);
+    throw new Error("Failed to parse AI response into scholarly data.");
   }
 }
 
 export async function generateStudyAssessments(input: GenerateStudyAssessmentsInput): Promise<GenerateStudyAssessmentsOutput> {
   const apiKey = process.env.GROQ_API_KEY;
   
-  if (!apiKey) return { error: "AI Key is missing." };
+  if (!apiKey) return { error: "AI credentials missing." };
   
   if (input.studyMaterial.length < 30) {
-    return { error: "Content is too short. Please add more details." };
+    return { error: "Content too short for deep-metric analysis." };
   }
 
   let material = input.studyMaterial;
   if (material.length > 8000) material = material.substring(0, 8000) + "...";
 
   const isMixed = input.assessmentTypes.includes('Mixed');
-  
-  // Strict count enforcement logic
   const targetMcq = isMixed ? (input.mcqCount || 0) : (input.assessmentTypes.includes('MCQ') ? input.questionCount : 0);
   const targetFlash = isMixed ? (input.flashcardCount || 0) : (input.assessmentTypes.includes('Flashcard') ? input.questionCount : 0);
   const targetEssay = isMixed ? (input.essayCount || 0) : (input.assessmentTypes.includes('Essay') ? input.questionCount : 0);
 
-  const countInstruction = `CRITICAL TASK: 
-1. Generate EXACTLY ${targetMcq} MCQs.
-2. Generate EXACTLY ${targetFlash} Flashcards.
-3. Generate EXACTLY ${targetEssay} Essay Prompts.
-
-Do not skip any format. Even if you generate many MCQs, you MUST provide the requested ${targetEssay} Essay Prompt(s).`;
-
-  const systemPrompt = `You are a Senior Academic Content Developer for Discate AI.
-Generate high-quality academic content ONLY from the provided material.
+  const systemPrompt = `You are a Senior Academic Developer for Discate AI.
+Generate high-quality academic data from the provided text.
 LEVEL: ${input.academicLevel} | DIFFICULTY: ${input.difficulty}
 
-${countInstruction}
+COUNTS TO GENERATE:
+- Exactly ${targetMcq} MCQs
+- Exactly ${targetFlash} Flashcards
+- Exactly ${targetEssay} Essay Prompts
 
 JSON STRUCTURE RULES:
-- "mcqs": Array of MCQ objects.
-- "flashcards": Array of Flashcard objects.
-- "essayPrompts": Array of Essay objects.
-- ALL three keys MUST exist in the JSON output, even if empty.
-- Ensure each MCQ has 4 unique options and one clearly correct answer.
-- Each Flashcard must facilitate active recall.
-- Each Essay Prompt must be thought-provoking and relevant to the material.`;
+- "mcqs": Array of MCQ objects with question, options (4), correctAnswer, explanation.
+- "flashcards": Array of objects with front and back.
+- "essayPrompts": Array of objects with prompt, evaluationCriteria, modelAnswerOutline.
+- ALL three keys MUST exist.`;
 
-  const userPrompt = `Material to process:
+  const userPrompt = `Material:
 """
 ${material}
 """
 
-STRICT JSON OUTPUT FORMAT:
-{
-  "mcqs": [{"question": "string", "options": ["string"], "correctAnswer": "string", "explanation": "string"}],
-  "flashcards": [{"front": "string", "back": "string"}],
-  "essayPrompts": [{"prompt": "string", "evaluationCriteria": ["string"], "modelAnswerOutline": ["string"]}]
-}`;
+OUTPUT ONLY RAW JSON OBJECT.`;
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -127,16 +116,11 @@ STRICT JSON OUTPUT FORMAT:
       }),
     });
 
-    if (!response.ok) {
-      const errBody = await response.json().catch(() => ({}));
-      console.error("Groq API Error:", errBody);
-      throw new Error("API Failure");
-    }
+    if (!response.ok) throw new Error("Groq Node Unavailable");
     
     const data = await response.json();
     const content = extractJson(data.choices[0].message.content);
     
-    // Ensure the keys exist even if model missed them
     const normalizedContent = {
       mcqs: content.mcqs || [],
       flashcards: content.flashcards || [],
@@ -146,7 +130,7 @@ STRICT JSON OUTPUT FORMAT:
 
     return GenerateStudyAssessmentsOutputSchema.parse(normalizedContent);
   } catch (error: any) {
-    console.error("AI Generation Error:", error.message);
-    return { error: "Failed to generate session. The request might be too large for a single pass. Try reducing item counts or material length." };
+    console.error("AI Generation Failure:", error.message);
+    return { error: "Session forging interrupted. Try reducing item counts or content length." };
   }
 }
