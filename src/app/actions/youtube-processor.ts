@@ -1,3 +1,4 @@
+
 'use server';
 
 import { YoutubeTranscript } from 'youtube-transcript';
@@ -56,6 +57,8 @@ export async function processYoutubeToNotes(
     
     LEVEL: ${academicLevel}
     RESPONSE LANGUAGE/STYLE: ${preferredLanguage}
+    
+    SCRIPT RULE: If a regional mix (like Hinglish, Marathish, Tamilish, etc.) is specified, you MUST use that language but strictly write it in the Romanized script (English letters). NEVER use Devanagari, Tamil, or any other regional script characters.
     
     FORMAT: 
     # STUDY NOTES
