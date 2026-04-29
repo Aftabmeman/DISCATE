@@ -1,7 +1,8 @@
+
 'use server';
 /**
- * @fileOverview High-performance academic assessment generator using Groq llama-3.1-8b-instant.
- * Optimized for mixed-mode with strict count enforcement and explicit multi-format output.
+ * @fileOverview High-performance academic assessment generator.
+ * Strict Contractual Count Enforcement for Mixed Mode.
  */
 
 import { z } from 'zod';
@@ -49,13 +50,11 @@ function extractJson(text: string) {
   try {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
-      return parsed;
+      return JSON.parse(jsonMatch[0]);
     }
     return JSON.parse(text);
   } catch (e) {
-    console.error("JSON Extraction Error:", e, text);
-    throw new Error("Failed to parse AI response into scholarly data.");
+    throw new Error("Failed to parse intelligence into scholarly data.");
   }
 }
 
@@ -65,7 +64,7 @@ export async function generateStudyAssessments(input: GenerateStudyAssessmentsIn
   if (!apiKey) return { error: "AI credentials missing." };
   
   if (input.studyMaterial.length < 30) {
-    return { error: "Content too short for deep-metric analysis." };
+    return { error: "Content too short for scholarship." };
   }
 
   let material = input.studyMaterial;
@@ -76,27 +75,32 @@ export async function generateStudyAssessments(input: GenerateStudyAssessmentsIn
   const targetFlash = isMixed ? (input.flashcardCount || 0) : (input.assessmentTypes.includes('Flashcard') ? input.questionCount : 0);
   const targetEssay = isMixed ? (input.essayCount || 0) : (input.assessmentTypes.includes('Essay') ? input.questionCount : 0);
 
-  const systemPrompt = `You are a Senior Academic Developer for Discate AI.
-Generate high-quality academic data from the provided text.
-LEVEL: ${input.academicLevel} | DIFFICULTY: ${input.difficulty}
+  // ELITE ENFORCEMENT PROMPT
+  const systemPrompt = `You are a Senior Academic Intelligence Developer.
+CRITICAL MANDATE: You MUST generate exactly the counts requested. Failure to provide all three categories will cause a system crash.
 
-COUNTS TO GENERATE:
-- Exactly ${targetMcq} MCQs
-- Exactly ${targetFlash} Flashcards
-- Exactly ${targetEssay} Essay Prompts
+ACADEMIC PARAMETERS:
+- LEVEL: ${input.academicLevel}
+- DIFFICULTY: ${input.difficulty}
+
+COUNTS TO GENERATE (STRICT):
+- mcqs: ${targetMcq} items
+- flashcards: ${targetFlash} items
+- essayPrompts: ${targetEssay} items
 
 JSON STRUCTURE RULES:
-- "mcqs": Array of MCQ objects with question, options (4), correctAnswer, explanation.
-- "flashcards": Array of objects with front and back.
-- "essayPrompts": Array of objects with prompt, evaluationCriteria, modelAnswerOutline.
-- ALL three keys MUST exist.`;
+- You MUST return a JSON object with exactly three keys: "mcqs", "flashcards", "essayPrompts".
+- Even if a count is 0, the key MUST exist as an empty array [].
+- "essayPrompts" MUST contain thought-provoking prompts with evaluationCriteria and modelAnswerOutline.
 
-  const userPrompt = `Material:
+DO NOT BE LAZY. Generate high-quality content for ALL requested counts.`;
+
+  const userPrompt = `Source Material:
 """
 ${material}
 """
 
-OUTPUT ONLY RAW JSON OBJECT.`;
+OUTPUT RAW JSON ONLY.`;
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -116,21 +120,19 @@ OUTPUT ONLY RAW JSON OBJECT.`;
       }),
     });
 
-    if (!response.ok) throw new Error("Groq Node Unavailable");
+    if (!response.ok) throw new Error("Groq Node Error");
     
     const data = await response.json();
     const content = extractJson(data.choices[0].message.content);
     
-    const normalizedContent = {
+    return GenerateStudyAssessmentsOutputSchema.parse({
       mcqs: content.mcqs || [],
       flashcards: content.flashcards || [],
       essayPrompts: content.essayPrompts || [],
       totalTokens: data.usage?.total_tokens
-    };
-
-    return GenerateStudyAssessmentsOutputSchema.parse(normalizedContent);
+    });
   } catch (error: any) {
-    console.error("AI Generation Failure:", error.message);
-    return { error: "Session forging interrupted. Try reducing item counts or content length." };
+    console.error("Discate Forge Failure:", error.message);
+    return { error: "Session forging failed. Try reducing item counts or content length." };
   }
 }

@@ -4,9 +4,8 @@
 import { YoutubeTranscript } from 'youtube-transcript';
 
 /**
- * YouTube Link to Notes Processor (Multi-Language Optimized)
- * Focus: High-tier Native Subtitles with multi-language support.
- * Model: meta-llama/llama-4-scout-17b-16e-instruct
+ * YouTube Link to Notes Processor (Elite High-Resilience Version)
+ * Focus: Multi-pass subtitle fetching to ensure no video is left behind.
  */
 
 export async function processYoutubeToNotes(
@@ -23,32 +22,31 @@ export async function processYoutubeToNotes(
 
     let transcriptText = "";
 
-    // --- NATIVE SUBTITLES (Multi-Language Fallback) ---
-    try {
-      console.log(`Discate Engine: Fetching subtitles for ${videoId}...`);
-      
-      // Attempt 1: Fetch default transcript
-      let transcript = await YoutubeTranscript.fetchTranscript(videoId).catch(() => null);
-      
-      // Attempt 2: If default fails, try common regional (Hindi)
-      if (!transcript) {
-        transcript = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'hi' }).catch(() => null);
+    // --- ELITE MULTI-PASS SUBTITLE FETCHING ---
+    // Pass 1: Try default fetch (auto-detects or uses primary)
+    // Pass 2: Fallback to specific language codes if primary fails
+    const languagesToTry = [undefined, 'en', 'hi', 'en-US', 'en-GB'];
+    
+    console.log(`Discate Engine: Analyzing multi-channel subtitles for ${videoId}...`);
+    
+    for (const lang of languagesToTry) {
+      try {
+        const transcript = await YoutubeTranscript.fetchTranscript(videoId, lang ? { lang } : undefined);
+        if (transcript && transcript.length > 0) {
+          transcriptText = transcript.map(t => t.text).join(' ');
+          console.log(`Success: Extracted intelligence using [${lang || 'default'}] channel.`);
+          break; // Stop if we found a valid transcript
+        }
+      } catch (e) {
+        // Continue to next language attempt
+        continue;
       }
-
-      if (transcript && transcript.length > 0) {
-        transcriptText = transcript.map(t => t.text).join(' ');
-      } else {
-        throw new Error("No Subtitles Found");
-      }
-    } catch (e) {
-      console.error("Subtitle Fetch Error:", e);
-      return { 
-        error: "This video doesn't have active captions (English or Hindi). Discate requires subtitled videos for elite intelligence generation." 
-      };
     }
 
     if (!transcriptText || transcriptText.trim().length < 50) {
-      throw new Error("The subtitles for this video are too short to generate quality notes.");
+      return { 
+        error: "Discate could not detect active or auto-generated captions for this video. Please try a video with subtitles enabled for elite analysis." 
+      };
     }
 
     // --- FINAL STEP: Generate Notes with Llama 4 Scout ---
@@ -79,7 +77,7 @@ export async function processYoutubeToNotes(
         model: 'meta-llama/llama-4-scout-17b-16e-instruct',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Transcript Content (May be in any language):\n"""\n${transcriptText.substring(0, 80000)}\n"""` }
+          { role: 'user', content: `Transcript Content:\n"""\n${transcriptText.substring(0, 80000)}\n"""` }
         ],
         temperature: 0.3,
         max_tokens: 4000,
@@ -87,9 +85,7 @@ export async function processYoutubeToNotes(
     });
 
     if (!response.ok) {
-      const errData = await response.json();
-      console.error("Groq Error:", errData);
-      return { error: "AI Generation failed. The session was too intense for the current node." };
+      return { error: "AI Generation failed. The session node is temporarily overloaded." };
     }
 
     const data = await response.json();
@@ -97,11 +93,11 @@ export async function processYoutubeToNotes(
     return {
       content: data.choices[0].message.content,
       tokenUsage: data.usage,
-      method: "Multi-Lang Subtitles"
+      method: "Multi-Pass Subtitle Node"
     };
 
   } catch (error: any) {
-    console.error("YouTube Processor Error:", error.message);
+    console.error("YouTube Processor Critical Error:", error.message);
     return { error: error.message || "An unexpected system error occurred." };
   }
 }
