@@ -2,10 +2,11 @@
 'use server';
 
 import { YoutubeTranscript } from 'youtube-transcript';
+import ytdl from '@distube/ytdl-core';
 
 /**
- * YouTube Link to Notes Processor (Elite High-Resilience Version)
- * Focus: Multi-pass subtitle fetching to ensure no video is left behind.
+ * YouTube Link to Notes Processor (Elite High-Resilience 2.0)
+ * Focus: Native Auto-Generated Caption Extraction with Metadata Fallback.
  */
 
 export async function processYoutubeToNotes(
@@ -17,41 +18,45 @@ export async function processYoutubeToNotes(
   if (!apiKey) return { error: "AI credentials missing in environment." };
 
   try {
-    const videoId = extractVideoId(videoUrl);
+    // Exact requested regex for videoId
+    const videoId = videoUrl.match(/(?:v=|youtu.be\/)([^&?\s]+)/)?.[1];
     if (!videoId) throw new Error("Invalid YouTube link format. Please provide a standard URL.");
 
     let transcriptText = "";
+    let method = "Direct Auto-Caption Node";
 
-    // --- ELITE MULTI-PASS SUBTITLE FETCHING ---
-    // Pass 1: Try default fetch (auto-detects or uses primary)
-    // Pass 2: Fallback to specific language codes if primary fails
-    const languagesToTry = [undefined, 'en', 'hi', 'en-US', 'en-GB'];
+    console.log(`Discate Engine: Analyzing intelligence for ${videoId}...`);
     
-    console.log(`Discate Engine: Analyzing multi-channel subtitles for ${videoId}...`);
-    
-    for (const lang of languagesToTry) {
-      try {
-        const transcript = await YoutubeTranscript.fetchTranscript(videoId, lang ? { lang } : undefined);
-        if (transcript && transcript.length > 0) {
-          transcriptText = transcript.map(t => t.text).join(' ');
-          console.log(`Success: Extracted intelligence using [${lang || 'default'}] channel.`);
-          break; // Stop if we found a valid transcript
-        }
-      } catch (e) {
-        // Continue to next language attempt
-        continue;
+    try {
+      // Primary Attempt: Fetch using youtube-transcript (handles auto-generated well)
+      const transcript = await YoutubeTranscript.fetchTranscript(videoId);
+      if (transcript && transcript.length > 0) {
+        transcriptText = transcript.map(t => t.text).join(' ');
       }
+    } catch (transcriptError) {
+      console.warn("Transcript extraction failed, attempting metadata fallback...");
     }
 
+    // Fallback: Use @distube/ytdl-core for Title + Description context
     if (!transcriptText || transcriptText.trim().length < 50) {
-      return { 
-        error: "Discate could not detect active or auto-generated captions for this video. Please try a video with subtitles enabled for elite analysis." 
-      };
+      try {
+        const info = await ytdl.getInfo(videoUrl);
+        const title = info.videoDetails.title;
+        const description = info.videoDetails.description || "No description provided.";
+        
+        transcriptText = `VIDEO TITLE: ${title}\n\nVIDEO DESCRIPTION/CONTEXT:\n${description}`;
+        method = "Contextual Metadata Fallback";
+        console.log("Success: Using video metadata for intelligence generation.");
+      } catch (ytdlError) {
+        return { 
+          error: "Discate could not extract intelligence or metadata from this video. Please ensure the link is public and accessible." 
+        };
+      }
     }
 
     // --- FINAL STEP: Generate Notes with Llama 4 Scout ---
     const systemPrompt = `You are an Expert Academic Evaluator for Discate AI. 
-    Transform the following transcript into high-quality Detailed Study Notes and 5 Deep Analytical Questions.
+    Transform the following video intelligence into high-quality Detailed Study Notes and 5 Deep Analytical Questions.
     
     LEVEL: ${academicLevel}
     RESPONSE LANGUAGE/STYLE: ${preferredLanguage}
@@ -60,7 +65,7 @@ export async function processYoutubeToNotes(
     
     FORMAT: 
     # STUDY NOTES
-    [Structured notes with headings and logical bullet points. Capture all core logic.]
+    [Structured notes with headings and logical bullet points. Capture all core logic. If only metadata is provided, expand based on known academic principles of the topic.]
     
     # 5 DEEP ANALYTICAL QUESTIONS
     [Provide 5 questions that test deep concept mastery, not just memory.]
@@ -77,7 +82,7 @@ export async function processYoutubeToNotes(
         model: 'meta-llama/llama-4-scout-17b-16e-instruct',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Transcript Content:\n"""\n${transcriptText.substring(0, 80000)}\n"""` }
+          { role: 'user', content: `Video Data (${method}):\n"""\n${transcriptText.substring(0, 80000)}\n"""` }
         ],
         temperature: 0.3,
         max_tokens: 4000,
@@ -93,17 +98,11 @@ export async function processYoutubeToNotes(
     return {
       content: data.choices[0].message.content,
       tokenUsage: data.usage,
-      method: "Multi-Pass Subtitle Node"
+      method: method
     };
 
   } catch (error: any) {
     console.error("YouTube Processor Critical Error:", error.message);
     return { error: error.message || "An unexpected system error occurred." };
   }
-}
-
-function extractVideoId(url: string) {
-  const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
-  const match = url.match(regExp);
-  return (match && match[7].length == 11) ? match[7] : null;
 }
