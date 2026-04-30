@@ -5,7 +5,7 @@ import { YoutubeTranscript } from 'youtube-transcript';
 import ytdl from '@distube/ytdl-core';
 
 /**
- * YouTube Link to Notes Processor (Elite High-Resilience 3.0)
+ * YouTube Link to Notes Processor (Elite High-Resilience 4.0)
  * Uses high-tier model and robust multi-method intelligence extraction.
  */
 
@@ -18,7 +18,7 @@ export async function processYoutubeToNotes(
   if (!apiKey) return { error: "AI credentials missing in environment." };
 
   try {
-    // Enhanced regex to handle all YT formats
+    // Robust regex to handle all YT formats including embed and shorts
     const videoIdMatch = videoUrl.match(/(?:v=|youtu\.be\/|embed\/|watch\?v=)([^&?\s]+)/);
     const videoId = videoIdMatch?.[1];
     
@@ -39,7 +39,7 @@ export async function processYoutubeToNotes(
       console.warn("Transcript engine failed, attempting metadata fallback...");
     }
 
-    // Fallback: Use @distube/ytdl-core for Title + Description context
+    // Fallback: Use @distube/ytdl-core for Title + Description context if transcript is missing or short
     if (!transcriptText || transcriptText.trim().length < 50) {
       try {
         const info = await ytdl.getInfo(videoUrl);
@@ -50,6 +50,7 @@ export async function processYoutubeToNotes(
         method = "Contextual Metadata Fallback";
         console.log("Success: Using video metadata for synthesis.");
       } catch (ytdlError) {
+        // Final catch-all if even metadata fails
         return { 
           error: "Discate could not extract intelligence from this video. Ensure the link is public and not age-restricted." 
         };

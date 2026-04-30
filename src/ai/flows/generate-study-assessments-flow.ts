@@ -51,11 +51,9 @@ export type GenerateStudyAssessmentsOutput = z.infer<typeof GenerateStudyAssessm
  */
 function extractJson(text: string) {
   try {
-    // Look for content between triple backticks if they exist
     const jsonBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
     const rawContent = jsonBlockMatch ? jsonBlockMatch[1] : text;
     
-    // Look for the first '{' and last '}' to strip any leading/trailing garbage
     const start = rawContent.indexOf('{');
     const end = rawContent.lastIndexOf('}');
     
@@ -88,12 +86,14 @@ export async function generateStudyAssessments(input: GenerateStudyAssessmentsIn
   const targetEssay = isMixed ? (input.essayCount || 0) : (input.assessmentTypes.includes('Essay') ? input.questionCount : 0);
 
   const systemPrompt = `You are an Expert Academic Intelligence Generator for Discate AI. 
-CRITICAL: You MUST return a JSON object with keys "mcqs", "flashcards", and "essayPrompts". 
+CRITICAL: You MUST return a SINGLE JSON object containing ALL three keys: "mcqs", "flashcards", and "essayPrompts".
 
-COUNTS TO GENERATE:
-- mcqs: ${targetMcq} items
-- flashcards: ${targetFlash} items
-- essayPrompts: ${targetEssay} items
+MANDATORY COUNTS TO GENERATE:
+- mcqs: ${targetMcq} items (DO NOT SKIP)
+- flashcards: ${targetFlash} items (DO NOT SKIP)
+- essayPrompts: ${targetEssay} items (DO NOT SKIP)
+
+If any count is greater than 0, you MUST populate that array. Do not return only one type if multiple are requested.
 
 ACADEMIC PARAMETERS:
 - Level: ${input.academicLevel}
@@ -104,7 +104,6 @@ JSON FORMAT RULES:
 - flashcards: array of objects {front, back}
 - essayPrompts: array of objects {prompt, evaluationCriteria[], modelAnswerOutline[]}
 
-If a count is 0, the key MUST be an empty array [].
 DO NOT include any text before or after the JSON block.`;
 
   const userPrompt = `Source Material:
@@ -112,7 +111,7 @@ DO NOT include any text before or after the JSON block.`;
 ${material}
 """
 
-Generate the requested ${targetMcq + targetFlash + targetEssay} items in pure JSON.`;
+Generate exactly ${targetMcq} MCQs, ${targetFlash} Flashcards, and ${targetEssay} Essay Prompts in pure JSON.`;
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -122,7 +121,7 @@ Generate the requested ${targetMcq + targetFlash + targetEssay} items in pure JS
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
+        model: 'llama-3.3-70b-versatile',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -145,6 +144,6 @@ Generate the requested ${targetMcq + targetFlash + targetEssay} items in pure JS
     });
   } catch (error: any) {
     console.error("Discate Forge Failure:", error.message);
-    return { error: "Failed to forge scholarly data. Please try reducing counts." };
+    return { error: "Failed to forge scholarly data. AI connection unstable, please try again." };
   }
 }
