@@ -2,7 +2,7 @@
 'use server';
 /**
  * @fileOverview High-performance academic assessment generator.
- * Strict Contractual Count Enforcement for Mixed Mode.
+ * Resilient JSON parsing and strict count enforcement.
  */
 
 import { z } from 'zod';
@@ -46,15 +46,27 @@ const GenerateStudyAssessmentsOutputSchema = z.object({
 });
 export type GenerateStudyAssessmentsOutput = z.infer<typeof GenerateStudyAssessmentsOutputSchema>;
 
+/**
+ * Resilient JSON extractor that handles markdown blocks and loose formatting.
+ */
 function extractJson(text: string) {
   try {
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
+    // Look for content between triple backticks if they exist
+    const jsonBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    const rawContent = jsonBlockMatch ? jsonBlockMatch[1] : text;
+    
+    // Look for the first '{' and last '}' to strip any leading/trailing garbage
+    const start = rawContent.indexOf('{');
+    const end = rawContent.lastIndexOf('}');
+    
+    if (start === -1 || end === -1) {
+      throw new Error("No JSON structure found in AI response.");
     }
-    return JSON.parse(text);
-  } catch (e) {
-    throw new Error("Failed to parse intelligence into scholarly data.");
+    
+    return JSON.parse(rawContent.substring(start, end + 1));
+  } catch (e: any) {
+    console.error("JSON Extraction Error:", e.message);
+    throw new Error("The AI provided an invalid data structure.");
   }
 }
 
@@ -75,32 +87,32 @@ export async function generateStudyAssessments(input: GenerateStudyAssessmentsIn
   const targetFlash = isMixed ? (input.flashcardCount || 0) : (input.assessmentTypes.includes('Flashcard') ? input.questionCount : 0);
   const targetEssay = isMixed ? (input.essayCount || 0) : (input.assessmentTypes.includes('Essay') ? input.questionCount : 0);
 
-  // ELITE ENFORCEMENT PROMPT
-  const systemPrompt = `You are a Senior Academic Intelligence Developer.
-CRITICAL MANDATE: You MUST generate exactly the counts requested. Failure to provide all three categories will cause a system crash.
+  const systemPrompt = `You are an Expert Academic Intelligence Generator for Discate AI. 
+CRITICAL: You MUST return a JSON object with keys "mcqs", "flashcards", and "essayPrompts". 
 
-ACADEMIC PARAMETERS:
-- LEVEL: ${input.academicLevel}
-- DIFFICULTY: ${input.difficulty}
-
-COUNTS TO GENERATE (STRICT):
+COUNTS TO GENERATE:
 - mcqs: ${targetMcq} items
 - flashcards: ${targetFlash} items
 - essayPrompts: ${targetEssay} items
 
-JSON STRUCTURE RULES:
-- You MUST return a JSON object with exactly three keys: "mcqs", "flashcards", "essayPrompts".
-- Even if a count is 0, the key MUST exist as an empty array [].
-- "essayPrompts" MUST contain thought-provoking prompts with evaluationCriteria and modelAnswerOutline.
+ACADEMIC PARAMETERS:
+- Level: ${input.academicLevel}
+- Difficulty: ${input.difficulty}
 
-DO NOT BE LAZY. Generate high-quality content for ALL requested counts.`;
+JSON FORMAT RULES:
+- mcqs: array of objects {question, options[], correctAnswer, explanation}
+- flashcards: array of objects {front, back}
+- essayPrompts: array of objects {prompt, evaluationCriteria[], modelAnswerOutline[]}
+
+If a count is 0, the key MUST be an empty array [].
+DO NOT include any text before or after the JSON block.`;
 
   const userPrompt = `Source Material:
 """
 ${material}
 """
 
-OUTPUT RAW JSON ONLY.`;
+Generate the requested ${targetMcq + targetFlash + targetEssay} items in pure JSON.`;
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -116,23 +128,23 @@ OUTPUT RAW JSON ONLY.`;
           { role: 'user', content: userPrompt }
         ],
         response_format: { type: 'json_object' },
-        temperature: 0.1,
+        temperature: 0.2,
       }),
     });
 
-    if (!response.ok) throw new Error("Groq Node Error");
+    if (!response.ok) throw new Error("Groq API error occurred.");
     
     const data = await response.json();
     const content = extractJson(data.choices[0].message.content);
     
     return GenerateStudyAssessmentsOutputSchema.parse({
-      mcqs: content.mcqs || [],
-      flashcards: content.flashcards || [],
-      essayPrompts: content.essayPrompts || [],
+      mcqs: Array.isArray(content.mcqs) ? content.mcqs : [],
+      flashcards: Array.isArray(content.flashcards) ? content.flashcards : [],
+      essayPrompts: Array.isArray(content.essayPrompts) ? content.essayPrompts : [],
       totalTokens: data.usage?.total_tokens
     });
   } catch (error: any) {
     console.error("Discate Forge Failure:", error.message);
-    return { error: "Session forging failed. Try reducing item counts or content length." };
+    return { error: "Failed to forge scholarly data. Please try reducing counts." };
   }
 }

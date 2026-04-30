@@ -5,8 +5,8 @@ import { YoutubeTranscript } from 'youtube-transcript';
 import ytdl from '@distube/ytdl-core';
 
 /**
- * YouTube Link to Notes Processor (Elite High-Resilience 2.0)
- * Focus: Native Auto-Generated Caption Extraction with Metadata Fallback.
+ * YouTube Link to Notes Processor (Elite High-Resilience 3.0)
+ * Uses high-tier model and robust multi-method intelligence extraction.
  */
 
 export async function processYoutubeToNotes(
@@ -18,23 +18,25 @@ export async function processYoutubeToNotes(
   if (!apiKey) return { error: "AI credentials missing in environment." };
 
   try {
-    // Exact requested regex for videoId
-    const videoId = videoUrl.match(/(?:v=|youtu.be\/)([^&?\s]+)/)?.[1];
+    // Enhanced regex to handle all YT formats
+    const videoIdMatch = videoUrl.match(/(?:v=|youtu\.be\/|embed\/|watch\?v=)([^&?\s]+)/);
+    const videoId = videoIdMatch?.[1];
+    
     if (!videoId) throw new Error("Invalid YouTube link format. Please provide a standard URL.");
 
     let transcriptText = "";
-    let method = "Direct Auto-Caption Node";
+    let method = "Direct Transcript Engine";
 
-    console.log(`Discate Engine: Analyzing intelligence for ${videoId}...`);
+    console.log(`Discate Engine: Analyzing video intelligence for ID: ${videoId}...`);
     
     try {
-      // Primary Attempt: Fetch using youtube-transcript (handles auto-generated well)
+      // Primary Attempt: Fetch using youtube-transcript
       const transcript = await YoutubeTranscript.fetchTranscript(videoId);
       if (transcript && transcript.length > 0) {
         transcriptText = transcript.map(t => t.text).join(' ');
       }
     } catch (transcriptError) {
-      console.warn("Transcript extraction failed, attempting metadata fallback...");
+      console.warn("Transcript engine failed, attempting metadata fallback...");
     }
 
     // Fallback: Use @distube/ytdl-core for Title + Description context
@@ -46,31 +48,31 @@ export async function processYoutubeToNotes(
         
         transcriptText = `VIDEO TITLE: ${title}\n\nVIDEO DESCRIPTION/CONTEXT:\n${description}`;
         method = "Contextual Metadata Fallback";
-        console.log("Success: Using video metadata for intelligence generation.");
+        console.log("Success: Using video metadata for synthesis.");
       } catch (ytdlError) {
         return { 
-          error: "Discate could not extract intelligence or metadata from this video. Please ensure the link is public and accessible." 
+          error: "Discate could not extract intelligence from this video. Ensure the link is public and not age-restricted." 
         };
       }
     }
 
-    // --- FINAL STEP: Generate Notes with Llama 4 Scout ---
-    const systemPrompt = `You are an Expert Academic Evaluator for Discate AI. 
-    Transform the following video intelligence into high-quality Detailed Study Notes and 5 Deep Analytical Questions.
+    // --- FINAL STEP: Generate Notes with Resilient Formatting ---
+    const systemPrompt = `You are an Elite Academic Mentor for Discate AI. 
+    Synthesize high-quality STUDY NOTES and 5 ANALYTICAL QUESTIONS based on the provided video intelligence.
     
     LEVEL: ${academicLevel}
-    RESPONSE LANGUAGE/STYLE: ${preferredLanguage}
+    RESPONSE LANGUAGE STYLE: ${preferredLanguage}
     
-    SCRIPT RULE: If a regional mix (like Hinglish, Marathish, Tamilish, etc.) is specified, you MUST use that language but strictly write it in the Romanized script (English letters). NEVER use Devanagari, Tamil, or any other regional script characters.
+    SCRIPT RULE: If a regional mix (like Hinglish, Marathish, Tamilish, etc.) is specified, use that language but strictly write it in the Romanized script (English letters).
     
     FORMAT: 
     # STUDY NOTES
-    [Structured notes with headings and logical bullet points. Capture all core logic. If only metadata is provided, expand based on known academic principles of the topic.]
+    [Structured notes with headings and bullet points. Capture core logic. If only metadata is available, expand using general academic knowledge of the topic.]
     
-    # 5 DEEP ANALYTICAL QUESTIONS
-    [Provide 5 questions that test deep concept mastery, not just memory.]
+    # 5 MASTERCLASS QUESTIONS
+    [Deep analytical questions to test concept mastery.]
     
-    TONE: Brilliant, professional, and encouraging. Use the specified regional mix style if provided.`;
+    TONE: Professional, inspiring, and logical.`;
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -79,10 +81,10 @@ export async function processYoutubeToNotes(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+        model: 'llama-3.3-70b-versatile',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Video Data (${method}):\n"""\n${transcriptText.substring(0, 80000)}\n"""` }
+          { role: 'user', content: `Source Intelligence (${method}):\n"""\n${transcriptText.substring(0, 100000)}\n"""` }
         ],
         temperature: 0.3,
         max_tokens: 4000,
@@ -90,7 +92,7 @@ export async function processYoutubeToNotes(
     });
 
     if (!response.ok) {
-      return { error: "AI Generation failed. The session node is temporarily overloaded." };
+      return { error: "Intelligence synthesis failed. The AI node is temporarily overloaded." };
     }
 
     const data = await response.json();
