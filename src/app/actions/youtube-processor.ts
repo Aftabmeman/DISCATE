@@ -3,9 +3,9 @@
 import { YoutubeTranscript } from 'youtube-transcript';
 
 /**
- * YouTube Link to Notes Processor (High-Resilience Elite 7.0)
- * Replaced ytdl-core with resilient Raw HTML Fetch + Regex extraction.
- * Implemented zero-error fallback string for LLM continuity.
+ * YouTube Link to Notes Processor (Elite 8.0)
+ * Bypasses ytdl-core completely for maximum resilience.
+ * Uses Direct Transcript Engine + Raw HTML Metadata Fallback.
  */
 
 export async function processYoutubeToNotes(
@@ -17,8 +17,8 @@ export async function processYoutubeToNotes(
   if (!apiKey) return { error: "AI credentials missing in environment." };
 
   try {
-    // Robust Regex for video ID extraction
-    const videoIdMatch = videoUrl.match(/(?:v=|youtu\.be\/|embed\/|watch\?v=|&v=)([^&?\s]+)/);
+    // Regex for video ID extraction as per instructions
+    const videoIdMatch = videoUrl.match(/(?:v=|youtu\.be\/)([^&?\s]+)/);
     const videoId = videoIdMatch?.[1];
     
     if (!videoId) throw new Error("Invalid YouTube link format. Please use a standard URL.");
@@ -26,27 +26,24 @@ export async function processYoutubeToNotes(
     let transcriptText = "";
     let method = "Direct Transcript Engine";
 
-    console.log(`Discate Engine: Analyzing video ID: ${videoId}...`);
-    
     // Attempt 1: Fetch using youtube-transcript (Auto-captions)
     try {
       const transcript = await YoutubeTranscript.fetchTranscript(videoId);
       if (transcript && transcript.length > 0) {
         transcriptText = transcript.map(t => t.text).join(' ');
       }
-    } catch (transcriptError: any) {
-      console.warn("Transcript engine failed (likely blocked or no captions).");
+    } catch (transcriptError) {
+      console.warn("Direct Transcript Engine failed.");
     }
 
-    // Attempt 2: Fallback to Raw HTML Metadata Extraction (Bypasses ytdl-core issues)
+    // Attempt 2: Resilient HTML Metadata Fallback (Bypasses library blocks)
     if (!transcriptText || transcriptText.trim().length < 50) {
       try {
         const response = await fetch(videoUrl, {
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-            'Accept-Language': 'en-US,en;q=0.9',
           },
-          next: { revalidate: 3600 } // Cache for 1 hour
+          next: { revalidate: 3600 }
         });
 
         if (response.ok) {
@@ -57,25 +54,24 @@ export async function processYoutubeToNotes(
           const descMatch = html.match(/<meta\s+name=["']description["']\s+content=["'](.*?)["']/i) || 
                             html.match(/<meta\s+property=["']og:description["']\s+content=["'](.*?)["']/i);
           
-          const title = titleMatch ? titleMatch[1].replace(' - YouTube', '').trim() : 'Unknown Academic Content';
-          const description = descMatch ? descMatch[1].trim() : 'Detailed metadata restricted by platform.';
+          const title = titleMatch ? titleMatch[1].replace(' - YouTube', '').trim() : 'Academic Content';
+          const description = descMatch ? descMatch[1].trim() : 'Metadata unavailable.';
           
           transcriptText = `VIDEO TITLE: ${title}\n\nVIDEO DESCRIPTION/CONTEXT:\n${description}`;
           method = "Resilient HTML Metadata Node";
-          console.log("Success: Using video metadata for synthesis.");
         }
-      } catch (fetchError: any) {
-        console.warn("HTML Metadata fetch failed:", fetchError.message);
+      } catch (fetchError) {
+        console.warn("HTML Metadata fetch failed.");
       }
     }
 
-    // Attempt 3: Ultimate Fallback String (Ensures system never hard-errors)
+    // Attempt 3: Safe Context Fallback (Prevents hard errors to user)
     if (!transcriptText || transcriptText.trim().length < 20) {
       transcriptText = "Video metadata and transcript currently unavailable due to platform security layers. Please provide a general academic overview and high-level synthesis based on the provided URL context and common subject knowledge for this level.";
       method = "Safe Context Fallback";
     }
 
-    // --- FINAL STEP: Generate Elite Notes (Untouched Groq Logic) ---
+    // --- FINAL STEP: Generate Elite Notes (Groq Logic preserved) ---
     const systemPrompt = `You are 'DISCATE AI', an Elite Academic Mentor. 
     Synthesize high-quality STUDY NOTES and 5 ANALYTICAL QUESTIONS based on the provided video intelligence.
     
@@ -95,7 +91,7 @@ export async function processYoutubeToNotes(
     
     TONE: Professional, inspiring, and logical.`;
 
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -112,11 +108,11 @@ export async function processYoutubeToNotes(
       }),
     });
 
-    if (!response.ok) {
+    if (!groqResponse.ok) {
       return { error: "Intelligence synthesis failed. AI node temporarily overloaded." };
     }
 
-    const data = await response.json();
+    const data = await groqResponse.json();
     
     return {
       content: data.choices[0].message.content,
