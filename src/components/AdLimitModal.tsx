@@ -34,11 +34,9 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
   const [timeLeft, setTimeLeft] = useState(10);
   const [isGranting, setIsGranting] = useState(false);
   
-  // Use refs to track state across backgrounding/pausing
   const startTimeRef = useRef<number | null>(null);
   const targetTime = 10000; // 10 seconds
 
-  // Reset modal state when closed/reopened
   useEffect(() => {
     if (!isOpen) {
       setView('prompt');
@@ -48,7 +46,6 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
     }
   }, [isOpen]);
 
-  // Mandatory Countdown Logic (Timestamp based for background resilience)
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
@@ -65,17 +62,15 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
           clearInterval(interval);
           handleClaimReward();
         }
-      }, 500); // Check frequently to catch transitions
+      }, 500);
     }
 
     return () => clearInterval(interval);
   }, [view, isGranting]);
 
-  // Handle visibility change (User coming back from Ad tab)
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && view === 'verifying' && startTimeRef.current) {
-        // Force immediate check when user returns
         const elapsed = Date.now() - startTimeRef.current;
         if (elapsed >= targetTime && !isGranting) {
           handleClaimReward();
@@ -88,14 +83,8 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
   }, [view, isGranting]);
 
   const handleStartAd = () => {
-    // 1. Record exact start time
     startTimeRef.current = Date.now();
-    
-    // 2. Open Adsterra Direct Link in a NEW tab
-    // We use a small delay or direct window.open
     window.open('https://www.profitablecpmratenetwork.com/j9ay58s17?key=b750504caa4b020b0a5da18b474f98bb', '_blank');
-    
-    // 3. Immediately switch UI to Verification
     setView('verifying');
     setTimeLeft(10);
   };
@@ -105,7 +94,6 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
     setIsGranting(true);
     
     try {
-      // Secure Firestore Update
       const result = await grantAdReward(db, user.uid);
       if (result.success) {
         setView('success');
@@ -122,7 +110,6 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
         title: "Sync Delay",
         description: "Retrying verification...",
       });
-      // Fallback: stay in verifying or revert if error persists
       setIsGranting(false);
     }
   };
@@ -131,7 +118,6 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
     <Dialog 
       open={isOpen} 
       onOpenChange={(open) => {
-        // PREVENT EXIT: Disable closing during verification phase
         if (view === 'verifying') return; 
         if (!open) onClose();
       }}
@@ -142,7 +128,6 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
         className="sm:max-w-md rounded-[2.5rem] border-none shadow-3xl overflow-hidden p-0 bg-white dark:bg-slate-900"
       >
         
-        {/* PROMPT VIEW */}
         {view === 'prompt' && (
           <div className="p-8 sm:p-12 text-center space-y-8 animate-in fade-in duration-500">
             <div className="h-20 w-20 bg-amber-100 dark:bg-amber-900/20 rounded-[2rem] flex items-center justify-center mx-auto shadow-sm border border-amber-200/50">
@@ -171,7 +156,6 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
           </div>
         )}
 
-        {/* VERIFYING VIEW: Timestamp-Resilient Countdown */}
         {view === 'verifying' && (
           <div className="relative min-h-[450px] flex flex-col items-center justify-center bg-slate-950 p-8 sm:p-12 text-center overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20 animate-pulse" />
@@ -214,7 +198,6 @@ export function AdLimitModal({ isOpen, onClose, reason = 'LIMIT_REACHED' }: AdLi
           </div>
         )}
 
-        {/* SUCCESS VIEW */}
         {view === 'success' && (
           <div className="p-8 sm:p-14 text-center space-y-10 animate-in fade-in zoom-in-95 duration-700">
             <div className="relative inline-block">

@@ -42,7 +42,7 @@ export async function validateAndDeductCoins(db: Firestore, userId: string, cost
   
   const now = new Date();
 
-  // 1. Auto-Healing: Create profile if missing (Fixes 'Profile not found' error)
+  // 1. Auto-Healing: Create profile if missing
   if (!profileSnap.exists()) {
     try {
       await setDoc(profileRef, {
@@ -56,7 +56,7 @@ export async function validateAndDeductCoins(db: Firestore, userId: string, cost
         createdAt: now.toISOString(),
         updatedAt: now.toISOString()
       });
-      profileSnap = await getDoc(profileRef); // Re-fetch
+      profileSnap = await getDoc(profileRef);
     } catch (e) {
       return { success: false, error: "Initialization failed. Try again." };
     }
@@ -87,8 +87,8 @@ export async function validateAndDeductCoins(db: Firestore, userId: string, cost
     lastAllowanceStr = now.toISOString();
   }
 
-  // 4. Limit Checks
-  if (dailyUsed + cost > 10) { 
+  // 4. Limit Checks (Synced to 5 as per UI)
+  if (dailyUsed + cost > 5) { 
     return { 
       success: false, 
       error: "Daily limit reached!",
