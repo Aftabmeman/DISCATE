@@ -34,7 +34,7 @@ export function setDocumentNonBlocking(docRef: DocumentReference, data: any, opt
 
 /**
  * Validates wallet balance and daily limits, then deducts coins.
- * NEW: If profile is missing, it auto-creates one with 50 coins (Welcome Kit).
+ * FIX: If profile is missing, it auto-creates one with 50 coins (Welcome Kit).
  */
 export async function validateAndDeductCoins(db: Firestore, userId: string, cost: number): Promise<{ success: boolean; error?: string; code?: 'LIMIT_REACHED' | 'NO_COINS' }> {
   const profileRef = doc(db, 'users', userId, 'profile', 'stats');
@@ -42,7 +42,7 @@ export async function validateAndDeductCoins(db: Firestore, userId: string, cost
   
   const now = new Date();
 
-  // 1. Auto-Healing: Create profile if missing
+  // 1. Auto-Healing: Create profile if missing (Fixes 'Profile not found' error)
   if (!profileSnap.exists()) {
     try {
       await setDoc(profileRef, {
@@ -88,7 +88,7 @@ export async function validateAndDeductCoins(db: Firestore, userId: string, cost
   }
 
   // 4. Limit Checks
-  if (dailyUsed + cost > 10) { // Increased limit slightly for elite users
+  if (dailyUsed + cost > 10) { 
     return { 
       success: false, 
       error: "Daily limit reached!",

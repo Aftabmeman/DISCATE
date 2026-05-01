@@ -1,8 +1,7 @@
-
 'use server';
 /**
  * @fileOverview High-performance academic assessment generator.
- * Resilient JSON parsing and strict count enforcement.
+ * Strictly enforces Mixed Mode counts for MCQs, Flashcards, and Essays.
  */
 
 import { z } from 'zod';
@@ -93,7 +92,8 @@ MANDATORY COUNTS TO GENERATE:
 - flashcards: ${targetFlash} items (DO NOT SKIP)
 - essayPrompts: ${targetEssay} items (DO NOT SKIP)
 
-If any count is greater than 0, you MUST populate that array. Do not return only one type if multiple are requested.
+If any count is greater than 0, you MUST populate that array. Do not return only one type if multiple are requested. 
+If Mixed Mode is selected, failing to return Essays or Flashcards is an academic failure.
 
 ACADEMIC PARAMETERS:
 - Level: ${input.academicLevel}
