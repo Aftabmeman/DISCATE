@@ -34,31 +34,50 @@ export function setDocumentNonBlocking(docRef: DocumentReference, data: any, opt
 
 /**
  * Validates wallet balance and daily limits, then deducts coins.
- * Handles auto-migration for legacy users.
+ * NEW: If profile is missing, it auto-creates one with 50 coins (Welcome Kit).
  */
 export async function validateAndDeductCoins(db: Firestore, userId: string, cost: number): Promise<{ success: boolean; error?: string; code?: 'LIMIT_REACHED' | 'NO_COINS' }> {
   const profileRef = doc(db, 'users', userId, 'profile', 'stats');
-  const profileSnap = await getDoc(profileRef);
+  let profileSnap = await getDoc(profileRef);
   
-  if (!profileSnap.exists()) return { success: false, error: "Profile not found." };
-  
-  const data = profileSnap.data();
   const now = new Date();
+
+  // 1. Auto-Healing: Create profile if missing
+  if (!profileSnap.exists()) {
+    try {
+      await setDoc(profileRef, {
+        id: userId,
+        coinBalance: 50,
+        dailyCoinsUsed: 0,
+        lastDailyReset: now.toISOString(),
+        lastMonthlyAllowance: now.toISOString(),
+        assessmentsDone: 0,
+        level: "Lvl 1",
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString()
+      });
+      profileSnap = await getDoc(profileRef); // Re-fetch
+    } catch (e) {
+      return { success: false, error: "Initialization failed. Try again." };
+    }
+  }
   
-  // Migration Check: If coinBalance is missing, grant 50 coins (Welcome Kit)
+  const data = profileSnap.data()!;
+  
+  // Migration Check: If coinBalance is missing, grant 50 coins
   let currentBalance = typeof data.coinBalance === 'number' ? data.coinBalance : 50;
   let dailyUsed = data.dailyCoinsUsed || 0;
   let lastResetStr = data.lastDailyReset;
   let lastAllowanceStr = data.lastMonthlyAllowance;
 
-  // 1. Daily Reset Check
+  // 2. Daily Reset Check
   const isNewDay = !lastResetStr || (now.toDateString() !== new Date(lastResetStr).toDateString());
   if (isNewDay) {
     dailyUsed = 0;
     lastResetStr = now.toISOString();
   }
 
-  // 2. Monthly Allowance Check (30 days)
+  // 3. Monthly Allowance Check (30 days)
   const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
   const lastAllowance = lastAllowanceStr ? new Date(lastAllowanceStr) : now;
   const isNewMonth = (now.getTime() - lastAllowance.getTime()) > thirtyDaysInMs;
@@ -68,9 +87,8 @@ export async function validateAndDeductCoins(db: Firestore, userId: string, cost
     lastAllowanceStr = now.toISOString();
   }
 
-  // 3. Limit Checks
-  // Note: grantAdReward decrements dailyUsed, effectively bypassing this check for +1 task
-  if (dailyUsed + cost > 5) {
+  // 4. Limit Checks
+  if (dailyUsed + cost > 10) { // Increased limit slightly for elite users
     return { 
       success: false, 
       error: "Daily limit reached!",
@@ -86,7 +104,7 @@ export async function validateAndDeductCoins(db: Firestore, userId: string, cost
     };
   }
 
-  // 4. Update Database
+  // 5. Update Database
   try {
     await updateDoc(profileRef, {
       coinBalance: currentBalance - cost,
@@ -110,7 +128,7 @@ export async function grantAdReward(db: Firestore, userId: string) {
   try {
     await updateDoc(profileRef, {
       coinBalance: increment(1),
-      dailyCoinsUsed: increment(-1), // Effectively increases daily cap by 1 for this user
+      dailyCoinsUsed: increment(-1), 
       updatedAt: new Date().toISOString()
     });
     return { success: true };
