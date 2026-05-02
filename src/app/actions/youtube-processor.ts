@@ -1,3 +1,4 @@
+
 'use server';
 
 import { YoutubeTranscript } from 'youtube-transcript';
@@ -79,7 +80,7 @@ export async function processYoutubeToNotes(
     RESPONSE LANGUAGE STYLE: ${preferredLanguage}
     
     MANDATORY RULES:
-    1. SCRIPT: If a regional mix (like Hinglish, Marathish, etc.) is specified, use that language but strictly write it in Romanized script (English letters). NEVER use Devanagari or regional scripts.
+    1. SCRIPT: MANDATORY SCRIPT RULE: If the user selects a feedback regional language mix (like Tamilish, Punjabish, Bengalish, Gujaratinglish, Marathish, etc.), you MUST write the entire response using ONLY the Roman alphabet (English letters). Under NO circumstances should you use native scripts like Devanagari, Tamil, Bengali, or Gurmukhi. The language should be the regional mix, but the script must be strictly English/Roman.
     2. CONTENT: Extract the core academic logic. If only metadata is available, expand intelligently using general subject knowledge.
     
     FORMAT: 
