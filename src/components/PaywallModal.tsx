@@ -16,7 +16,7 @@ import {
   ShieldCheck, 
   Rocket, 
   X,
-  Infinite,
+  Infinity,
   BrainCircuit,
   Star,
   CheckCircle2
@@ -31,7 +31,7 @@ interface PaywallModalProps {
 
 const features = [
   {
-    icon: Infinite,
+    icon: Infinity,
     title: "Unlimited Extractions",
     desc: "Remove all daily limits on YouTube and Document intelligence forging.",
     color: "text-purple-500",
