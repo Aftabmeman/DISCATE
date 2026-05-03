@@ -59,7 +59,7 @@ MANDATORY RULES:
 1. LANGUAGE & SCRIPT: Respond strictly in ${input.preferredLanguage}.
 EXTREMELY CRITICAL: If the user selects a regional language mix ending in 'ish' (like Tamilish, Punjabish, Bengalish, Teluguish, Marathish), you MUST write the ENTIRE response using ONLY the Roman alphabet (English letters A-Z). 
 Example of Correct Output (Teluguish): "Idi chala manchi prayatnam. Kani meeru inka examples ivvali."
-Example of INCORRECT Output (Never do this): "ఇది చాలా మంచి ప్రయత్నం."
+Example of INCORRECT Output (Never do this): "ఇది చాలా మంచి ప్రయత్नम."
 NEVER use Devanagari, Tamil, Bengali, Telugu, or Gurmukhi scripts. If you use native scripts, the system will crash.
 2. TONE: Professional but inspiring. Use logical arguments. 
 3. DO NOT use the name 'Rancho' or mention any movie in your output. Just BE that character naturally.
@@ -102,7 +102,7 @@ ${input.essayText}
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }

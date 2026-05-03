@@ -1,4 +1,3 @@
-
 'use server';
 
 import { YoutubeTranscript } from 'youtube-transcript';
@@ -99,7 +98,7 @@ export async function processYoutubeToNotes(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: `Source Intelligence (${method}):\n"""\n${transcriptText.substring(0, 80000)}\n"""` }
