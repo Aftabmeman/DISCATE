@@ -25,7 +25,10 @@ import {
   Heart,
   User,
   FileText,
-  Scale
+  Scale,
+  Crown,
+  Sparkles,
+  Zap
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
@@ -34,6 +37,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useDoc, useMemoFirebase } from "@/firebase"
 import { doc, updateDoc } from "firebase/firestore"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { PaywallModal } from "@/components/PaywallModal"
 
 const languages = [
   "English", "Hinglish", "Marathish", "Gujaratinglish", "Bengalish", 
@@ -111,6 +115,7 @@ export default function ProfilePage() {
 
   const [isMounted, setIsMounted] = useState(false);
   const [isUpdatingLang, setIsUpdatingLang] = useState(false);
+  const [isPaywallOpen, setIsPaywallOpen] = useState(false);
 
   const profileRef = useMemoFirebase(() => {
     if (!firestore || !user?.uid) return null;
@@ -161,6 +166,8 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-8 sm:space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-40 px-4 max-w-2xl mx-auto">
+      <PaywallModal isOpen={isPaywallOpen} onClose={() => setIsPaywallOpen(false)} />
+
       <div className="flex flex-col items-center pt-8 sm:pt-10 pb-4">
         <div className="relative inline-block group">
           <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full scale-125 transition-all opacity-50" />
@@ -181,11 +188,34 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* Elite Upgrade Banner */}
+      <Card 
+        onClick={() => setIsPaywallOpen(true)}
+        className="group relative overflow-hidden cursor-pointer border-none shadow-2xl rounded-[2.5rem] bg-slate-950 text-white p-6 sm:p-10 transition-all hover:scale-[1.02] active:scale-95"
+      >
+        <div className="absolute top-0 right-0 w-40 h-40 bg-primary/20 rounded-full blur-[60px] -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
+        <div className="relative z-10 flex items-center justify-between">
+           <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                 <div className="bg-primary/20 p-1.5 rounded-lg border border-primary/20">
+                    <Crown className="h-4 w-4 text-primary fill-primary" />
+                 </div>
+                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Discate Elite</span>
+              </div>
+              <h2 className="text-xl sm:text-3xl font-black font-headline tracking-tight uppercase">Upgrade to Masterclass</h2>
+              <p className="text-slate-400 text-xs sm:text-base font-medium max-w-[240px] sm:max-w-none">Unlimited forging, zero ads, and priority logic synthesis.</p>
+           </div>
+           <div className="h-12 w-12 sm:h-16 sm:w-16 bg-white/5 rounded-2xl flex items-center justify-center backdrop-blur-xl border border-white/10 group-hover:bg-primary transition-colors">
+              <Zap className="h-6 w-6 sm:h-8 sm:w-8 text-white group-hover:scale-125 transition-transform" />
+           </div>
+        </div>
+      </Card>
+
       <div className="grid grid-cols-3 gap-3 sm:gap-5">
         {[
           { icon: Coins, label: "Coins", val: coinBalance.toString(), color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-900/10" },
           { icon: Award, label: "Level", val: profile?.level ?? "Lvl 1", color: "text-primary", bg: "bg-primary/10" },
-          { icon: BookMarked, label: "Sets", val: profile?.assessmentsDone?.toString() ?? "0", color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/10" }
+          { icon: BookMarked, label: "Sets", val: profile?.assessmentsDone?.toString() ?? "0", color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-amber-900/10" }
         ].map((stat, i) => (
           <Card key={i} className="p-4 sm:p-6 flex flex-col items-center justify-center text-center rounded-[2rem] sm:rounded-[2.5rem] border-none bg-white dark:bg-slate-900 shadow-xl border border-slate-50 dark:border-white/5 transition-all hover:scale-105">
             <div className={cn("p-2.5 sm:p-4 rounded-xl mb-2 sm:mb-4 shadow-sm", stat.bg)}>
