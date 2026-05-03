@@ -91,6 +91,12 @@ export function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-xl p-0 border-none bg-white dark:bg-slate-950 overflow-hidden rounded-[3rem] shadow-3xl sm:max-h-[90vh]">
+        {/* Accessibility Titles (Visually Hidden) */}
+        <div className="sr-only">
+          <DialogTitle>DISCATE Elite Subscription</DialogTitle>
+          <DialogDescription>Upgrade to Masterclass for unlimited forging, zero ads, and priority logic synthesis.</DialogDescription>
+        </div>
+
         {/* Background Glow */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-primary/20 rounded-full blur-[100px] opacity-60" />
